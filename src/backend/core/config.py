@@ -15,14 +15,6 @@ class OllamaConfig(BaseModel):
     request_timeout: float = 120.0
 
 
-class MemgraphConfig(BaseModel):
-    """Memgraph graph database configuration."""
-
-    uri: str = "bolt://localhost:7687"
-    user: str = ""
-    password: str = ""
-
-
 class ChromaDBConfig(BaseModel):
     """ChromaDB vector database configuration."""
 
@@ -40,7 +32,6 @@ class Settings(BaseModel):
 
     # Services
     ollama: OllamaConfig = Field(default_factory=OllamaConfig)
-    memgraph: MemgraphConfig = Field(default_factory=MemgraphConfig)
     chromadb: ChromaDBConfig = Field(default_factory=ChromaDBConfig)
 
     # Game settings

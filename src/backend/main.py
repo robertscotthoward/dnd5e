@@ -14,7 +14,6 @@ from rich.tree import Tree
 
 from .core.config import settings
 from .core.vector_store import vector_store
-from .core.graph_store import graph_store
 from .core.ai_client import ai_client
 from .core.tools import WorldTools
 from .models.world import World, Object, Location, Size
