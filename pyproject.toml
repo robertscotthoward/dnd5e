@@ -1,0 +1,23 @@
+[project]
+name = "dnd5e"
+version = "0.1.0"
+description = "D&D 5e AI-powered game engine with agents for DM, Players, and World simulation"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "typer[all]>=0.12.0",
+    "llama-index>=0.12.0",
+    "llama-index-llms-ollama>=0.4.0",
+    "chromadb>=0.5.0",
+    "neo4j>=5.0.0",
+    "networkx>=3.0",
+    "spacy>=3.7.0",
+    "pyvis>=0.3.0",
+    "markdown-it-py>=3.0.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "rich>=13.0.0",
+]
+
+[project.scripts]
+dnd5e = "src.backend.main:app"
