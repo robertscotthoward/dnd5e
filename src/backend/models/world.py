@@ -36,14 +36,15 @@ class Size(BaseModel):
 
 class Object(BaseModel):
     """
-    Base object in the world. Everything is an object - locations, items, players.
+    Base object in the world. Everything is an object - locations, items, players, parties.
 
     The world resolution is 5 feet. Objects form a parent/child hierarchy.
+    All game data (stats, abilities, HP, etc.) is stored in properties.
     """
 
     id: int
     parent: Optional[int] = None  # None only for the root System object
-    type: str  # e.g. PC, NPC, system, planet, continent, bed, sword, ring
+    type: str  # e.g. PC, NPC, party, system, planet, continent, bed, sword, ring
     name: Optional[str] = None
     description: Optional[str] = None
     location: Location = Field(default_factory=Location)
@@ -52,7 +53,42 @@ class Object(BaseModel):
     cost: int = 0  # in copper pieces
     is_moveable: bool = True  # can the location change?
     is_virtual: bool = False  # can children extend beyond parent bounds?
-    properties: dict[str, Any] = Field(default_factory=dict)  # additional properties
+    properties: dict[str, Any] = Field(default_factory=dict)  # all additional data
+
+    # Convenience methods for common properties
+    def get_prop(self, key: str, default: Any = None) -> Any:
+        """Get a property value."""
+        return self.properties.get(key, default)
+
+    def set_prop(self, key: str, value: Any) -> None:
+        """Set a property value."""
+        self.properties[key] = value
+
+    @property
+    def hp(self) -> Optional[dict]:
+        """Get HP if this is a player/creature."""
+        return self.properties.get("hp")
+
+    @property
+    def is_dead(self) -> bool:
+        """Check if this object is dead (HP <= 0)."""
+        hp = self.hp
+        if hp is None:
+            return False
+        return hp.get("current", 1) <= 0
+
+    @property
+    def abilities(self) -> Optional[dict]:
+        """Get ability scores if this is a player/creature."""
+        return self.properties.get("abilities")
+
+    def get_ability_modifier(self, ability: str) -> int:
+        """Calculate ability modifier: (score - 10) // 2."""
+        abilities = self.abilities
+        if not abilities:
+            return 0
+        score = abilities.get(ability, 10)
+        return (score - 10) // 2
 
     def model_dump_yaml(self) -> dict:
         """Convert to YAML-friendly dict."""
@@ -88,7 +124,7 @@ class World(BaseModel):
     The game world containing all objects.
 
     Objects are stored in a dictionary keyed by integer ID.
-    When an object is deleted, its ID is added to delete_ids for tracking.
+    Everything is an object - locations, items, players, parties.
     """
 
     name: str
@@ -109,6 +145,22 @@ class World(BaseModel):
     def get_object(self, obj_id: int) -> Optional[Object]:
         """Get an object by ID."""
         return self.objects.get(obj_id)
+
+    def get_objects_by_type(self, obj_type: str) -> list[Object]:
+        """Get all objects of a specific type."""
+        return [obj for obj in self.objects.values() if obj.type == obj_type]
+
+    def get_pcs(self) -> list[Object]:
+        """Get all player characters."""
+        return self.get_objects_by_type("PC")
+
+    def get_npcs(self) -> list[Object]:
+        """Get all non-player characters."""
+        return self.get_objects_by_type("NPC")
+
+    def get_parties(self) -> list[Object]:
+        """Get all parties."""
+        return self.get_objects_by_type("party")
 
     def delete_object(self, obj_id: int, cascade: bool = False) -> bool:
         """
@@ -159,6 +211,13 @@ class World(BaseModel):
             else:
                 break
         return ancestors
+
+    def get_party_members(self, party_id: int) -> list[Object]:
+        """Get all members of a party (PCs/NPCs whose parent is the party)."""
+        return [
+            obj for obj in self.objects.values()
+            if obj.parent == party_id and obj.type in ("PC", "NPC")
+        ]
 
     def get_visible_world(self, observer_id: int) -> "World":
         """

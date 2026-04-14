@@ -1,112 +1,8 @@
-"""Player models for the D&D 5e game engine."""
+"""Player-related constants and helpers for the D&D 5e game engine.
 
-from typing import Optional
-from pydantic import BaseModel, Field
-
-
-class AbilityScores(BaseModel):
-    """The six ability scores for a D&D character."""
-
-    str_: int = Field(10, alias="str")  # Strength
-    int_: int = Field(10, alias="int")  # Intelligence
-    wis: int = 10  # Wisdom
-    dex: int = 10  # Dexterity
-    con: int = 10  # Constitution
-    chr: int = 10  # Charisma
-
-    class Config:
-        populate_by_name = True
-
-    def get_modifier(self, ability: str) -> int:
-        """Calculate ability modifier: (score - 10) // 2."""
-        score = getattr(self, ability if ability not in ("str", "int") else f"{ability}_")
-        return (score - 10) // 2
-
-
-class ClassLevel(BaseModel):
-    """A character's class and level in that class."""
-
-    type: str  # e.g. "Ranger", "Fighter", "Wizard"
-    level: int = 1
-
-
-class HealthPool(BaseModel):
-    """A pool of points (HP, mana, etc.) with max and current values."""
-
-    max: int
-    current: int
-
-    def modify(self, delta: int) -> int:
-        """Modify current value, clamping to [0, max]. Returns new value."""
-        self.current = max(0, min(self.max, self.current + delta))
-        return self.current
-
-    @property
-    def is_depleted(self) -> bool:
-        return self.current <= 0
-
-
-class Player(BaseModel):
-    """
-    Base player model for both PCs and NPCs.
-
-    Players are Objects in the world with additional game statistics.
-    The object_id links this player data to their Object in the world.
-    """
-
-    object_id: int  # Links to the Object in the world
-    name: str
-    race: str  # e.g. "Human", "Elf", "Dwarf"
-    classes: list[ClassLevel] = Field(default_factory=list)
-    abilities: AbilityScores = Field(default_factory=AbilityScores)
-    hp: HealthPool
-    mana: Optional[HealthPool] = None
-    health: Optional[HealthPool] = None  # Separate from HP for some systems
-    personality: Optional[str] = None  # For AI decision making
-    disposition: Optional[str] = None  # e.g. "friendly", "hostile", "neutral"
-
-    @property
-    def total_level(self) -> int:
-        """Sum of all class levels."""
-        return sum(c.level for c in self.classes)
-
-    @property
-    def is_dead(self) -> bool:
-        return self.hp.is_depleted
-
-    def add_class(self, class_type: str, level: int = 1) -> None:
-        """Add a new class or increase level in existing class."""
-        for c in self.classes:
-            if c.type.lower() == class_type.lower():
-                c.level += level
-                return
-        self.classes.append(ClassLevel(type=class_type, level=level))
-
-
-class PC(Player):
-    """
-    Player Character - controlled by AI agent representing a player.
-
-    PCs have additional tracking for experience and backstory.
-    """
-
-    experience: int = 0
-    backstory: Optional[str] = None
-    goals: list[str] = Field(default_factory=list)
-
-
-class NPC(Player):
-    """
-    Non-Player Character - monsters, townfolk, etc.
-
-    NPCs have additional tracking for AI behavior.
-    """
-
-    is_hostile: bool = False
-    patrol_route: list[int] = Field(default_factory=list)  # Object IDs to patrol between
-    dialogue: dict[str, str] = Field(default_factory=dict)  # Trigger -> response mapping
-    loot_table: list[dict] = Field(default_factory=list)  # Items dropped on death
-
+Player data is stored in Object.properties, not separate classes.
+This module provides constants and helper functions for player creation.
+"""
 
 # Default races with their typical ability modifiers
 RACE_MODIFIERS: dict[str, dict[str, int]] = {
@@ -136,3 +32,35 @@ CLASS_HIT_DICE: dict[str, int] = {
     "Sorcerer": 6,
     "Wizard": 6,
 }
+
+
+def get_ability_modifier(score: int) -> int:
+    """Calculate ability modifier: (score - 10) // 2."""
+    return (score - 10) // 2
+
+
+def calculate_max_hp(class_type: str, con_modifier: int, level: int = 1) -> int:
+    """
+    Calculate max HP for a character.
+
+    Level 1: hit die max + CON modifier
+    Higher levels: hit die max + (average roll + CON modifier) per additional level
+    """
+    hit_die = CLASS_HIT_DICE.get(class_type, 8)
+    if level == 1:
+        return max(1, hit_die + con_modifier)
+
+    # Level 1 gets max, subsequent levels get average + 1
+    avg_roll = (hit_die // 2) + 1
+    base_hp = hit_die + con_modifier
+    additional_hp = (avg_roll + con_modifier) * (level - 1)
+    return max(1, base_hp + additional_hp)
+
+
+def apply_racial_modifiers(abilities: dict[str, int], race: str) -> dict[str, int]:
+    """Apply racial modifiers to ability scores."""
+    modifiers = RACE_MODIFIERS.get(race, {})
+    result = abilities.copy()
+    for ability, mod in modifiers.items():
+        result[ability] = result.get(ability, 10) + mod
+    return result

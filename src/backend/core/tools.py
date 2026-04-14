@@ -4,7 +4,6 @@ from typing import Any, Optional
 from pydantic import BaseModel
 
 from ..models.world import World, Object, Location, Size
-from ..models.game import Campaign
 
 
 class ToolResult(BaseModel):
@@ -23,9 +22,8 @@ class WorldTools:
     Only tools are allowed to update the world.
     """
 
-    def __init__(self, campaign: Campaign):
-        self.campaign = campaign
-        self.world = campaign.world
+    def __init__(self, world: World):
+        self.world = world
 
     def create_object(
         self,
@@ -55,7 +53,7 @@ class WorldTools:
             cost: Cost in copper pieces
             is_moveable: Can the location change?
             is_virtual: Can children extend beyond parent bounds?
-            **properties: Additional properties
+            **properties: Additional properties (hp, abilities, etc.)
         """
         # Validate parent exists
         parent = self.world.get_object(parent_id)
@@ -131,7 +129,7 @@ class WorldTools:
             return ToolResult(success=False, message=f"Object {id} not found")
 
         # Handle built-in properties
-        if hasattr(obj, name) and name not in ("id", "parent"):
+        if hasattr(obj, name) and name not in ("id", "parent", "properties"):
             if name == "location" and isinstance(value, list):
                 obj.location = Location.from_list(value)
             elif name == "size" and isinstance(value, list):
@@ -150,31 +148,36 @@ class WorldTools:
 
     def add_hp(self, id: int, delta: int) -> ToolResult:
         """
-        Modify a player's HP.
+        Modify an object's HP.
 
         Args:
-            id: Object ID of the player
+            id: Object ID of the player/creature
             delta: Amount to add (negative for damage)
 
         Returns:
             Result including new HP and death status
         """
-        player = self.campaign.get_player(id)
-        if not player:
-            return ToolResult(success=False, message=f"Player with object ID {id} not found")
+        obj = self.world.get_object(id)
+        if not obj:
+            return ToolResult(success=False, message=f"Object {id} not found")
 
-        old_hp = player.hp.current
-        new_hp = player.hp.modify(delta)
-        is_dead = player.is_dead
+        hp = obj.properties.get("hp")
+        if not hp:
+            return ToolResult(success=False, message=f"Object {id} has no HP")
 
-        message_parts = [f"Modified HP of {player.name}: {old_hp} -> {new_hp}"]
+        old_hp = hp["current"]
+        new_hp = max(0, min(hp["max"], old_hp + delta))
+        hp["current"] = new_hp
+        is_dead = new_hp <= 0
+
+        message_parts = [f"Modified HP of {obj.name or 'object'}: {old_hp} -> {new_hp}"]
         if delta < 0:
             message_parts.append(f"({-delta} damage)")
         else:
             message_parts.append(f"({delta} healing)")
 
         if is_dead:
-            message_parts.append(f"{player.name} has died!")
+            message_parts.append(f"{obj.name or 'Object'} has died!")
 
         return ToolResult(
             success=True,

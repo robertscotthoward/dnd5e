@@ -17,9 +17,9 @@ from .core.vector_store import vector_store
 from .core.graph_store import graph_store
 from .core.ai_client import ai_client
 from .core.tools import WorldTools
-from .models.world import World, Object, Location
-from .models.player import PC, AbilityScores, ClassLevel, HealthPool, RACE_MODIFIERS, CLASS_HIT_DICE
-from .models.game import Campaign, Party, GameState
+from .models.world import World, Object, Location, Size
+from .models.player import RACE_MODIFIERS, CLASS_HIT_DICE, get_ability_modifier, apply_racial_modifiers
+from .models.game import Campaign, GameState
 
 app = typer.Typer(
     name="dnd5e",
@@ -32,7 +32,7 @@ console = Console()
 game_state = GameState()
 
 
-def generate_ability_scores(seed: int) -> AbilityScores:
+def generate_ability_scores(seed: int) -> dict[str, int]:
     """Generate random ability scores using 4d6 drop lowest."""
     rng = random.Random(seed)
 
@@ -41,14 +41,14 @@ def generate_ability_scores(seed: int) -> AbilityScores:
         rolls.sort(reverse=True)
         return sum(rolls[:3])
 
-    return AbilityScores(
-        str=roll_ability(),
-        int=roll_ability(),
-        wis=roll_ability(),
-        dex=roll_ability(),
-        con=roll_ability(),
-        chr=roll_ability(),
-    )
+    return {
+        "str": roll_ability(),
+        "int": roll_ability(),
+        "wis": roll_ability(),
+        "dex": roll_ability(),
+        "con": roll_ability(),
+        "chr": roll_ability(),
+    }
 
 
 def create_default_world(name: str) -> World:
@@ -132,21 +132,15 @@ def create_default_world(name: str) -> World:
         description="The main gathering area of the inn with tables and a fireplace",
         is_moveable=False,
         is_virtual=True,
-        size=world.objects[1].size,  # Use a reasonable size
+        size=Size(length=30, width=20, height=10),
     )
-    common_room.size.length = 30
-    common_room.size.width = 20
-    common_room.size.height = 10
     world.add_object(common_room)
 
     return world
 
 
-def create_default_pcs(world: World, party_id: int, seed: int) -> list[PC]:
-    """Create 4 default player characters."""
-    pcs = []
-    common_room_id = 7  # ID of the common room
-
+def create_default_pcs(world: World, party_id: int, seed: int) -> None:
+    """Create 4 default player characters as Objects in the world."""
     # Character definitions
     characters = [
         {
@@ -180,47 +174,37 @@ def create_default_pcs(world: World, party_id: int, seed: int) -> list[PC]:
     ]
 
     for i, char in enumerate(characters):
-        # Create object in world
         char_seed = seed + i * 1000
-        obj_id = world.next_id()
-        obj = Object(
-            id=obj_id,
-            parent=common_room_id,
+
+        # Generate abilities with racial modifiers
+        abilities = generate_ability_scores(char_seed)
+        abilities = apply_racial_modifiers(abilities, char["race"])
+
+        # Calculate HP
+        con_mod = get_ability_modifier(abilities["con"])
+        hit_die = CLASS_HIT_DICE.get(char["class"], 8)
+        max_hp = max(1, hit_die + con_mod)
+
+        # Create PC as an Object with all properties
+        pc = Object(
+            id=world.next_id(),
+            parent=party_id,
             type="PC",
             name=char["name"],
             description=f"{char['race']} {char['class']}",
             location=Location(x=5 * (i % 2), y=5 * (i // 2), z=0),
+            properties={
+                "race": char["race"],
+                "classes": [{"type": char["class"], "level": 1}],
+                "abilities": abilities,
+                "hp": {"max": max_hp, "current": max_hp},
+                "personality": char["personality"],
+                "backstory": char["backstory"],
+                "goals": ["Complete the current quest", "Grow stronger through adventure"],
+                "experience": 0,
+            },
         )
-        world.add_object(obj)
-
-        # Generate abilities
-        abilities = generate_ability_scores(char_seed)
-
-        # Apply racial modifiers
-        race_mods = RACE_MODIFIERS.get(char["race"], {})
-        for ability, mod in race_mods.items():
-            current = getattr(abilities, ability if ability not in ("str", "int") else f"{ability}_")
-            setattr(abilities, ability if ability not in ("str", "int") else f"{ability}_", current + mod)
-
-        # Calculate HP (hit die max + CON modifier for level 1)
-        hit_die = CLASS_HIT_DICE.get(char["class"], 8)
-        con_mod = abilities.get_modifier("con")
-        max_hp = hit_die + con_mod
-
-        pc = PC(
-            object_id=obj_id,
-            name=char["name"],
-            race=char["race"],
-            classes=[ClassLevel(type=char["class"], level=1)],
-            abilities=abilities,
-            hp=HealthPool(max=max_hp, current=max_hp),
-            personality=char["personality"],
-            backstory=char["backstory"],
-            goals=["Complete the current quest", "Grow stronger through adventure"],
-        )
-        pcs.append(pc)
-
-    return pcs
+        world.add_object(pc)
 
 
 @app.command()
@@ -238,10 +222,10 @@ def new_campaign(
 
     # Create world
     world = create_default_world(name)
-    console.print(f"Created world with {len(world.objects)} objects")
+    console.print(f"Created world with {len(world.objects)} location objects")
 
-    # Create party
-    party_obj = Object(
+    # Create party (PCs will be children of the party)
+    party = Object(
         id=world.next_id(),
         parent=7,  # Common room
         type="party",
@@ -249,27 +233,17 @@ def new_campaign(
         description="A band of adventurers seeking fortune and glory",
         is_virtual=True,
     )
-    world.add_object(party_obj)
+    world.add_object(party)
 
-    # Create PCs
-    pcs = create_default_pcs(world, party_obj.id, seed)
-    console.print(f"Created {len(pcs)} player characters")
+    # Create PCs as children of the party
+    create_default_pcs(world, party.id, seed)
+    console.print(f"Created {len(world.get_pcs())} player characters")
 
-    # Create party
-    party = Party(
-        id=party_obj.id,
-        name="The Adventurers",
-        member_ids=[pc.object_id for pc in pcs],
-    )
-
-    # Create campaign
+    # Create campaign (just world + metadata, no separate pcs/parties lists)
     campaign = Campaign(
         name=name,
         seed=seed,
         world=world,
-        pcs=pcs,
-        npcs=[],
-        parties=[party],
     )
 
     # Save campaign
@@ -282,7 +256,7 @@ def new_campaign(
     console.print(f"[green]Campaign saved to: {save_path}[/green]")
 
     # Show summary
-    status()
+    _show_status()
 
 
 @app.command()
@@ -303,14 +277,25 @@ def load_campaign(
     game_state.load_campaign(campaign, str(file))
 
     console.print(f"[green]Loaded campaign: {campaign.name}[/green]")
-    status()
+    _show_status()
 
 
 @app.command()
-def turn():
+def turn(
+    campaign_file: Optional[Path] = typer.Option(None, "--campaign", "-c", help="Campaign file to load"),
+):
     """Execute one game turn (DM + players act)."""
+    # Load campaign if specified
+    if campaign_file:
+        if not campaign_file.exists():
+            campaign_file = settings.worlds_path / campaign_file
+        if campaign_file.exists():
+            campaign = load_campaign_from_file(campaign_file)
+            game_state.load_campaign(campaign, str(campaign_file))
+
     if not game_state.has_campaign:
         console.print("[red]No campaign loaded. Use 'new-campaign' or 'load-campaign' first.[/red]")
+        console.print("[dim]Or use: turn --campaign <file>[/dim]")
         raise typer.Exit(1)
 
     campaign = game_state.campaign
@@ -319,7 +304,7 @@ def turn():
     console.print(Panel(f"[bold]Turn {campaign.turn_number}[/bold]", title="Game Turn"))
 
     # Create tools for this turn
-    tools = WorldTools(campaign)
+    tools = WorldTools(campaign.world)
 
     # 1. World Agent: Update environment
     console.print("\n[dim]World updates...[/dim]")
@@ -328,13 +313,16 @@ def turn():
         console.print(f"[italic]{world_update}[/italic]")
 
     # 2. Each player acts
-    for pc in campaign.pcs:
+    pcs = campaign.world.get_pcs()
+    for pc in pcs:
         if pc.is_dead:
             continue
 
         console.print(f"\n[bold blue]{pc.name}'s turn[/bold blue]")
-        situation = f"Turn {campaign.turn_number}. The party is in {campaign.world.get_object(7).name}."
-        action = ai_client.generate_player_action(campaign, pc.object_id, situation)
+        location = campaign.world.get_object(pc.parent)
+        location_name = location.name if location else "unknown location"
+        situation = f"Turn {campaign.turn_number}. The party is in {location_name}."
+        action = ai_client.generate_player_action(campaign, pc.id, situation)
         console.print(f"[cyan]{action}[/cyan]")
 
     # 3. DM resolves and narrates
@@ -348,9 +336,8 @@ def turn():
     console.print(f"\n[dim]Campaign saved. Turn {campaign.turn_number} complete.[/dim]")
 
 
-@app.command()
-def status():
-    """Show current game state."""
+def _show_status() -> None:
+    """Internal function to display game status."""
     if not game_state.has_campaign:
         console.print("[yellow]No campaign loaded.[/yellow]")
         console.print("Use 'new-campaign <name>' to create a new campaign")
@@ -370,22 +357,51 @@ def status():
     console.print(tree)
 
     # Players table
-    table = Table(title="Player Characters")
-    table.add_column("Name", style="cyan")
-    table.add_column("Race")
-    table.add_column("Class")
-    table.add_column("Level")
-    table.add_column("HP", justify="right")
-    table.add_column("Status")
+    pcs = campaign.world.get_pcs()
+    if pcs:
+        table = Table(title="Player Characters")
+        table.add_column("ID", style="dim")
+        table.add_column("Name", style="cyan")
+        table.add_column("Race")
+        table.add_column("Class")
+        table.add_column("Level")
+        table.add_column("HP", justify="right")
+        table.add_column("Status")
 
-    for pc in campaign.pcs:
-        class_str = "/".join(f"{c.type}" for c in pc.classes)
-        level_str = str(pc.total_level)
-        hp_str = f"{pc.hp.current}/{pc.hp.max}"
-        status_str = "[red]Dead[/red]" if pc.is_dead else "[green]Alive[/green]"
-        table.add_row(pc.name, pc.race, class_str, level_str, hp_str, status_str)
+        for pc in pcs:
+            classes = pc.properties.get("classes", [])
+            class_str = "/".join(c.get("type", "?") for c in classes) if classes else "Unknown"
+            level = sum(c.get("level", 1) for c in classes) if classes else 1
+            hp = pc.properties.get("hp", {})
+            hp_str = f"{hp.get('current', '?')}/{hp.get('max', '?')}"
+            status_str = "[red]Dead[/red]" if pc.is_dead else "[green]Alive[/green]"
+            table.add_row(
+                str(pc.id),
+                pc.name or "Unknown",
+                pc.properties.get("race", "Unknown"),
+                class_str,
+                str(level),
+                hp_str,
+                status_str,
+            )
 
-    console.print(table)
+        console.print(table)
+
+
+@app.command()
+def status(
+    campaign_file: Optional[Path] = typer.Option(None, "--campaign", "-c", help="Campaign file to load"),
+):
+    """Show current game state."""
+    # Load campaign if specified
+    if campaign_file is not None:
+        if not campaign_file.exists():
+            campaign_file = settings.worlds_path / campaign_file
+        if campaign_file.exists():
+            campaign = load_campaign_from_file(campaign_file)
+            game_state.load_campaign(campaign, str(campaign_file))
+
+    _show_status()
 
 
 @app.command()
@@ -444,6 +460,8 @@ def add_tree_node(tree: Tree, world: World, obj_id: int) -> None:
     label = f"[{obj.type}] {obj.name or 'unnamed'}"
     if obj.type == "PC":
         label = f"[bold cyan]{label}[/bold cyan]"
+    elif obj.type == "party":
+        label = f"[bold green]{label}[/bold green]"
 
     node = tree.add(label)
     for child in world.get_children(obj_id):
@@ -461,9 +479,6 @@ def save_campaign(campaign: Campaign, path: Path) -> None:
         "created_at": campaign.created_at.isoformat(),
         "updated_at": datetime.now().isoformat(),
         "world": campaign.world.model_dump_yaml(),
-        "pcs": [pc.model_dump(mode="json") for pc in campaign.pcs],
-        "npcs": [npc.model_dump(mode="json") for npc in campaign.npcs],
-        "parties": [party.model_dump(mode="json") for party in campaign.parties],
     }
 
     with open(path, "w", encoding="utf-8") as f:
@@ -491,6 +506,7 @@ def load_campaign_from_file(path: Path) -> Campaign:
             name=obj_data.get("name"),
             description=obj_data.get("description"),
             location=Location.from_list(obj_data["location"]) if "location" in obj_data else Location(),
+            size=Size.from_list(obj_data["size"]) if "size" in obj_data else Size(),
             weight=obj_data.get("weight", 0),
             cost=obj_data.get("cost", 0),
             is_moveable=obj_data.get("is_moveable", True),
@@ -499,43 +515,10 @@ def load_campaign_from_file(path: Path) -> Campaign:
         )
         world.add_object(obj)
 
-    # Reconstruct PCs
-    pcs = []
-    for pc_data in data.get("pcs", []):
-        abilities_data = pc_data["abilities"]
-        abilities = AbilityScores(
-            str=abilities_data.get("str_", abilities_data.get("str", 10)),
-            int=abilities_data.get("int_", abilities_data.get("int", 10)),
-            wis=abilities_data.get("wis", 10),
-            dex=abilities_data.get("dex", 10),
-            con=abilities_data.get("con", 10),
-            chr=abilities_data.get("chr", 10),
-        )
-        pc = PC(
-            object_id=pc_data["object_id"],
-            name=pc_data["name"],
-            race=pc_data["race"],
-            classes=[ClassLevel(**c) for c in pc_data.get("classes", [])],
-            abilities=abilities,
-            hp=HealthPool(**pc_data["hp"]),
-            mana=HealthPool(**pc_data["mana"]) if pc_data.get("mana") else None,
-            personality=pc_data.get("personality"),
-            backstory=pc_data.get("backstory"),
-            goals=pc_data.get("goals", []),
-            experience=pc_data.get("experience", 0),
-        )
-        pcs.append(pc)
-
-    # Reconstruct parties
-    parties = [Party(**p) for p in data.get("parties", [])]
-
     return Campaign(
         name=data["name"],
         seed=data["seed"],
         world=world,
-        pcs=pcs,
-        npcs=[],
-        parties=parties,
         turn_number=data.get("turn_number", 0),
         created_at=datetime.fromisoformat(data["created_at"]) if "created_at" in data else datetime.now(),
         updated_at=datetime.fromisoformat(data["updated_at"]) if "updated_at" in data else datetime.now(),

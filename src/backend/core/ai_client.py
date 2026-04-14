@@ -1,12 +1,12 @@
 """AI client using Ollama via LlamaIndex for agent interactions."""
 
-from typing import Callable, Optional
+from typing import Optional
 from llama_index.core.tools import FunctionTool
 from llama_index.llms.ollama import Ollama
 from rich.console import Console
 
 from .config import settings
-from .tools import WorldTools, TOOL_DEFINITIONS
+from .tools import WorldTools
 from .vector_store import vector_store
 from ..models.game import Campaign
 
@@ -48,49 +48,42 @@ class AIClient:
         """Create LlamaIndex function tools from WorldTools."""
         tools = []
 
-        # create_object tool
         tools.append(FunctionTool.from_defaults(
             fn=world_tools.create_object,
             name="create_object",
             description="Create a new object in the world",
         ))
 
-        # move_object tool
         tools.append(FunctionTool.from_defaults(
             fn=world_tools.move_object,
             name="move_object",
             description="Move an object to a new parent location",
         ))
 
-        # set_object_property tool
         tools.append(FunctionTool.from_defaults(
             fn=world_tools.set_object_property,
             name="set_object_property",
             description="Set a property on an object",
         ))
 
-        # add_hp tool
         tools.append(FunctionTool.from_defaults(
             fn=world_tools.add_hp,
             name="add_hp",
             description="Modify a player's HP (negative for damage, positive for healing)",
         ))
 
-        # delete_object tool
         tools.append(FunctionTool.from_defaults(
             fn=world_tools.delete_object,
             name="delete_object",
             description="Delete an object from the world",
         ))
 
-        # get_object tool
         tools.append(FunctionTool.from_defaults(
             fn=world_tools.get_object,
             name="get_object",
             description="Get an object by ID",
         ))
 
-        # get_sub_world tool
         tools.append(FunctionTool.from_defaults(
             fn=world_tools.get_sub_world,
             name="get_sub_world",
@@ -134,13 +127,26 @@ class AIClient:
         # Get rules context
         rules_context = self.query_rules(situation)
 
+        # Get PCs from world
+        pcs = campaign.world.get_pcs()
+
         # Get visible world for context
-        party = campaign.parties[0] if campaign.parties else None
-        if party and party.member_ids:
-            visible_world = campaign.world.get_visible_world(party.member_ids[0])
+        if pcs:
+            visible_world = campaign.world.get_visible_world(pcs[0].id)
             world_context = str(visible_world.model_dump_yaml())
         else:
-            world_context = "No party found"
+            world_context = "No players found"
+
+        # Build PC summary
+        pc_summaries = []
+        for pc in pcs:
+            hp = pc.properties.get("hp", {})
+            classes = pc.properties.get("classes", [])
+            class_str = "/".join(c.get("type", "?") for c in classes) if classes else "Unknown"
+            race = pc.properties.get("race", "Unknown")
+            pc_summaries.append(
+                f"- {pc.name} ({race} {class_str}): HP {hp.get('current', '?')}/{hp.get('max', '?')}"
+            )
 
         # Build prompt
         prompt = f"""You are the Dungeon Master for a D&D 5e campaign called "{campaign.name}".
@@ -155,7 +161,7 @@ RELEVANT D&D RULES:
 {rules_context}
 
 PLAYERS:
-{[f"- {pc.name} ({pc.race} {'/'.join(c.type for c in pc.classes)}): HP {pc.hp.current}/{pc.hp.max}" for pc in campaign.pcs]}
+{chr(10).join(pc_summaries) if pc_summaries else "No players"}
 
 As the DM, narrate what happens next. If any game mechanics are involved (combat, skill checks, etc.),
 describe the dice rolls and their outcomes. Use the tools available to modify the game state.
@@ -184,20 +190,29 @@ Respond with your narration."""
             player_id: Object ID of the player
             situation: Current situation description
         """
-        pc = campaign.get_pc(player_id)
+        pc = campaign.world.get_object(player_id)
         if not pc:
             return "Player not found"
 
         # Get visible world
         visible_world = campaign.world.get_visible_world(player_id)
 
-        prompt = f"""You are playing {pc.name}, a {pc.race} {'/'.join(c.type for c in pc.classes)}.
+        # Extract PC properties
+        hp = pc.properties.get("hp", {})
+        abilities = pc.properties.get("abilities", {})
+        classes = pc.properties.get("classes", [])
+        class_str = "/".join(c.get("type", "?") for c in classes) if classes else "Unknown"
+        race = pc.properties.get("race", "Unknown")
+        personality = pc.properties.get("personality", "Not defined")
+        goals = pc.properties.get("goals", [])
+
+        prompt = f"""You are playing {pc.name}, a {race} {class_str}.
 
 CHARACTER DETAILS:
-- HP: {pc.hp.current}/{pc.hp.max}
-- Abilities: STR {pc.abilities.str_}, INT {pc.abilities.int_}, WIS {pc.abilities.wis}, DEX {pc.abilities.dex}, CON {pc.abilities.con}, CHR {pc.abilities.chr}
-- Personality: {pc.personality or 'Not defined'}
-- Goals: {', '.join(pc.goals) if pc.goals else 'None specified'}
+- HP: {hp.get('current', '?')}/{hp.get('max', '?')}
+- Abilities: STR {abilities.get('str', 10)}, INT {abilities.get('int', 10)}, WIS {abilities.get('wis', 10)}, DEX {abilities.get('dex', 10)}, CON {abilities.get('con', 10)}, CHR {abilities.get('chr', 10)}
+- Personality: {personality}
+- Goals: {', '.join(goals) if goals else 'None specified'}
 
 CURRENT SITUATION:
 {situation}
