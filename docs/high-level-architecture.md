@@ -244,6 +244,24 @@ src/backend/
     └── player.py        # Constants: RACE_MODIFIERS, CLASS_HIT_DICE
 ```
 
+### 5. LlamaIndex over PydanticAI for Agent Orchestration
+
+**Decision**: Use LlamaIndex (+ Ollama) rather than PydanticAI for agent orchestration.
+
+**Rationale**:
+
+PydanticAI was evaluated and has genuine strengths for this codebase: the data models (`Object`, `World`, `Campaign`) are already Pydantic v2, and PydanticAI agents natively consume those types for structured inputs and outputs. Its tool-calling API is also tightly integrated with Pydantic schemas, which would reduce boilerplate.
+
+However, LlamaIndex was retained for two reasons:
+
+1. **RAG pipeline integration**: The rules corpus workflow—parse markdown, chunk, embed, store in ChromaDB, query per turn—is a first-class concern in LlamaIndex. It has mature, battle-tested abstractions for exactly this retrieval pattern. Replicating this with PydanticAI would require wiring a separate retrieval stack by hand.
+
+2. **Ecosystem maturity**: LlamaIndex has broader Ollama support, more stable tool-calling primitives, and more community examples for local-LLM agentic workflows at the time of this project's development.
+
+**Trade-off accepted**: The agent/tool-calling code is slightly more verbose than it would be with PydanticAI. A future refactor could adopt PydanticAI for the agent layer while keeping direct ChromaDB client calls for retrieval, if cleaner agent code becomes a priority.
+
+---
+
 ## What Makes This "Agentic"?
 
 1. **Autonomous decision-making** - Agents choose actions based on goals/personality
