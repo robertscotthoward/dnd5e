@@ -28,15 +28,15 @@ This project demonstrates how to build a multi-agent AI system using a real-worl
 
 ### Technical Stack
 
-| Layer | Technology | Role |
-|---|---|---|
-| Language | Python 3.12+ | Core application |
-| CLI Framework | Typer + Rich | Command-line interface and display |
-| LLM Orchestration | LlamaIndex + Ollama | Agent reasoning and tool calling |
-| LLM Backend | Ollama (`qwen2.5:14b`) | Local inference (no cloud dependency) |
-| Vector Database | ChromaDB | Semantic search over D&D rules corpus |
-| Data Models | Pydantic v2 | Type-safe world state |
-| Persistence | YAML | Campaign save/load |
+| Layer             | Technology             | Role                                  |
+| ----------------- | ---------------------- | ------------------------------------- |
+| Language          | Python 3.12+           | Core application                      |
+| CLI Framework     | Typer + Rich           | Command-line interface and display    |
+| LLM Orchestration | LlamaIndex + Ollama    | Agent reasoning and tool calling      |
+| LLM Backend       | Ollama (`qwen2.5:14b`) | Local inference (no cloud dependency) |
+| Vector Database   | ChromaDB               | Semantic search over D&D rules corpus |
+| Data Models       | Pydantic v2            | Type-safe world state                 |
+| Persistence       | YAML                   | Campaign save/load                    |
 
 ### Data Flow: One Game Turn
 
@@ -150,7 +150,7 @@ python -m src.backend.main new-campaign "MyAdventure" --seed 42
 python -m src.backend.main turn --campaign "MyAdventure.yaml"
 
 # Other commands
-python -m src.backend.main status --campaign "MyAdventure.yaml"   # View world state
+python -m src.backend.main status --campaign "MyAdventure.yaml"    # View world state
 python -m src.backend.main query "how does sneak attack work"      # Query rules corpus
 python -m src.backend.main test-ai                                 # Test Ollama connection
 ```
