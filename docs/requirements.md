@@ -27,6 +27,14 @@ Use the local ollama server and model `qwen2.5:14b` for tool calling.
 Assume memgraph is running on bolt://localhost:7687
 
 
+# Use Cases
+```
+python -m src.backend.main index-corpus
+python -m src.backend.main new-campaign "MyAdventure"
+python -m src.backend.main turn --campaign "MyAdventure.yaml"
+```
+
+
 # Agents
 There will be one agent for the following:
 * The dungeon master (DM) who coordinates the players, party members, and their state. The DM determines what events happen, e.g."A monster hit Thor for 3 hp damage. He rolled a d20 and got a 14, but with a savings bonus, saved for poison." Then it calls the add_hp(id, -3), which then determines if Thor died or not.
@@ -223,5 +231,5 @@ This world file (W) can get very big, and is not ideal to be pushed into an LLM.
 # Other Requirements
 * Start with a fixed seed per campaign for reproducible runs; log seeds for each turn and major random events.
 * Precise visibility rules: LOS, range, occlusion, light/dark states; define perception checks and passive/active perception thresholds.
-* 
+
 
