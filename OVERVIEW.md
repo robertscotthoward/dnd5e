@@ -117,7 +117,7 @@ Visibility is hierarchy-based: an object can see itself, its ancestors, and its 
 └── dev.bat                 # Development convenience script
 ```
 
----
+--- 
 
 ## 6. Getting Started
 
@@ -153,6 +153,8 @@ python -m src.backend.main turn --campaign "MyAdventure.yaml"
 python -m src.backend.main status --campaign "MyAdventure.yaml"    # View world state
 python -m src.backend.main query "how does sneak attack work"      # Query rules corpus
 python -m src.backend.main test-ai                                 # Test Ollama connection
+
+dev.bat  # to run both servers: API and web
 ```
 
 ### Configuration

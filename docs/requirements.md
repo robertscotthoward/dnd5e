@@ -20,12 +20,12 @@ Use these packages for general AI work:
 The app will create:
 * Four player characters (PCs)
 * A new campaign that consists of one or more parties. By default, all PCs are in the same party.
+* A player by itself is not in a party. There must be at least two players in any party, but the term "party" is often used generically where a person is in a party of one.
 * A `data/world.yaml` file will be created and persisted. This will be the "campaign". See "World Generation" below.
 
 Use the local ollama server and model `qwen2.5:14b` for tool calling.
 
 Assume memgraph is running on bolt://localhost:7687
-
 
 # Use Cases
 ```
@@ -33,6 +33,13 @@ python -m src.backend.main index-corpus
 python -m src.backend.main new-campaign "MyAdventure"
 python -m src.backend.main turn --campaign "MyAdventure.yaml"
 ```
+
+# The Pillars of Adventure
+A party or character can be in one of the following game modes:
+- Exploration, where the party is asking the DM questions. 
+- Social Interaction, where the party is interacting with NPCs.
+- Travel, where the party is moving between places in an automatic manner. 
+- Combat (or Melee) where the rules of combat turns are enforced; e.g. Roll for initiative, surprise, attacking, etc.
 
 
 # Agents
@@ -233,3 +240,29 @@ This world file (W) can get very big, and is not ideal to be pushed into an LLM.
 * Precise visibility rules: LOS, range, occlusion, light/dark states; define perception checks and passive/active perception thresholds.
 
 
+
+# Web Site
+This vue.js website will have the following features:
+- A nice navigation of the initial options that show:
+  - The user can register: username and password, which are stored in cache/users.json where security is deliberately low. The passwords will be salted and hashed, but the same algorithm will be used to authenticate.
+  - The user can log in
+  - A list of existing campaigns of which the users can join. When a user joins a campaign, for the first time, it will need to create a character region, race and class, name, background. A background will be generated based on the character's region and race. The regions can be found in https://elderscrolls.fandom.com/wiki/Regions_(Daggerfall). The user can accept the background or replace it with their own background.
+  - When a user joins an existing campaign that it has already joined before, the DM gives a summary of where it left off and a description of where the character is and the other players around the character in the party.
+  - Campaigns can have multiple players, and each player can be in at most one party.
+- Anyone in the party can create a snapshot of the campaign game to save it for restoration later. These can be found for any campaign. These snapshots are like git branches. They form a tree. If I play snapshot (or saved game) "A" and I save it as "B", then "A" is the parent of "B", etc.
+- Snapshots are copies of the campaign folder. Each campaign as a folder under the "campaigns" folder. In the example above, the folder system would be:
+```
+campaigns/
+  A/
+    campaigns/
+      B/
+```
+
+When a user joins a campaign, the "campaign" page shows:
+- the name of the campaign
+- the players in the campaign
+- each player's hit points, encumberance, and health - a gradient of green to yellow to red.
+- A chat windows that all players in the campaign see. This will be a signal-r like websocket that syncs across all player's browser.
+- If player P1 types something, upon ENTER, all players see it, and the DM responds to it. To prevent confusion, each line entered will be be preceded with the persons name, e.g. "Thor: Where are we going?" "DM" will represent the dungeon master. Monsters and NPCs will also be part of the chat, but they will not be able to see what the players type - only what the DM relays to them. Remember, an NPC can see what a player does or says to them, but not what the players say to each other. The player must explicitly state "Dragon, please let us pass." so that the DM knows the player is talking to the dragon. Any question or statement not qualified with a target will assume the party as the target. "What should we do?" says the player. The DM does not reply. "DM: check the lock for traps" will tell the DM you are giving a command. In combat, each player takes a turn. So if it's Thor's turn, the DM will only listen to Thor. Other's can chat, but the DM is waiting for Thor to say what he will do.
+- At the bottom of the chat will be common buttons for common actions depending on the mode of the game. For example, if in combat, and it's your turn, you will see buttons like: Attack, Cast Spell, Dash, Disengage, Dodge, Help, Hide, Ready, Search, Use Object, etc. But only if you are allowed to do those things. You might be silences, so you cannot cast a spell, which will be disabled with a tooltip that says so. Unconsciousness is an automatic skip.
+- 
