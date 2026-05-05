@@ -1,0 +1,18 @@
+{
+  "players": [
+    {
+      "user_id": "ac80a32a859e5452",
+      "username": "rob",
+      "character_object_id": 13,
+      "character_name": "robeblade",
+      "race": "Half-Elf",
+      "class_type": "Wizard",
+      "hp_current": 7,
+      "hp_max": 7,
+      "encumbrance_current": 0.0,
+      "encumbrance_max": 150.0,
+      "joined_at": "2026-05-04T15:08:38.633102",
+      "last_seen": "2026-05-04T15:18:34.491096"
+    }
+  ]
+}

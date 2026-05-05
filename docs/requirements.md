@@ -261,8 +261,14 @@ campaigns/
 When a user joins a campaign, the "campaign" page shows:
 - the name of the campaign
 - the players in the campaign
+- When the character is created to join a campaign, show the dice roll for each attribute plus a bonus points d6. Give the user the ability to roll again. The bonus points can be added to one or more attributes - the user gets to decide.
 - each player's hit points, encumberance, and health - a gradient of green to yellow to red.
 - A chat windows that all players in the campaign see. This will be a signal-r like websocket that syncs across all player's browser.
 - If player P1 types something, upon ENTER, all players see it, and the DM responds to it. To prevent confusion, each line entered will be be preceded with the persons name, e.g. "Thor: Where are we going?" "DM" will represent the dungeon master. Monsters and NPCs will also be part of the chat, but they will not be able to see what the players type - only what the DM relays to them. Remember, an NPC can see what a player does or says to them, but not what the players say to each other. The player must explicitly state "Dragon, please let us pass." so that the DM knows the player is talking to the dragon. Any question or statement not qualified with a target will assume the party as the target. "What should we do?" says the player. The DM does not reply. "DM: check the lock for traps" will tell the DM you are giving a command. In combat, each player takes a turn. So if it's Thor's turn, the DM will only listen to Thor. Other's can chat, but the DM is waiting for Thor to say what he will do.
 - At the bottom of the chat will be common buttons for common actions depending on the mode of the game. For example, if in combat, and it's your turn, you will see buttons like: Attack, Cast Spell, Dash, Disengage, Dodge, Help, Hide, Ready, Search, Use Object, etc. But only if you are allowed to do those things. You might be silences, so you cannot cast a spell, which will be disabled with a tooltip that says so. Unconsciousness is an automatic skip.
-- 
+
+
+# Admin
+Create an page with route "/admin". Only allow that if the user has property "admin" true.
+This page will show all campaigns each with an "X" to delete it completely. Before deleting a campaign, create a zip of the campaign folder and store that under the campaigns folder.
+Under each campaign, show the players each with an "X" to delete the from the campaign.

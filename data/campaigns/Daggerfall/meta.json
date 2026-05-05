@@ -1,0 +1,14 @@
+{
+  "id": "Daggerfall",
+  "name": "Daggerfall",
+  "seed": 432,
+  "turn_number": 0,
+  "game_mode": "Exploration",
+  "created_by": "rob",
+  "created_at": "2026-05-04T15:08:38.505048",
+  "updated_at": "2026-05-04T15:08:38.505048",
+  "parent_snapshot": null,
+  "snapshot_label": null,
+  "active_player_turn": null,
+  "player_count": 1
+}
