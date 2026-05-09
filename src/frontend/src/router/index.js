@@ -30,6 +30,12 @@ const routes = [
     component: () => import('../views/GameView.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/AdminView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
 ]
 
 const router = createRouter({
@@ -41,6 +47,8 @@ router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {
     next({ name: 'login', query: { redirect: to.fullPath } })
+  } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    next({ name: 'home' })
   } else {
     next()
   }

@@ -24,6 +24,7 @@ class Session(BaseModel):
     token: str
     user_id: str
     username: str
+    is_admin: bool = False
     created_at: datetime = Field(default_factory=datetime.now)
 
 

@@ -4,21 +4,18 @@
     <div class="navbar-left">
       <RouterLink to="/" class="navbar-brand">
         <svg class="d20-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Outer pentagon / icosahedron face -->
           <polygon
             points="20,3 37,14 37,26 20,37 3,26 3,14"
             stroke="#c9a227"
             stroke-width="1.5"
             fill="none"
           />
-          <!-- Inner lines creating facets -->
           <line x1="20" y1="3"  x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
           <line x1="37" y1="14" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
           <line x1="37" y1="26" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
           <line x1="20" y1="37" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
           <line x1="3"  y1="26" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
           <line x1="3"  y1="14" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
-          <!-- "20" text -->
           <text x="20" y="21" text-anchor="middle" dominant-baseline="middle"
                 fill="#c9a227" font-size="9" font-family="Cinzel, serif" font-weight="700">20</text>
         </svg>
@@ -33,14 +30,32 @@
     <div class="navbar-right">
       <template v-if="authStore.isLoggedIn">
         <RouterLink to="/campaigns" class="nav-link">Campaigns</RouterLink>
-        <div class="nav-user">
-          <div class="user-avatar">{{ userInitial }}</div>
-          <span class="user-name">{{ authStore.user?.username }}</span>
+
+        <!-- Profile dropdown -->
+        <div class="profile-menu" ref="profileMenuRef">
+          <button class="profile-trigger" @click.stop="toggleDropdown" :class="{ active: dropdownOpen }">
+            <div class="user-avatar">{{ userInitial }}</div>
+            <span class="user-name">{{ authStore.user?.username }}</span>
+            <span class="chevron" :class="{ open: dropdownOpen }">▾</span>
+          </button>
+
+          <div v-if="dropdownOpen" class="profile-dropdown">
+            <RouterLink
+              v-if="authStore.isAdmin"
+              to="/admin"
+              class="dropdown-item"
+              @click="dropdownOpen = false"
+            >
+              ⚙ Admin
+            </RouterLink>
+            <div v-if="authStore.isAdmin" class="dropdown-divider"></div>
+            <button class="dropdown-item dropdown-item-logout" @click="handleLogout">
+              ↩ Logout
+            </button>
+          </div>
         </div>
-        <button class="dnd-button-ghost nav-logout-btn" @click="handleLogout">
-          Logout
-        </button>
       </template>
+
       <template v-else>
         <RouterLink to="/login" class="dnd-button nav-login-btn">
           Enter Realm
@@ -51,18 +66,35 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const authStore = useAuthStore()
 const router = useRouter()
 
+const dropdownOpen = ref(false)
+const profileMenuRef = ref(null)
+
 const userInitial = computed(() => {
   return authStore.user?.username?.charAt(0)?.toUpperCase() || '?'
 })
 
+function toggleDropdown() {
+  dropdownOpen.value = !dropdownOpen.value
+}
+
+function closeDropdown(e) {
+  if (profileMenuRef.value && !profileMenuRef.value.contains(e.target)) {
+    dropdownOpen.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('click', closeDropdown))
+onUnmounted(() => document.removeEventListener('click', closeDropdown))
+
 async function handleLogout() {
+  dropdownOpen.value = false
   await authStore.logout(router)
 }
 </script>
@@ -146,10 +178,26 @@ async function handleLogout() {
   color: #c9a227;
 }
 
-.nav-user {
+/* ===== Profile dropdown ===== */
+.profile-menu {
+  position: relative;
+}
+
+.profile-trigger {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.profile-trigger:hover,
+.profile-trigger.active {
+  border-color: #3d2e10;
+  background: rgba(201,162,39,0.06);
 }
 
 .user-avatar {
@@ -166,6 +214,7 @@ async function handleLogout() {
   justify-content: center;
   border: 1px solid #c9a227;
   box-shadow: 0 0 8px rgba(201,162,39,0.3);
+  flex-shrink: 0;
 }
 
 .user-name {
@@ -178,11 +227,67 @@ async function handleLogout() {
   white-space: nowrap;
 }
 
-.nav-logout-btn {
+.chevron {
   font-size: 0.75rem;
-  padding: 0.35rem 0.875rem;
+  color: #7a6115;
+  line-height: 1;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+.chevron.open {
+  transform: rotate(180deg);
 }
 
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  background: linear-gradient(to bottom, #1a1109, #150f06);
+  border: 1px solid #7a6115;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,162,39,0.08);
+  overflow: hidden;
+  z-index: 200;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #c9a227;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  text-align: left;
+}
+.dropdown-item:hover {
+  background: rgba(201,162,39,0.1);
+  color: #e8d5b7;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #3d2e10;
+  margin: 0;
+}
+
+.dropdown-item-logout {
+  color: #f87171;
+}
+.dropdown-item-logout:hover {
+  background: rgba(248,113,113,0.1);
+  color: #fca5a5;
+}
+
+/* ===== Login button ===== */
 .nav-login-btn {
   font-size: 0.8rem;
   padding: 0.4rem 1rem;

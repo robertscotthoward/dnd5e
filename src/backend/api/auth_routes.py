@@ -53,4 +53,4 @@ def logout(request: Request, response: Response):
 def me(request: Request):
     """Return the currently authenticated user's info."""
     session = get_current_user(request)
-    return {"user_id": session.user_id, "username": session.username}
+    return {"user_id": session.user_id, "username": session.username, "is_admin": session.is_admin}

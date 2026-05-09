@@ -4,6 +4,7 @@ import json
 import re
 import secrets
 import shutil
+import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -322,3 +323,59 @@ def create_snapshot(campaign_id: str, label: str, created_by: str) -> Snapshot:
         created_at=now,
         path=str((src / "campaigns" / snap_id).relative_to(campaigns_root())),
     )
+
+
+def delete_campaign(campaign_id: str) -> str:
+    """
+    Zip the campaign folder into the campaigns root, then delete the folder.
+
+    Returns the path of the zip file (relative to the campaigns root).
+    Raises FileNotFoundError if the campaign does not exist.
+    """
+    src = campaign_path(campaign_id)
+    if not src.exists():
+        raise FileNotFoundError(f"Campaign '{campaign_id}' not found")
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    zip_name = f"{campaign_id}_{timestamp}.zip"
+    zip_path = campaigns_root() / zip_name
+
+    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for file in src.rglob("*"):
+            if file.is_file():
+                zf.write(file, file.relative_to(campaigns_root()))
+
+    shutil.rmtree(src)
+    return zip_name
+
+
+def remove_player(campaign_id: str, user_id: str) -> bool:
+    """
+    Remove a player from a campaign's players.json and their PC from the world.
+
+    Returns True if the player was found and removed, False if not found.
+    """
+    players = get_raw_players(campaign_id)
+    player = next((p for p in players if p["user_id"] == user_id), None)
+    if not player:
+        return False
+
+    # Remove the PC object from the world if one exists
+    char_id = player.get("character_object_id")
+    if char_id is not None:
+        campaign = load_campaign_world(campaign_id)
+        if campaign:
+            campaign.world.delete_object(char_id)
+            save_campaign_world(campaign_id, campaign)
+
+    # Remove from players list
+    players = [p for p in players if p["user_id"] != user_id]
+    save_raw_players(campaign_id, players)
+
+    # Update player count
+    meta = get_campaign_meta(campaign_id)
+    if meta:
+        meta.player_count = len(players)
+        save_campaign_meta(meta)
+
+    return True

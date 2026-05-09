@@ -3,6 +3,7 @@
 import hashlib
 import json
 import secrets
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -10,11 +11,41 @@ from fastapi import HTTPException, Request
 
 from src.backend.models.user import Session
 
-# In-memory session store: token -> Session
-_sessions: dict[str, Session] = {}
+_CACHE = Path(__file__).parent.parent.parent.parent / "cache"
+_USERS_FILE    = _CACHE / "users.json"
+_SESSIONS_FILE = _CACHE / "sessions.json"
 
-# Path to the users JSON file: 4 levels up from src/backend/core/ is the project root
-_USERS_FILE = Path(__file__).parent.parent.parent.parent / "cache" / "users.json"
+_SESSION_TTL = timedelta(days=7)
+
+
+def _load_sessions_from_disk() -> dict[str, Session]:
+    """Load persisted sessions, discarding any that have expired."""
+    if not _SESSIONS_FILE.exists():
+        return {}
+    try:
+        with open(_SESSIONS_FILE, encoding="utf-8") as f:
+            raw = json.load(f)
+        cutoff = datetime.now() - _SESSION_TTL
+        result = {}
+        for token, data in raw.items():
+            session = Session(**data)
+            if session.created_at >= cutoff:
+                result[token] = session
+        return result
+    except Exception:
+        return {}
+
+
+def _save_sessions_to_disk() -> None:
+    """Write the current session store to disk."""
+    _CACHE.mkdir(parents=True, exist_ok=True)
+    data = {token: s.model_dump(mode="json") for token, s in _sessions.items()}
+    with open(_SESSIONS_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, default=str)
+
+
+# Session store: populated from disk at import time
+_sessions: dict[str, Session] = _load_sessions_from_disk()
 
 
 def hash_password(password: str, salt: str) -> str:
@@ -86,12 +117,12 @@ def register_user(username: str, password: str) -> tuple[bool, str, Optional[dic
     password_hash = hash_password(password, salt)
 
     user_id = secrets.token_hex(8)
-    from datetime import datetime
     user = {
         "id": user_id,
         "username": username,
         "password_hash": password_hash,
         "salt": salt,
+        "is_admin": False,
         "created_at": datetime.now().isoformat(),
     }
 
@@ -118,7 +149,7 @@ def authenticate_user(username: str, password: str) -> Optional[dict]:
 
 def create_session(user_dict: dict) -> str:
     """
-    Create an in-memory session for the given user.
+    Create a session for the given user and persist it to disk.
 
     Returns the session token string.
     """
@@ -127,19 +158,28 @@ def create_session(user_dict: dict) -> str:
         token=token,
         user_id=user_dict["id"],
         username=user_dict["username"],
+        is_admin=user_dict.get("is_admin", user_dict.get("admin", False)),
     )
     _sessions[token] = session
+    _save_sessions_to_disk()
     return token
 
 
 def get_session(token: str) -> Optional[Session]:
-    """Look up a session by token. Returns None if not found."""
-    return _sessions.get(token)
+    """Look up a session by token, returning None if missing or expired."""
+    session = _sessions.get(token)
+    if session is None:
+        return None
+    if datetime.now() - session.created_at > _SESSION_TTL:
+        delete_session(token)
+        return None
+    return session
 
 
 def delete_session(token: str) -> None:
-    """Remove a session from memory."""
+    """Remove a session and persist the change to disk."""
     _sessions.pop(token, None)
+    _save_sessions_to_disk()
 
 
 def get_current_user(request: Request) -> Session:
@@ -154,4 +194,16 @@ def get_current_user(request: Request) -> Session:
     session = get_session(token)
     if not session:
         raise HTTPException(status_code=401, detail="Invalid or expired session")
+    return session
+
+
+def get_current_admin(request: Request) -> Session:
+    """
+    FastAPI dependency like get_current_user but also enforces is_admin.
+
+    Raises HTTPException 403 if the user is not an admin.
+    """
+    session = get_current_user(request)
+    if not session.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
     return session
