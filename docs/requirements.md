@@ -281,4 +281,6 @@ Create an page with route "/admin". Only allow that if the user has property "ad
 This page will show all campaigns each with an "X" to delete it completely. Before deleting a campaign, create a zip of the campaign folder and store that under the campaigns folder.
 Under each campaign, show the players each with an "X" to delete the from the campaign.
 When I type http://localhost:5173/admin on the URL, it should not redirect me to http://localhost:5173/login?redirect=/admin because I'm already logged in and I have "admin" property set to ture.
-If the user is an admin, then add a
+If the user is an admin, then add a profile menu option called "Admin" that link to the /admin page.
+On the admin page, add left navigation bar. Add "Console" that links to "/admin".
+Where a world is shown (e.g. "Daggerfall"), when the user lci

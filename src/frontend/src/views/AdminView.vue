@@ -1,5 +1,15 @@
 <template>
   <div class="admin-page">
+    <!-- Left sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-label">Admin</div>
+      <RouterLink to="/admin" class="sidebar-link" :class="{ active: route.name === 'admin' }">
+        ⚙ Console
+      </RouterLink>
+    </aside>
+
+    <!-- Main content -->
+    <div class="admin-main">
     <div class="admin-container">
       <!-- Header -->
       <div class="admin-header">
@@ -90,6 +100,7 @@
         </div>
       </div>
     </div>
+    </div> <!-- /admin-main -->
 
     <!-- Confirm dialog -->
     <div v-if="dialog.visible" class="modal-overlay" @click.self="closeDialog">
@@ -110,11 +121,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 const campaigns = ref([])
 const loading = ref(false)
@@ -252,15 +264,64 @@ function formatDate(iso) {
 
 <style scoped>
 .admin-page {
+  display: flex;
   min-height: 100vh;
-  padding-top: 80px;
-  padding-bottom: 3rem;
+  padding-top: 64px;
   background: #0d0a06;
+}
+
+/* ===== Sidebar ===== */
+.admin-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  border-right: 1px solid #2a1e08;
+  padding: 1.5rem 0;
+  background: #0a0703;
+  min-height: calc(100vh - 64px);
+}
+
+.sidebar-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #4a3820;
+  text-transform: uppercase;
+  padding: 0 1rem 0.5rem;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #8a7355;
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+}
+.sidebar-link:hover {
+  background: rgba(201,162,39,0.06);
+  color: #c9a227;
+}
+.sidebar-link.active {
+  background: rgba(201,162,39,0.1);
+  color: #c9a227;
+  border-right: 2px solid #c9a227;
+}
+
+/* ===== Main content ===== */
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 3rem;
 }
 
 .admin-container {
   max-width: 900px;
-  margin: 0 auto;
   padding: 2rem 1.5rem;
 }
 
