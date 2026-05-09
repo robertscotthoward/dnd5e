@@ -124,6 +124,10 @@
           <div class="ctx-item ctx-disabled">No child types defined</div>
         </div>
       </div>
+      <div class="ctx-divider"></div>
+      <div class="ctx-item ctx-danger" @click="openDeleteDialog">
+        <span>✕ Delete</span>
+      </div>
     </div>
 
     <!-- Create dialog -->
@@ -150,25 +154,41 @@
 
         <template v-for="field in typeFields(createDialog.type)" :key="field.key">
           <div class="form-group">
-            <label class="form-label">{{ field.label }}</label>
-            <select
-              v-if="field.type === 'select'"
-              class="form-input"
-              v-model="createDialog.properties[field.key]"
-            >
-              <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
-            </select>
-            <input
-              v-else-if="field.type === 'number'"
-              type="number"
-              class="form-input"
-              v-model.number="createDialog.properties[field.key]"
-            />
-            <input
-              v-else
-              class="form-input"
-              v-model="createDialog.properties[field.key]"
-            />
+            <div v-if="field.type === 'abilities'" class="abilities-block">
+              <div class="abilities-label-row">
+                <span class="form-label">Abilities</span>
+                <button type="button" class="reroll-btn" @click="createDialog.properties.abilities = rollAbilities()">
+                  Re-roll
+                </button>
+              </div>
+              <div class="abilities-grid">
+                <div v-for="stat in ['str','dex','con','int','wis','chr']" :key="stat" class="ability-cell">
+                  <div class="ability-label">{{ stat.toUpperCase() }}</div>
+                  <div class="ability-value">{{ createDialog.properties.abilities?.[stat] ?? '—' }}</div>
+                </div>
+              </div>
+            </div>
+            <template v-else>
+              <label class="form-label">{{ field.label }}</label>
+              <select
+                v-if="field.type === 'select'"
+                class="form-input"
+                v-model="createDialog.properties[field.key]"
+              >
+                <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
+              </select>
+              <input
+                v-else-if="field.type === 'number'"
+                type="number"
+                class="form-input"
+                v-model.number="createDialog.properties[field.key]"
+              />
+              <input
+                v-else
+                class="form-input"
+                v-model="createDialog.properties[field.key]"
+              />
+            </template>
           </div>
         </template>
 
@@ -180,6 +200,29 @@
           <button class="dnd-button-ghost" @click="closeDialog">Cancel</button>
           <button class="dnd-button" @click="saveObject" :disabled="saving">
             {{ saving ? 'Saving…' : 'Create' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete confirmation dialog -->
+    <div v-if="deleteDialog.visible" class="modal-overlay" @click.self="closeDeleteDialog">
+      <div
+        class="create-modal dnd-panel"
+        tabindex="-1"
+        @keydown.esc="closeDeleteDialog"
+      >
+        <h3 class="modal-title">Delete <span class="modal-type">{{ deleteDialog.node?.name }}</span>?</h3>
+        <p class="delete-warning">
+          This will permanently delete this item and all its children. This cannot be undone.
+        </p>
+        <div v-if="deleteError" class="error-banner" style="margin-top:0.5rem;margin-bottom:0">
+          {{ deleteError }}
+        </div>
+        <div class="modal-actions">
+          <button class="dnd-button-ghost" @click="closeDeleteDialog">Cancel</button>
+          <button class="dnd-button dnd-button-danger" @click="confirmDelete" :disabled="deleting">
+            {{ deleting ? 'Deleting…' : 'Delete' }}
           </button>
         </div>
       </div>
@@ -284,12 +327,14 @@ const CLASSES = ['Fighter','Wizard','Rogue','Cleric','Ranger','Paladin','Barbari
 
 const TYPE_FIELDS = {
   PC: [
-    { key: 'race',       label: 'Race',        type: 'select', options: RACES },
-    { key: 'class_type', label: 'Class',        type: 'select', options: CLASSES },
+    { key: 'race',       label: 'Race',      type: 'select', options: RACES },
+    { key: 'class_type', label: 'Class',     type: 'select', options: CLASSES },
+    { key: 'abilities',  label: 'Abilities', type: 'abilities' },
   ],
   NPC: [
     { key: 'race',        label: 'Race',        type: 'select', options: RACES },
     { key: 'personality', label: 'Personality', type: 'text' },
+    { key: 'abilities',   label: 'Abilities',   type: 'abilities' },
   ],
   weapon: [
     { key: 'damage_die',  label: 'Damage Die',  type: 'select', options: ['1d4','1d6','1d8','1d10','1d12','2d6'] },
@@ -329,10 +374,20 @@ function randomName(type) {
   return pick(NAMES[type] || ['Item'])
 }
 
+function rollAbilities() {
+  const roll = () => {
+    const d = Array.from({ length: 4 }, () => Math.floor(Math.random() * 6) + 1)
+    d.sort((a, b) => a - b)
+    d.shift()
+    return d.reduce((s, v) => s + v, 0)
+  }
+  return { str: roll(), dex: roll(), con: roll(), int: roll(), wis: roll(), chr: roll() }
+}
+
 function randomDefaults(type) {
   switch (type) {
-    case 'PC':      return { race: pick(RACES), class_type: pick(CLASSES) }
-    case 'NPC':     return { race: pick(RACES), personality: pick(['Friendly','Gruff','Cautious','Cunning','Boisterous','Mysterious']) }
+    case 'PC':      return { race: pick(RACES), class_type: pick(CLASSES), abilities: rollAbilities() }
+    case 'NPC':     return { race: pick(RACES), personality: pick(['Friendly','Gruff','Cautious','Cunning','Boisterous','Mysterious']), abilities: rollAbilities() }
     case 'weapon':  return { damage_die: pick(['1d6','1d8','1d10']), damage_type: pick(['slashing','piercing','bludgeoning']) }
     case 'armor':   return { armor_class: 12 + Math.floor(Math.random() * 5), armor_type: pick(['light','medium','heavy']) }
     case 'shield':  return { armor_class_bonus: 2 }
@@ -355,6 +410,9 @@ const createError  = ref(null)
 const ctxMenu          = ref({ visible: false, x: 0, y: 0, node: null })
 const ctxSubmenuOpen   = ref(false)
 const createDialog     = ref({ visible: false, type: '', name: '', description: '', properties: {}, parentId: null })
+const deleteDialog     = ref({ visible: false, node: null })
+const deleting         = ref(false)
+const deleteError      = ref(null)
 
 const dialogRef    = ref(null)
 const nameInputRef = ref(null)
@@ -503,10 +561,51 @@ async function saveObject() {
   }
 }
 
+// ─── Delete dialog ─────────────────────────────────────────────────────────────
+function openDeleteDialog() {
+  const node = ctxMenu.value.node
+  closeCtxMenu()
+  deleteError.value = null
+  deleteDialog.value = { visible: true, node }
+}
+
+function closeDeleteDialog() {
+  deleteDialog.value = { visible: false, node: null }
+  deleteError.value = null
+}
+
+async function confirmDelete() {
+  if (deleting.value || !deleteDialog.value.node) return
+  deleting.value = true
+  deleteError.value = null
+  try {
+    const id = deleteDialog.value.node.id
+    const res = await fetch(`/api/admin/world/${campaignId}/objects/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}))
+      throw new Error(d.detail || 'Failed to delete object')
+    }
+    const data = await res.json()
+    const deletedIds = new Set([data.deleted_id, ...data.deleted_descendants])
+    rawObjects.value = rawObjects.value.filter(o => !deletedIds.has(o.id))
+    if (selectedNode.value && deletedIds.has(selectedNode.value.id)) {
+      selectedNode.value = null
+    }
+    closeDeleteDialog()
+  } catch (e) {
+    deleteError.value = e.message
+  } finally {
+    deleting.value = false
+  }
+}
+
 // ─── Global event handlers ─────────────────────────────────────────────────────
 function onGlobalClick() { closeCtxMenu() }
 function onGlobalKeydown(e) {
-  if (e.key === 'Escape') { closeCtxMenu(); closeDialog() }
+  if (e.key === 'Escape') { closeCtxMenu(); closeDialog(); closeDeleteDialog() }
 }
 
 // ─── Detail panel helpers ──────────────────────────────────────────────────────
@@ -664,6 +763,9 @@ function propLines(props, depth = 0) {
 .ctx-disabled { color: #4a3820; cursor: default; }
 .ctx-disabled:hover { background: none; color: #4a3820; }
 .ctx-arrow { font-size: 0.55rem; color: #7a6115; flex-shrink: 0; }
+.ctx-divider { height: 1px; background: #2a1e08; margin: 0.2rem 0; }
+.ctx-danger { color: #c05050; }
+.ctx-danger:hover { background: rgba(192,80,80,0.12); color: #e87878; }
 
 .ctx-has-sub { position: relative; }
 .ctx-sub {
@@ -739,4 +841,77 @@ function propLines(props, depth = 0) {
 }
 .form-textarea { resize: vertical; min-height: 56px; }
 select.form-input { cursor: pointer; }
+
+/* ── Delete button ── */
+.dnd-button-danger {
+  background: rgba(139,26,26,0.3);
+  border-color: #7f1d1d;
+  color: #f87171;
+}
+.dnd-button-danger:hover:not(:disabled) {
+  background: rgba(139,26,26,0.5);
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+
+/* ── Delete warning ── */
+.delete-warning {
+  font-family: 'Crimson Text', serif;
+  font-size: 1rem;
+  color: #c08080;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+/* ── Abilities grid ── */
+.abilities-block { margin-top: 0.25rem; }
+.abilities-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+.reroll-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid #3d2e10;
+  border-radius: 3px;
+  color: #7a6115;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.reroll-btn:hover { border-color: #7a6115; color: #c9a227; }
+.abilities-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.4rem;
+}
+.ability-cell {
+  background: #0a0703;
+  border: 1px solid #3d2e10;
+  border-radius: 4px;
+  padding: 0.35rem 0.2rem;
+  text-align: center;
+}
+.ability-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #5a4530;
+  text-transform: uppercase;
+  margin-bottom: 0.15rem;
+}
+.ability-value {
+  font-family: 'Crimson Text', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #c9a227;
+  line-height: 1;
+}
 </style>

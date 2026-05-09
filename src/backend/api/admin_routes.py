@@ -125,3 +125,18 @@ def admin_create_world_object(
         "description": obj.description,
         "properties": obj.properties,
     }
+
+
+@router.delete("/world/{campaign_id}/objects/{object_id}")
+def admin_delete_world_object(campaign_id: str, object_id: int, request: Request):
+    """Delete a world object and all its descendants (cascade)."""
+    get_current_admin(request)
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign world not found")
+    if object_id not in campaign.world.objects:
+        raise HTTPException(status_code=404, detail="Object not found")
+    descendants = [d.id for d in campaign.world.get_descendants(object_id)]
+    campaign.world.delete_object(object_id, cascade=True)
+    save_campaign_world(campaign_id, campaign)
+    return {"deleted_id": object_id, "deleted_descendants": descendants}
