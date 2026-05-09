@@ -1,0 +1,192 @@
+name: MyAdventure
+seed: 119924
+turn_number: 1
+created_at: '2026-04-14T19:49:50.804074'
+updated_at: '2026-04-14T19:53:35.562722'
+world:
+  name: MyAdventure
+  max_id: 12
+  delete_ids: []
+  objects:
+    1:
+      id: 1
+      type: system
+      name: Realmspace
+      description: The crystal sphere containing Toril and its celestial bodies
+      is_moveable: false
+    2:
+      id: 2
+      type: planet
+      parent: 1
+      name: Toril
+      description: The world of Abeir-Toril, home to the Forgotten Realms
+      is_moveable: false
+    3:
+      id: 3
+      type: continent
+      parent: 2
+      name: Faerûn
+      description: The western continent of Toril
+      is_moveable: false
+    4:
+      id: 4
+      type: region
+      parent: 3
+      name: The Sword Coast
+      description: A region on the western coast of Faerûn
+      is_moveable: false
+    5:
+      id: 5
+      type: town
+      parent: 4
+      name: Phandalin
+      description: A frontier town on the Triboar Trail
+      is_moveable: false
+      is_virtual: true
+    6:
+      id: 6
+      type: inn
+      parent: 5
+      name: Stonehill Inn
+      description: A modest inn run by Toblen Stonehill and his family
+      is_moveable: false
+      is_virtual: true
+    7:
+      id: 7
+      type: room
+      parent: 6
+      name: Common Room
+      description: The main gathering area of the inn with tables and a fireplace
+      size:
+      - 30.0
+      - 20.0
+      - 10.0
+      is_moveable: false
+      is_virtual: true
+    8:
+      id: 8
+      type: party
+      parent: 7
+      name: The Adventurers
+      description: A band of adventurers seeking fortune and glory
+      is_virtual: true
+    9:
+      id: 9
+      type: PC
+      parent: 8
+      name: Thorin
+      description: Dwarf Fighter
+      properties:
+        race: Dwarf
+        classes:
+        - type: Fighter
+          level: 1
+        abilities:
+          str: 9
+          int: 10
+          wis: 15
+          dex: 15
+          con: 14
+          chr: 16
+        hp:
+          max: 12
+          current: 12
+        personality: Gruff but loyal, values honor above all else
+        backstory: A former soldier seeking redemption for past failures
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0
+    10:
+      id: 10
+      type: PC
+      parent: 8
+      name: Elara
+      description: Elf Wizard
+      location:
+      - 5.0
+      - 0.0
+      - 0.0
+      properties:
+        race: Elf
+        classes:
+        - type: Wizard
+          level: 1
+        abilities:
+          str: 16
+          int: 9
+          wis: 16
+          dex: 16
+          con: 8
+          chr: 13
+        hp:
+          max: 5
+          current: 5
+        personality: Curious and bookish, always seeking knowledge
+        backstory: A scholar from Candlekeep investigating ancient mysteries
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0
+    11:
+      id: 11
+      type: PC
+      parent: 8
+      name: Mira
+      description: Halfling Rogue
+      location:
+      - 0.0
+      - 5.0
+      - 0.0
+      properties:
+        race: Halfling
+        classes:
+        - type: Rogue
+          level: 1
+        abilities:
+          str: 10
+          int: 8
+          wis: 15
+          dex: 10
+          con: 12
+          chr: 18
+        hp:
+          max: 9
+          current: 9
+        personality: Quick-witted and charming, can't resist a good heist
+        backstory: A former street urchin turned adventurer
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0
+    12:
+      id: 12
+      type: PC
+      parent: 8
+      name: Aldric
+      description: Human Cleric
+      location:
+      - 5.0
+      - 5.0
+      - 0.0
+      properties:
+        race: Human
+        classes:
+        - type: Cleric
+          level: 1
+        abilities:
+          str: 17
+          int: 15
+          wis: 16
+          dex: 13
+          con: 18
+          chr: 17
+        hp:
+          max: 12
+          current: 12
+        personality: Compassionate healer with strong moral convictions
+        backstory: A priest of Lathander spreading light in dark places
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0

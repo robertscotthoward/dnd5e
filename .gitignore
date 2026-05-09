@@ -113,4 +113,4 @@ Desktop.ini
 
 # D&D 5e game engine - generated data
 data/chromadb/
-data/worlds/
+#data/worlds/

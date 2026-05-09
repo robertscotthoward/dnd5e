@@ -246,6 +246,7 @@ This vue.js website will have the following features:
 - A nice navigation of the initial options that show:
   - The user can register: username and password, which are stored in cache/users.json where security is deliberately low. The passwords will be salted and hashed, but the same algorithm will be used to authenticate.
   - The user can log in
+  - Create a cookie on the user's machine so they don't have to sign in every time.
   - A list of existing campaigns of which the users can join. When a user joins a campaign, for the first time, it will need to create a character region, race and class, name, background. A background will be generated based on the character's region and race. The regions can be found in https://elderscrolls.fandom.com/wiki/Regions_(Daggerfall). The user can accept the background or replace it with their own background.
   - When a user joins an existing campaign that it has already joined before, the DM gives a summary of where it left off and a description of where the character is and the other players around the character in the party.
   - Campaigns can have multiple players, and each player can be in at most one party.
@@ -268,7 +269,16 @@ When a user joins a campaign, the "campaign" page shows:
 - At the bottom of the chat will be common buttons for common actions depending on the mode of the game. For example, if in combat, and it's your turn, you will see buttons like: Attack, Cast Spell, Dash, Disengage, Dodge, Help, Hide, Ready, Search, Use Object, etc. But only if you are allowed to do those things. You might be silences, so you cannot cast a spell, which will be disabled with a tooltip that says so. Unconsciousness is an automatic skip.
 
 
+# Profile
+Under the profile name (or icon) create a dropdown menu that contains:
+- Admin - only shown if the user is an admin. Clicking goes to the /admin page.
+- Logout - and remove the current location of this option
+
+
+
 # Admin
 Create an page with route "/admin". Only allow that if the user has property "admin" true.
 This page will show all campaigns each with an "X" to delete it completely. Before deleting a campaign, create a zip of the campaign folder and store that under the campaigns folder.
 Under each campaign, show the players each with an "X" to delete the from the campaign.
+When I type http://localhost:5173/admin on the URL, it should not redirect me to http://localhost:5173/login?redirect=/admin because I'm already logged in and I have "admin" property set to ture.
+If the user is an admin, then add a
