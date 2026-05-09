@@ -7,6 +7,7 @@ from src.backend.core.campaign_manager import (
     delete_campaign,
     get_players,
     list_campaigns,
+    load_campaign_world,
     remove_player,
 )
 
@@ -44,3 +45,23 @@ def admin_remove_player(campaign_id: str, user_id: str, request: Request):
     if not found:
         raise HTTPException(status_code=404, detail="Player not found in campaign")
     return {"removed": user_id, "campaign": campaign_id}
+
+
+@router.get("/world/{campaign_id}")
+def admin_get_world(campaign_id: str, request: Request):
+    """Return all world objects for a campaign as a flat list."""
+    get_current_admin(request)
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign world not found")
+    objects = [
+        {
+            "id": obj.id,
+            "parent": obj.parent,
+            "type": obj.type,
+            "name": obj.name,
+            "description": obj.description,
+        }
+        for obj in campaign.world.objects.values()
+    ]
+    return {"campaign_id": campaign_id, "objects": objects}

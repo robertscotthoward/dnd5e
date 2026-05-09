@@ -48,7 +48,9 @@
           <!-- Campaign header row -->
           <div class="campaign-header">
             <div class="campaign-info">
-              <h2 class="campaign-name">{{ entry.meta.name }}</h2>
+              <h2 class="campaign-name">
+                <RouterLink :to="`/admin/world/${entry.meta.id}`" class="campaign-name-link">{{ entry.meta.name }}</RouterLink>
+              </h2>
               <div class="campaign-meta-row">
                 <span class="meta-chip">ID: {{ entry.meta.id }}</span>
                 <span class="meta-chip">Turn {{ entry.meta.turn_number }}</span>
@@ -420,6 +422,17 @@ function formatDate(iso) {
   font-weight: 700;
   color: #c9a227;
   margin-bottom: 0.4rem;
+}
+
+.campaign-name-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.campaign-name-link:hover {
+  color: #e8d5b7;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .campaign-meta-row {

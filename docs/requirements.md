@@ -283,4 +283,16 @@ Under each campaign, show the players each with an "X" to delete the from the ca
 When I type http://localhost:5173/admin on the URL, it should not redirect me to http://localhost:5173/login?redirect=/admin because I'm already logged in and I have "admin" property set to ture.
 If the user is an admin, then add a profile menu option called "Admin" that link to the /admin page.
 On the admin page, add left navigation bar. Add "Console" that links to "/admin".
-Where a world is shown (e.g. "Daggerfall"), when the user lci
+
+Where a world is shown (e.g. "Daggerfall"), when the user clicks the name, navigate to "/admin/world/Daggerfall" and there show an expanded tree view of the world, root-to-leaves. 
+For each item, show the tree item name as "NAME (TYPE) - DESCRIPTION.
+For example:
+```
+    1:
+      id: 1
+      type: system
+      name: Realmspace
+      description: The crystal sphere containing Toril and its celestial bodies
+      is_moveable: false
+```
+will be shown as "Realmspace (system) - The crystal sphere containing Toril and its celestial bodies
