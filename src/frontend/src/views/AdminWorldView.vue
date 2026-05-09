@@ -18,7 +18,7 @@
           <RouterLink to="/admin" class="dnd-button-ghost">← Console</RouterLink>
         </div>
 
-        <div class="gold-divider" style="margin-bottom:2rem"></div>
+        <div class="gold-divider" style="margin-bottom:1.5rem"></div>
 
         <div v-if="error" class="error-banner">{{ error }}</div>
 
@@ -27,21 +27,83 @@
           <span>Loading world…</span>
         </div>
 
-        <div v-else-if="!flatNodes.length" class="empty-state">
+        <div v-else-if="!flatNodes.length && !error" class="empty-state">
           No world objects found.
         </div>
 
-        <div v-else class="world-tree dnd-panel">
-          <div
-            v-for="node in flatNodes"
-            :key="node.id"
-            class="tree-node"
-            :style="{ paddingLeft: (node.depth * 1.5 + 0.75) + 'rem' }"
-          >
-            <span class="node-name">{{ node.name || '(unnamed)' }}</span>
-            <span class="node-type"> ({{ node.type }})</span>
-            <span class="node-desc" v-if="node.description"> — {{ node.description }}</span>
+        <!-- Two-column layout: tree + detail -->
+        <div v-else-if="flatNodes.length" class="world-layout">
+
+          <!-- Tree column -->
+          <div class="tree-col">
+            <div class="world-tree dnd-panel">
+              <div
+                v-for="node in flatNodes"
+                :key="node.id"
+                class="tree-node"
+                :class="{ selected: selectedNode?.id === node.id }"
+                :style="{ paddingLeft: (node.depth * 1.5 + 0.75) + 'rem' }"
+                @click="selectedNode = node"
+              >
+                <span class="node-name">{{ node.name || '(unnamed)' }}</span>
+                <span class="node-type"> ({{ node.type }})</span>
+                <span class="node-desc" v-if="node.description"> — {{ node.description }}</span>
+              </div>
+            </div>
           </div>
+
+          <!-- Detail column -->
+          <div class="detail-col">
+            <!-- Placeholder when nothing selected -->
+            <div v-if="!selectedNode" class="detail-empty dnd-panel">
+              <span class="detail-empty-text">Select an item to view details</span>
+            </div>
+
+            <!-- Detail panel -->
+            <div v-else class="detail-panel dnd-panel">
+              <!-- Detail header -->
+              <div class="detail-header">
+                <span class="detail-name">{{ selectedNode.name || '(unnamed)' }}</span>
+                <span class="detail-type-badge">{{ selectedNode.type }}</span>
+              </div>
+              <p class="detail-desc" v-if="selectedNode.description">{{ selectedNode.description }}</p>
+
+              <!-- Metadata -->
+              <div class="detail-section">
+                <div class="detail-meta-row">
+                  <span class="meta-key">id</span>
+                  <span class="meta-val">{{ selectedNode.id }}</span>
+                </div>
+                <div class="detail-meta-row" v-if="selectedNode.parent !== null && selectedNode.parent !== undefined">
+                  <span class="meta-key">parent</span>
+                  <span class="meta-val meta-val-link" @click="selectById(selectedNode.parent)">
+                    {{ parentName(selectedNode.parent) }} (#{{ selectedNode.parent }})
+                  </span>
+                </div>
+              </div>
+
+              <!-- Properties -->
+              <template v-if="propLines(selectedNode.properties).length">
+                <div class="detail-divider"></div>
+                <div class="detail-props">
+                  <div
+                    v-for="(line, i) in propLines(selectedNode.properties)"
+                    :key="i"
+                    class="prop-line"
+                    :style="{ paddingLeft: (line.depth * 1.25) + 'rem' }"
+                  >
+                    <span v-if="line.value !== null">
+                      <span class="prop-key">{{ line.key }}</span>
+                      <span class="prop-sep">: </span>
+                      <span class="prop-val">{{ line.value }}</span>
+                    </span>
+                    <span v-else class="prop-section">{{ line.key }}</span>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -58,6 +120,7 @@ const campaignId = route.params.id
 const rawObjects = ref([])
 const loading = ref(false)
 const error = ref(null)
+const selectedNode = ref(null)
 
 onMounted(async () => {
   loading.value = true
@@ -80,15 +143,50 @@ onMounted(async () => {
 const flatNodes = computed(() => {
   const objects = rawObjects.value
   if (!objects.length) return []
-
   function traverse(parentId, depth) {
     return objects
       .filter(o => o.parent === parentId)
       .flatMap(o => [{ ...o, depth }, ...traverse(o.id, depth + 1)])
   }
-
   return traverse(null, 0)
 })
+
+function parentName(parentId) {
+  const obj = rawObjects.value.find(o => o.id === parentId)
+  return obj?.name || '(unnamed)'
+}
+
+function selectById(id) {
+  const node = flatNodes.value.find(n => n.id === id)
+  if (node) selectedNode.value = node
+}
+
+// Flatten an arbitrary nested object/array into display lines { depth, key, value }
+// value === null means it is a section header (object/array key with children below it)
+function propLines(props, depth = 0) {
+  if (!props || typeof props !== 'object') return []
+  const lines = []
+  for (const [key, val] of Object.entries(props)) {
+    if (val === null || val === undefined) continue
+    if (Array.isArray(val)) {
+      lines.push({ depth, key, value: null })
+      val.forEach((item, i) => {
+        if (item && typeof item === 'object') {
+          lines.push({ depth: depth + 1, key: `[${i}]`, value: null })
+          lines.push(...propLines(item, depth + 2))
+        } else {
+          lines.push({ depth: depth + 1, key: String(i), value: String(item) })
+        }
+      })
+    } else if (typeof val === 'object') {
+      lines.push({ depth, key, value: null })
+      lines.push(...propLines(val, depth + 1))
+    } else {
+      lines.push({ depth, key, value: String(val) })
+    }
+  }
+  return lines
+}
 </script>
 
 <style scoped>
@@ -147,10 +245,10 @@ const flatNodes = computed(() => {
   flex: 1;
   min-width: 0;
   padding-bottom: 3rem;
+  overflow: hidden;
 }
 
 .admin-container {
-  max-width: 960px;
   padding: 2rem 1.5rem;
 }
 
@@ -218,16 +316,34 @@ const flatNodes = computed(() => {
   padding: 3rem 0;
 }
 
-/* ===== World tree ===== */
+/* ===== Two-column layout ===== */
+.world-layout {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.tree-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-col {
+  width: 340px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+}
+
+/* ===== Tree ===== */
 .world-tree {
-  padding: 0.5rem 0;
+  padding: 0.25rem 0;
 }
 
 .tree-node {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 0;
   padding-top: 0.3rem;
   padding-bottom: 0.3rem;
   padding-right: 1rem;
@@ -235,10 +351,12 @@ const flatNodes = computed(() => {
   font-family: 'Crimson Text', serif;
   font-size: 0.97rem;
   line-height: 1.4;
+  cursor: pointer;
+  transition: background 0.1s;
 }
-.tree-node:last-child {
-  border-bottom: none;
-}
+.tree-node:last-child { border-bottom: none; }
+.tree-node:hover { background: rgba(201,162,39,0.05); }
+.tree-node.selected { background: rgba(201,162,39,0.1); }
 
 .node-name {
   font-family: 'Cinzel', serif;
@@ -246,15 +364,123 @@ const flatNodes = computed(() => {
   font-weight: 700;
   color: #c9a227;
 }
-
 .node-type {
   font-family: 'Crimson Text', serif;
   font-size: 0.85rem;
   color: #7a6115;
 }
+.node-desc { color: #8a7355; font-size: 0.93rem; }
 
-.node-desc {
-  color: #8a7355;
-  font-size: 0.93rem;
+/* ===== Detail panel ===== */
+.detail-empty {
+  padding: 2rem 1rem;
+  text-align: center;
 }
+.detail-empty-text {
+  font-family: 'Crimson Text', serif;
+  font-style: italic;
+  color: #4a3820;
+  font-size: 0.95rem;
+}
+
+.detail-panel {
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+
+.detail-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
+
+.detail-name {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #c9a227;
+}
+
+.detail-type-badge {
+  font-family: 'Crimson Text', serif;
+  font-size: 0.78rem;
+  color: #7a6115;
+  border: 1px solid #3d2e10;
+  border-radius: 3px;
+  padding: 0.05rem 0.4rem;
+  background: #1a1109;
+}
+
+.detail-desc {
+  font-family: 'Crimson Text', serif;
+  font-size: 0.95rem;
+  color: #8a7355;
+  font-style: italic;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0.25rem;
+}
+
+.detail-meta-row {
+  display: flex;
+  gap: 0.5rem;
+  font-family: 'Crimson Text', serif;
+  font-size: 0.88rem;
+}
+
+.meta-key {
+  color: #5a4530;
+  min-width: 52px;
+}
+
+.meta-val { color: #8a7355; }
+
+.meta-val-link {
+  color: #7a6115;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.meta-val-link:hover { color: #c9a227; }
+
+.detail-divider {
+  height: 1px;
+  background: #2a1e08;
+  margin: 0.75rem 0;
+}
+
+/* ===== Properties ===== */
+.detail-props {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.prop-line {
+  font-family: 'Crimson Text', serif;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.prop-section {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #5a4530;
+  text-transform: uppercase;
+  display: block;
+  margin-top: 0.35rem;
+}
+
+.prop-key { color: #7a6115; }
+.prop-sep { color: #4a3820; }
+.prop-val { color: #c8b67a; }
 </style>

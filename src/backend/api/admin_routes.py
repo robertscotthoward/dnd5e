@@ -61,6 +61,7 @@ def admin_get_world(campaign_id: str, request: Request):
             "type": obj.type,
             "name": obj.name,
             "description": obj.description,
+            "properties": obj.properties,
         }
         for obj in campaign.world.objects.values()
     ]
