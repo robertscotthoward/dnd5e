@@ -82,6 +82,10 @@
         >
           &#x1F4DC; Sheet
         </button>
+        <AmbientAudio
+          :locationName="currentLocation?.name || ''"
+          :locationDescription="currentLocation?.description || ''"
+        />
       </div>
 
       <!-- Tab bar -->
@@ -314,6 +318,7 @@ import LootSummary from '../components/LootSummary.vue'
 import JournalTab from '../components/JournalTab.vue'
 import QuestTracker from '../components/QuestTracker.vue'
 import NpcPanel from '../components/NpcPanel.vue'
+import AmbientAudio from '../components/AmbientAudio.vue'
 
 const route = useRoute()
 const router = useRouter()
