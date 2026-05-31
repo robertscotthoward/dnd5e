@@ -37,7 +37,7 @@
 * [x] **PlayerCard with HP bars** — `PlayerCard.vue` renders hp/encumbrance/health as color-gradient bars.
 * [x] **ActionBar** — `ActionBar.vue` renders context-sensitive action buttons per game mode.
 * [x] **DM chat integration** — When a player submits a message, the WS handler should invoke the DM agent and broadcast its response as a `DM:` message.
-* [ ] **Combat turn enforcement** — WS handler must check `activeTurn`; only process the active player's action command during Combat mode; broadcast "waiting for X" to others.
+* [x] **Combat turn enforcement** — WS handler must check `activeTurn`; only process the active player's action command during Combat mode; broadcast "waiting for X" to others.
 * [ ] **Button disable states** — Action buttons should be disabled (with tooltip) based on character state (silenced, unconscious, etc.) pulled from world object properties.
 
 ## Phase 6: Web — Snapshots & Admin

@@ -233,6 +233,40 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                 if not text:
                     continue
 
+                # Reload meta for current game mode
+                meta = get_campaign_meta(campaign_id) or meta
+
+                # Combat turn enforcement: only the active combatant may send
+                # commands that trigger the DM during Combat mode.
+                if meta.game_mode == "Combat":
+                    active_id = meta.active_player_turn
+                    campaign_for_check = load_campaign_world(campaign_id)
+                    active_obj = (
+                        campaign_for_check.world.get_object(active_id)
+                        if (campaign_for_check and active_id is not None)
+                        else None
+                    )
+                    active_char_name = active_obj.name if active_obj else None
+
+                    if active_char_name and char_name != active_char_name:
+                        await manager.send_personal(
+                            websocket,
+                            {
+                                "type": "not_your_turn",
+                                "message": f"It is {active_char_name}'s turn. Please wait.",
+                                "active_character": active_char_name,
+                            },
+                        )
+                        await manager.broadcast(
+                            campaign_id,
+                            {
+                                "type": "waiting_for_turn",
+                                "message": f"Waiting for {active_char_name} to act.",
+                                "active_character": active_char_name,
+                            },
+                        )
+                        continue
+
                 # Save and broadcast the player's message
                 pc_msg = ChatMessage(
                     sender=char_name,
@@ -249,7 +283,7 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                     },
                 )
 
-                # Every player message triggers the DM agent
+                # Player message triggers the DM agent
                 await manager.broadcast(
                     campaign_id,
                     {
@@ -281,12 +315,20 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                     active_char_name = active_obj.name if active_obj else None
 
                     if active_char_name and char_name != active_char_name:
-                        # Not this player's turn — reject and notify
+                        # Not this player's turn — reject and notify sender; broadcast to others
                         await manager.send_personal(
                             websocket,
                             {
                                 "type": "not_your_turn",
                                 "message": f"It is {active_char_name}'s turn. Please wait.",
+                                "active_character": active_char_name,
+                            },
+                        )
+                        await manager.broadcast(
+                            campaign_id,
+                            {
+                                "type": "waiting_for_turn",
+                                "message": f"Waiting for {active_char_name} to act.",
                                 "active_character": active_char_name,
                             },
                         )
