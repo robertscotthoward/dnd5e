@@ -234,7 +234,7 @@
       <!-- AI-generated background -->
       <div class="background-section">
         <div class="dnd-section-heading">Origin Story</div>
-        <div v-if="creatingChar" class="loading-bg">
+        <div v-if="generatingBg" class="loading-bg">
           <div class="spinner"></div>
           <span class="loading-text">The fates are weaving your story...</span>
         </div>
@@ -252,17 +252,22 @@
             <button class="dnd-button-ghost" style="font-size:0.72rem" @click="toggleEdit">
               {{ editingBg ? '✓ Done Editing' : '✏ Edit' }}
             </button>
-            <button class="dnd-button-ghost" style="font-size:0.72rem" @click="regenerateBackground" :disabled="creatingChar">
+            <button class="dnd-button-ghost" style="font-size:0.72rem" @click="regenerateBackground" :disabled="generatingBg">
               ↺ Regenerate
             </button>
           </div>
         </div>
-        <div v-else-if="creationError" class="error-msg">
-          {{ creationError }}
-          <button class="dnd-button-ghost" style="font-size:0.72rem; margin-top:0.5rem" @click="submitCharacter">
+        <div v-else-if="bgError" class="error-msg">
+          {{ bgError }}
+          <button class="dnd-button-ghost" style="font-size:0.72rem; margin-top:0.5rem" @click="fetchBackground">
             Retry
           </button>
         </div>
+      </div>
+
+      <!-- Character creation error -->
+      <div v-if="creationError" class="error-msg" style="margin-top:0.75rem">
+        {{ creationError }}
       </div>
     </div>
 
@@ -296,9 +301,9 @@
         v-else-if="currentStep === TOTAL_STEPS"
         class="dnd-button begin-btn"
         @click="beginAdventure"
-        :disabled="!generatedBackground || creatingChar"
+        :disabled="!generatedBackground || generatingBg || creatingChar"
       >
-        ⚔ Begin Adventure
+        {{ creatingChar ? 'Creating...' : '⚔ Begin Adventure' }}
       </button>
     </div>
   </div>
@@ -320,6 +325,8 @@ const campaignStore = useCampaignStore()
 
 const TOTAL_STEPS = 6
 const currentStep = ref(1)
+const generatingBg = ref(false)
+const bgError = ref(null)
 const creatingChar = ref(false)
 const creationError = ref(null)
 const generatedBackground = ref('')
@@ -426,7 +433,28 @@ function prevStep() {
 async function goToReview() {
   if (!canProceed.value) return
   currentStep.value = 6
-  await submitCharacter()
+  await fetchBackground()
+}
+
+async function fetchBackground() {
+  generatingBg.value = true
+  bgError.value = null
+  generatedBackground.value = ''
+
+  const bg = await campaignStore.generateBackground(props.campaignId, {
+    name: form.value.name,
+    race: form.value.race,
+    class_type: form.value.classType,
+    region: form.value.region,
+  })
+
+  if (bg) {
+    generatedBackground.value = bg
+  } else {
+    bgError.value = campaignStore.error || 'Failed to generate background.'
+  }
+
+  generatingBg.value = false
 }
 
 async function rollStats() {
@@ -469,10 +497,13 @@ function modSign(score) {
   return mod >= 0 ? `+${mod}` : `${mod}`
 }
 
-async function submitCharacter() {
+async function regenerateBackground() {
+  await fetchBackground()
+}
+
+async function beginAdventure() {
   creatingChar.value = true
   creationError.value = null
-  generatedBackground.value = ''
 
   const charData = {
     name: form.value.name,
@@ -480,33 +511,28 @@ async function submitCharacter() {
     race: form.value.race,
     class_type: form.value.classType,
     abilities: finalAbilities.value,
+    background: generatedBackground.value || undefined,
   }
 
   const result = await campaignStore.createCharacter(props.campaignId, charData)
 
   if (result) {
-    generatedBackground.value = result.background || result.origin_story || 'Your story begins now...'
+    creatingChar.value = false
+    emit('created', {
+      ...form.value,
+      background: generatedBackground.value,
+      character: result,
+    })
   } else {
     creationError.value = campaignStore.error || 'Failed to create character. Please try again.'
+    creatingChar.value = false
   }
-
-  creatingChar.value = false
-}
-
-async function regenerateBackground() {
-  await submitCharacter()
 }
 
 function toggleEdit() {
   editingBg.value = !editingBg.value
 }
 
-function beginAdventure() {
-  emit('created', {
-    ...form.value,
-    background: generatedBackground.value,
-  })
-}
 </script>
 
 <style scoped>

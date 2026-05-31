@@ -54,6 +54,38 @@ class RollStatsRequest(BaseModel):
     seed: Optional[int] = None
 
 
+class GenerateBackgroundRequest(BaseModel):
+    name: str
+    race: str
+    class_type: str
+    region: str
+
+
+@router.post("/campaigns/{campaign_id}/generate-background")
+def generate_background(campaign_id: str, req: GenerateBackgroundRequest, request: Request):
+    """
+    Generate an AI background narrative for a character based on name, race, class, and region.
+
+    Called during character creation before the character object is committed to the world.
+    Safe to call multiple times for regeneration.
+    """
+    get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    try:
+        prompt = (
+            f"Write a 2-3 sentence D&D 5e character background for a {req.race} {req.class_type} "
+            f"from {req.region} named {req.name}. Make it evocative and suitable for the Forgotten Realms."
+        )
+        background = ai_client.llm.complete(prompt).text.strip()
+    except Exception as e:
+        background = f"A {req.race} {req.class_type} from {req.region} seeking adventure."
+
+    return {"background": background}
+
+
 @router.post("/campaigns/{campaign_id}/roll-stats")
 def roll_stats(campaign_id: str, req: RollStatsRequest, request: Request):
     """

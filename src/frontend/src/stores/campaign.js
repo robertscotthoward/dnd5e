@@ -67,6 +67,27 @@ export const useCampaignStore = defineStore('campaign', () => {
     }
   }
 
+  async function generateBackground(campaignId, { name, race, class_type, region }) {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/generate-background`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, race, class_type, region }),
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Failed to generate background')
+      return data.background
+    } catch (e) {
+      error.value = e.message
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function createCharacter(campaignId, charData) {
     loading.value = true
     try {
@@ -211,7 +232,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   return {
     campaigns, currentMeta, players, chat, gameMode, activeTurn,
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
-    fetchCampaigns, createCampaign, joinCampaign, createCharacter,
+    fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
     fetchSnapshots,
   }
