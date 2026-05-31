@@ -21,3 +21,8 @@ dependencies = [
 
 [project.scripts]
 dnd5e = "main:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]

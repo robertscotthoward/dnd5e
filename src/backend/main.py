@@ -66,10 +66,78 @@ def cmd_new_campaign(
 @cli.command("turn")
 def cmd_turn(
     campaign: str = typer.Option(..., "--campaign", help="Campaign name."),
+    situation: str = typer.Option(
+        "The party rests in the Common Room of Stonehill Inn, waiting for adventure.",
+        "--situation",
+        help="Current situation description passed to the DM agent.",
+    ),
 ) -> None:
-    """Run one DM agent turn: update world and produce narrative output."""
-    console.print("[yellow]'turn' command not yet implemented.[/yellow]")
-    raise typer.Exit(code=1)
+    """Run one DM agent turn: query rules, update world, produce narrative, persist YAML."""
+    from src.backend.core.campaign_io import load_campaign_from_file, save_campaign
+    from src.backend.core.ai_client import ai_client
+    from src.backend.core.tools import WorldTools
+
+    # Resolve campaign file path
+    campaigns_dir = Path(__file__).parent.parent.parent / "data" / "campaigns"
+    # Accept bare name or explicit path
+    candidate = Path(campaign)
+    if candidate.exists():
+        world_path = candidate
+    else:
+        # Try <name>/world.yaml
+        world_path = campaigns_dir / campaign / "world.yaml"
+        if not world_path.exists():
+            # Try appending .yaml directly
+            world_path = campaigns_dir / (campaign + ".yaml")
+
+    if not world_path.exists():
+        console.print(f"[red]Campaign file not found: {world_path}[/red]")
+        raise typer.Exit(code=1)
+
+    console.print(f"[bold]Loading campaign:[/bold] {world_path}")
+    campaign_obj = load_campaign_from_file(world_path)
+    console.print(
+        f"[dim]Turn {campaign_obj.turn_number} | Seed {campaign_obj.seed} | "
+        f"{len(campaign_obj.world.objects)} objects[/dim]"
+    )
+
+    # Build world tools
+    world_tools = WorldTools(campaign_obj.world)
+
+    # Query rules for current situation
+    console.print("\n[bold]Querying rules corpus...[/bold]")
+    rules_context = ai_client.query_rules(situation)
+    if rules_context == "No relevant rules found.":
+        console.print("[yellow]No corpus indexed — DM will proceed without rules context.[/yellow]")
+    else:
+        console.print(f"[dim]Rules context: {len(rules_context)} chars[/dim]")
+
+    # Run DM agent turn
+    console.print("\n[bold]Running DM agent...[/bold]")
+    narrative = ai_client.generate_dm_response(campaign_obj, situation, world_tools)
+
+    # Advance turn counter and log event
+    campaign_obj.advance_turn()
+    campaign_obj.add_event(
+        event_type="dm_narrative",
+        description=narrative,
+        seed=campaign_obj.seed,
+    )
+
+    # Persist updated world YAML
+    save_campaign(campaign_obj, world_path)
+    console.print(f"\n[green]World saved:[/green] {world_path}")
+
+    # Append to seeds.log
+    seeds_log = world_path.parent / "seeds.log"
+    with open(seeds_log, "a", encoding="utf-8") as f:
+        f.write(f"turn={campaign_obj.turn_number} seed={campaign_obj.seed} campaign={campaign_obj.name}\n")
+    console.print(f"[dim]Seed logged to {seeds_log}[/dim]")
+
+    # Print narrative
+    console.print("\n[bold cyan]--- DM Narrative ---[/bold cyan]")
+    console.print(narrative)
+    console.print("[bold cyan]--------------------[/bold cyan]")
 
 
 # ---------------------------------------------------------------------------
