@@ -59,7 +59,7 @@
 ## Phase 9: Progression & Character Depth
 
 * [x] **Experience points and level-up flow** — Award XP after combat encounters and story milestones via a new `award_xp(id, amount)` tool. When XP crosses a level threshold, trigger a level-up dialog in the frontend with new ability choices (hit die roll, ASI, class features).
-* [ ] **Death saves panel** — When a PC's HP hits 0, display three success/fail checkbox pips on their PlayerCard. Each turn the player rolls a d20; success ≥ 10, fail < 10, two failures = dead, three successes = stable. DM agent drives the rolls via tool calls.
+* [x] **Death saves panel** — When a PC's HP hits 0, display three success/fail checkbox pips on their PlayerCard. Each turn the player rolls a d20; success ≥ 10, fail < 10, two failures = dead, three successes = stable. DM agent drives the rolls via tool calls.
 * [ ] **Character sheet side panel** — In-game slide-out panel (toggle button in GameView) showing full ability scores, modifiers, class features, proficiencies, and equipped items pulled from the world object's `properties`.
 * [ ] **Spell slot tracker** — For caster classes, render a row of pip icons (filled/empty) per spell level on the character sheet panel. `Cast Spell` action decrements the correct slot; long rest restores all slots.
 * [ ] **Inventory / equipment panel** — Scrollable list of the PC's carried items (children of their world object) with weight total vs. carry capacity. Show equipped vs. stowed state; clicking equips/unequips via `set_object_property`.

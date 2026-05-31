@@ -406,6 +406,51 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                                     },
                                 )
 
+            elif msg_type == "death_save":
+                char_id = data.get("character_id")
+                if not isinstance(char_id, int):
+                    await manager.send_personal(
+                        websocket,
+                        {"type": "error", "message": "death_save requires integer character_id"},
+                    )
+                else:
+                    ds_campaign = load_campaign_world(campaign_id)
+                    if ds_campaign:
+                        from src.backend.core.tools import WorldTools as _WorldTools
+                        ds_tools = _WorldTools(ds_campaign.world)
+                        ds_result = ds_tools.roll_death_save(char_id)
+                        if ds_result.success:
+                            save_campaign_world(campaign_id, ds_campaign)
+                            ds_msg = ChatMessage(
+                                sender="DM",
+                                sender_type="DM",
+                                text=ds_result.message,
+                                turn_number=meta.turn_number,
+                            )
+                            append_chat(campaign_id, ds_msg)
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "death_save_result",
+                                    "data": ds_result.data,
+                                    "message": ds_msg.model_dump(mode="json"),
+                                },
+                            )
+                            # Refresh player list so death_saves pips update
+                            ds_players = get_players(campaign_id)
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "player_list",
+                                    "players": [p.model_dump(mode="json") for p in ds_players],
+                                },
+                            )
+                        else:
+                            await manager.send_personal(
+                                websocket,
+                                {"type": "error", "message": ds_result.message},
+                            )
+
             elif msg_type == "snapshot":
                 label = str(data.get("label", f"Snapshot by {char_name}"))
                 snap = create_snapshot(campaign_id, label, session.username)

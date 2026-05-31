@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from src.backend.models.user import CampaignMeta, CampaignPlayer, ChatMessage, Snapshot
+from src.backend.models.user import CampaignMeta, CampaignPlayer, ChatMessage, DeathSaves, Snapshot
 from src.backend.core.campaign_io import load_campaign_from_file, save_campaign, new_campaign_object, append_seed_log
 
 
@@ -124,6 +124,13 @@ def get_players(campaign_id: str) -> list[CampaignPlayer]:
                 if cp.hp_current <= 0 and cp.hp_max > 0 and "unconscious" not in world_conditions:
                     world_conditions.append("unconscious")
                 cp.conditions = world_conditions
+                # Death saves: read from world object if HP is 0
+                if cp.hp_current <= 0 and cp.hp_max > 0:
+                    ds = obj.properties.get("death_saves", {})
+                    cp.death_saves = DeathSaves(
+                        successes=ds.get("successes", 0),
+                        failures=ds.get("failures", 0),
+                    )
         result.append(cp)
     return result
 

@@ -1,6 +1,7 @@
 """World manipulation tools for the AI agents."""
 
 import logging
+import random
 from typing import Any, Optional
 from pydantic import BaseModel
 
@@ -253,7 +254,10 @@ class WorldTools:
             message_parts.append(f"({delta} healing)")
 
         if is_dead:
-            message_parts.append(f"{obj.name or 'Object'} has died!")
+            message_parts.append(f"{obj.name or 'Object'} is unconscious and must make death saving throws!")
+            # Initialize death saves when HP first drops to 0
+            if old_hp > 0:
+                obj.properties["death_saves"] = {"successes": 0, "failures": 0}
 
         return ToolResult(
             success=True,
@@ -362,6 +366,83 @@ class WorldTools:
                 "new_level": new_level,
                 "level_up": level_up_data,
                 "xp_to_next": xp_to_next_level(new_xp),
+            },
+        )
+
+    def roll_death_save(self, id: int) -> ToolResult:
+        """
+        Roll a death saving throw for an unconscious PC (HP = 0).
+
+        Rolls d20: 20 = instant stabilize, ≥ 10 = success, < 10 = failure.
+        Three successes = stable; two failures = dead.
+
+        Args:
+            id: Object ID of the unconscious PC
+        """
+        obj = self.world.get_object(id)
+        if not obj:
+            return ToolResult(success=False, message=f"Object {id} not found")
+
+        hp = obj.properties.get("hp", {})
+        if hp.get("current", 1) > 0:
+            return ToolResult(success=False, message=f"Object {id} is not unconscious (HP > 0)")
+
+        saves = obj.properties.setdefault("death_saves", {"successes": 0, "failures": 0})
+        roll = random.randint(1, 20)
+
+        # Natural 20: instant stabilize
+        if roll == 20:
+            saves["successes"] = 3
+            saves["failures"] = 0
+            obj.properties["death_saves"] = saves
+            return ToolResult(
+                success=True,
+                message=f"{obj.name or 'PC'} rolled a natural 20 on their death save and stabilizes!",
+                data={
+                    "id": id,
+                    "roll": roll,
+                    "result": "success",
+                    "successes": saves["successes"],
+                    "failures": saves["failures"],
+                    "stable": True,
+                    "dead": False,
+                },
+            )
+
+        is_success = roll >= 10
+        if is_success:
+            saves["successes"] = min(3, saves["successes"] + 1)
+        else:
+            saves["failures"] = min(3, saves["failures"] + 1)
+
+        obj.properties["death_saves"] = saves
+
+        stable = saves["successes"] >= 3
+        dead = saves["failures"] >= 2
+
+        outcome = "success" if is_success else "failure"
+        name = obj.name or "PC"
+        if stable:
+            narrative = f"{name} rolled {roll} — success! {name} stabilizes with 3 successes."
+        elif dead:
+            narrative = f"{name} rolled {roll} — failure! {name} has died (2 failures)."
+        else:
+            narrative = (
+                f"{name} rolled {roll} — {outcome}! "
+                f"({saves['successes']} successes, {saves['failures']} failures)"
+            )
+
+        return ToolResult(
+            success=True,
+            message=narrative,
+            data={
+                "id": id,
+                "roll": roll,
+                "result": outcome,
+                "successes": saves["successes"],
+                "failures": saves["failures"],
+                "stable": stable,
+                "dead": dead,
             },
         )
 
@@ -623,6 +704,22 @@ TOOL_DEFINITIONS = [
                 "amount": {"type": "integer", "description": "XP to award (positive integer)"},
             },
             "required": ["id", "amount"],
+        },
+    },
+    {
+        "name": "roll_death_save",
+        "description": (
+            "Roll a death saving throw for an unconscious PC (HP = 0). "
+            "Roll d20: 20 = instant stable, >=10 = success, <10 = failure. "
+            "Three successes = stable; two failures = dead. "
+            "Call this at the start of each unconscious PC's turn during Combat."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "description": "Object ID of the unconscious PC"},
+            },
+            "required": ["id"],
         },
     },
 ]

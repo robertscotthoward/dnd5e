@@ -53,6 +53,31 @@
       </div>
     </div>
 
+    <!-- Death Saves Panel (only shown when HP = 0) -->
+    <div v-if="isUnconscious" class="death-saves-panel">
+      <div class="ds-label">Death Saves</div>
+      <div class="ds-rows">
+        <div class="ds-row">
+          <span class="ds-row-label success">S</span>
+          <span
+            v-for="n in 3"
+            :key="'s' + n"
+            class="ds-pip pip-success"
+            :class="{ filled: n <= deathSaveSuccesses }"
+          ></span>
+        </div>
+        <div class="ds-row">
+          <span class="ds-row-label failure">F</span>
+          <span
+            v-for="n in 3"
+            :key="'f' + n"
+            class="ds-pip pip-failure"
+            :class="{ filled: n <= deathSaveFailures }"
+          ></span>
+        </div>
+      </div>
+    </div>
+
     <!-- Status Badge -->
     <div class="card-footer">
       <div class="status-badge" :class="statusClass">
@@ -108,6 +133,18 @@ const encPercent = computed(() => {
   if (!props.player.encumbrance_max || props.player.encumbrance_max === 0) return 0
   const pct = (props.player.encumbrance_current / props.player.encumbrance_max) * 100
   return Math.max(0, Math.min(100, pct))
+})
+
+const isUnconscious = computed(() => {
+  return props.player.hp_current !== undefined && props.player.hp_current <= 0 && props.player.hp_max > 0
+})
+
+const deathSaveSuccesses = computed(() => {
+  return props.player.death_saves?.successes ?? 0
+})
+
+const deathSaveFailures = computed(() => {
+  return props.player.death_saves?.failures ?? 0
 })
 
 const statusText = computed(() => {
@@ -259,6 +296,75 @@ const statusClass = computed(() => {
 .status-unconscious{ color: #94a3b8; border-color: #334155; background: rgba(30,41,59,0.4); }
 .status-dead       { color: #64748b; border-color: #1e293b; background: rgba(15,23,42,0.5); }
 .status-unknown    { color: #8a7355; border-color: #3d2e10; background: rgba(61,46,16,0.2); }
+
+/* Death Saves Panel */
+.death-saves-panel {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid #334155;
+  border-radius: 4px;
+}
+
+.ds-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 0.3rem;
+}
+
+.ds-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ds-row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.ds-row-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  font-weight: 700;
+  width: 10px;
+  text-align: center;
+}
+.ds-row-label.success { color: #86efac; }
+.ds-row-label.failure { color: #f87171; }
+
+.ds-pip {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.pip-success {
+  border-color: #14532d;
+  background: transparent;
+}
+.pip-success.filled {
+  background: #86efac;
+  border-color: #86efac;
+  box-shadow: 0 0 4px rgba(134,239,172,0.6);
+}
+
+.pip-failure {
+  border-color: #7f1d1d;
+  background: transparent;
+}
+.pip-failure.filled {
+  background: #f87171;
+  border-color: #f87171;
+  box-shadow: 0 0 4px rgba(248,113,113,0.6);
+}
 
 .mt-2 { margin-top: 0.5rem; }
 .text-green-400 { color: #4ade80; }

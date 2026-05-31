@@ -56,6 +56,11 @@ class ChatMessage(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
 
 
+class DeathSaves(BaseModel):
+    successes: int = 0  # 0-3
+    failures: int = 0   # 0-3
+
+
 class CampaignPlayer(BaseModel):
     user_id: str
     username: str
@@ -68,6 +73,7 @@ class CampaignPlayer(BaseModel):
     encumbrance_current: float = 0.0
     encumbrance_max: float = 150.0  # default STR 10 * 15
     conditions: list[str] = Field(default_factory=list)  # active D&D 5e conditions
+    death_saves: DeathSaves = Field(default_factory=DeathSaves)
     joined_at: str
     last_seen: Optional[str] = None
 
@@ -77,6 +83,8 @@ class CampaignPlayer(BaseModel):
         if self.hp_max == 0:
             return "unknown"
         if self.hp_current <= 0:
+            if self.death_saves.failures >= 2:
+                return "dead"
             return "unconscious"
         pct = self.hp_current / self.hp_max
         if pct > 0.5:
