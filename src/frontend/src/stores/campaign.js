@@ -1,6 +1,24 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+// D&D 5e XP thresholds (index = level)
+const XP_THRESHOLDS = [
+  0, 0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000,
+  85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000,
+]
+export function xpLevelFor(totalXp) {
+  let level = 1
+  for (let lvl = 20; lvl >= 1; lvl--) {
+    if (totalXp >= XP_THRESHOLDS[lvl]) { level = lvl; break }
+  }
+  return level
+}
+export function xpToNextLevel(totalXp) {
+  const cur = xpLevelFor(totalXp)
+  if (cur >= 20) return 0
+  return XP_THRESHOLDS[cur + 1] - totalXp
+}
+
 export const useCampaignStore = defineStore('campaign', () => {
   const campaigns = ref([])
   const currentMeta = ref(null)
@@ -15,6 +33,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   const ws = ref(null)
   const wsStatus = ref('disconnected')
   const joinResult = ref(null)  // { needs_character, player, summary }
+  const pendingLevelUp = ref(null)  // { character_id, character_name, old_level, new_level, hit_die, class_type, has_asi }
 
   async function fetchCampaigns() {
     loading.value = true
@@ -209,6 +228,18 @@ export const useCampaignStore = defineStore('campaign', () => {
       case 'snapshot_created':
         snapshots.value.push(msg.snapshot)
         break
+      case 'xp_awarded': {
+        const xpData = msg.data
+        const xpPlayer = players.value.find(p => p.character_object_id === xpData?.id)
+        if (xpPlayer) {
+          xpPlayer.experience = xpData.new_xp
+        }
+        if (msg.message) chat.value.push(msg.message)
+        break
+      }
+      case 'level_up':
+        pendingLevelUp.value = msg.level_up
+        break
     }
   }
 
@@ -228,6 +259,38 @@ export const useCampaignStore = defineStore('campaign', () => {
     if (ws.value && ws.value.readyState === WebSocket.OPEN) {
       ws.value.send(JSON.stringify({ type: 'snapshot', label }))
     }
+  }
+
+  function sendAwardXp(characterId, amount, reason = '') {
+    if (ws.value && ws.value.readyState === WebSocket.OPEN) {
+      ws.value.send(JSON.stringify({ type: 'award_xp', character_id: characterId, amount, reason }))
+    }
+  }
+
+  async function awardXp(campaignId, characterId, amount, reason = '') {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/award-xp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ character_id: characterId, amount, reason }),
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Failed to award XP')
+      if (data.level_up) pendingLevelUp.value = data.level_up
+      return data
+    } catch (e) {
+      error.value = e.message
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  function clearLevelUp() {
+    pendingLevelUp.value = null
   }
 
   async function fetchSnapshots(id) {
@@ -263,8 +326,9 @@ export const useCampaignStore = defineStore('campaign', () => {
   return {
     campaigns, currentMeta, players, chat, gameMode, activeTurn,
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
+    pendingLevelUp,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
-    fetchSnapshots, restoreSnapshot,
+    fetchSnapshots, restoreSnapshot, sendAwardXp, awardXp, clearLevelUp,
   }
 })

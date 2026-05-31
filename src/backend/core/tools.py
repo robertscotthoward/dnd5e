@@ -10,6 +10,54 @@ from .combat import CombatEngine
 
 logger = logging.getLogger(__name__)
 
+# D&D 5e XP thresholds per level (index = level, value = total XP needed to reach that level)
+XP_THRESHOLDS: list[int] = [
+    0,       # level 0 (unused placeholder)
+    0,       # level 1
+    300,     # level 2
+    900,     # level 3
+    2700,    # level 4
+    6500,    # level 5
+    14000,   # level 6
+    23000,   # level 7
+    34000,   # level 8
+    48000,   # level 9
+    64000,   # level 10
+    85000,   # level 11
+    100000,  # level 12
+    120000,  # level 13
+    140000,  # level 14
+    165000,  # level 15
+    195000,  # level 16
+    225000,  # level 17
+    265000,  # level 18
+    305000,  # level 19
+    355000,  # level 20
+]
+
+MAX_LEVEL = 20
+
+# Number of Ability Score Improvement levels (levels where ASI is granted)
+ASI_LEVELS = {4, 8, 12, 16, 19}
+
+
+def xp_level_for(total_xp: int) -> int:
+    """Return the level a character has reached given total XP."""
+    level = 1
+    for lvl in range(MAX_LEVEL, 0, -1):
+        if total_xp >= XP_THRESHOLDS[lvl]:
+            level = lvl
+            break
+    return level
+
+
+def xp_to_next_level(total_xp: int) -> int:
+    """Return XP needed to reach the next level, or 0 if already at max."""
+    current = xp_level_for(total_xp)
+    if current >= MAX_LEVEL:
+        return 0
+    return XP_THRESHOLDS[current + 1] - total_xp
+
 
 class ToolResult(BaseModel):
     """Result of a tool call."""
@@ -246,6 +294,76 @@ class WorldTools:
             return ToolResult(success=True, message=message, data={"id": id, "cascade": cascade})
         else:
             return ToolResult(success=False, message=f"Failed to delete object {id}")
+
+    def award_xp(self, id: int, amount: int) -> ToolResult:
+        """
+        Award experience points to a character.
+
+        When XP crosses a level threshold the result data includes a
+        ``level_up`` key with the new level, hit die, and whether an ASI
+        is available.
+
+        Args:
+            id: Object ID of the PC
+            amount: XP to award (must be positive)
+        """
+        if amount <= 0:
+            return ToolResult(success=False, message="XP amount must be positive")
+
+        obj = self.world.get_object(id)
+        if not obj:
+            return ToolResult(success=False, message=f"Object {id} not found")
+
+        old_xp = obj.properties.get("experience", 0)
+        new_xp = old_xp + amount
+        obj.properties["experience"] = new_xp
+
+        old_level = xp_level_for(old_xp)
+        new_level = xp_level_for(new_xp)
+
+        # Update class level on level-up
+        level_up_data = None
+        if new_level > old_level:
+            classes = obj.properties.get("classes", [])
+            if classes:
+                classes[0]["level"] = new_level
+                obj.properties["classes"] = classes
+
+            from ..models.player import CLASS_HIT_DICE
+            class_type = classes[0].get("type", "Fighter") if classes else "Fighter"
+            hit_die = CLASS_HIT_DICE.get(class_type, 8)
+            has_asi = new_level in ASI_LEVELS
+
+            level_up_data = {
+                "character_id": id,
+                "character_name": obj.name or f"object_{id}",
+                "old_level": old_level,
+                "new_level": new_level,
+                "hit_die": hit_die,
+                "class_type": class_type,
+                "has_asi": has_asi,
+            }
+
+        msg_parts = [
+            f"Awarded {amount} XP to {obj.name or 'object'}: "
+            f"{old_xp} -> {new_xp} XP (level {new_level})"
+        ]
+        if level_up_data:
+            msg_parts.append(f"LEVEL UP! {obj.name} is now level {new_level}!")
+
+        return ToolResult(
+            success=True,
+            message=" ".join(msg_parts),
+            data={
+                "id": id,
+                "old_xp": old_xp,
+                "new_xp": new_xp,
+                "old_level": old_level,
+                "new_level": new_level,
+                "level_up": level_up_data,
+                "xp_to_next": xp_to_next_level(new_xp),
+            },
+        )
 
     def get_object(self, id: int) -> ToolResult:
         """
@@ -493,6 +611,18 @@ TOOL_DEFINITIONS = [
                 "id": {"type": "integer", "description": "ID of the object"},
             },
             "required": ["id"],
+        },
+    },
+    {
+        "name": "award_xp",
+        "description": "Award experience points to a player character after combat or a story milestone",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "description": "Object ID of the PC"},
+                "amount": {"type": "integer", "description": "XP to award (positive integer)"},
+            },
+            "required": ["id", "amount"],
         },
     },
 ]

@@ -199,6 +199,9 @@
       </div>
     </Teleport>
 
+    <!-- Level-Up Dialog -->
+    <LevelUpDialog :campaignId="campaignId" @confirmed="onLevelUpConfirmed" />
+
     <!-- Restore Confirm Modal -->
     <Teleport to="body">
       <div v-if="restoreTarget" class="modal-overlay" @click.self="restoreTarget = null">
@@ -229,6 +232,7 @@ import PlayerCard from '../components/PlayerCard.vue'
 import ChatWindow from '../components/ChatWindow.vue'
 import ActionBar from '../components/ActionBar.vue'
 import SnapshotNode from '../components/SnapshotNode.vue'
+import LevelUpDialog from '../components/LevelUpDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -347,6 +351,13 @@ async function doRestore() {
 function leaveGame() {
   campaignStore.disconnectWs()
   router.push('/campaigns')
+}
+
+function onLevelUpConfirmed({ hpGain, asiChoices }) {
+  // Broadcast the level-up to chat so all players see it
+  const me = campaignStore.players.find(p => p.user_id === authStore.user?.user_id)
+  const name = me?.character_name || 'A hero'
+  campaignStore.sendChat(`${name} leveled up! +${hpGain} HP gained.`)
 }
 
 onMounted(async () => {

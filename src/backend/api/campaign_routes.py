@@ -50,6 +50,17 @@ class SnapshotRequest(BaseModel):
     label: str
 
 
+class AwardXpRequest(BaseModel):
+    character_id: int
+    amount: int
+    reason: Optional[str] = None
+
+
+class LevelUpRequest(BaseModel):
+    hp_gain: int
+    asi_choices: dict[str, int] = {}  # e.g. {"str": 1, "con": 1}
+
+
 class RollStatsRequest(BaseModel):
     race: str
     seed: Optional[int] = None
@@ -332,6 +343,105 @@ def advance_turn(campaign_id: str, request: Request):
     append_chat(campaign_id, dm_msg)
 
     return {"narration": narration, "turn_number": campaign.turn_number}
+
+
+@router.post("/campaigns/{campaign_id}/award-xp")
+def award_xp(campaign_id: str, req: AwardXpRequest, request: Request):
+    """
+    Award XP to a character and return the updated XP totals.
+
+    If a level-up occurs the response includes a ``level_up`` block with
+    details for the frontend dialog (hit die, ASI flag, new level).
+    """
+    session = get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load world")
+
+    from src.backend.core.tools import WorldTools
+
+    tools = WorldTools(campaign.world)
+    result = tools.award_xp(req.character_id, req.amount)
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.message)
+
+    save_campaign_world(campaign_id, campaign)
+
+    reason_text = f" ({req.reason})" if req.reason else ""
+    sys_msg = ChatMessage(
+        sender="SYSTEM",
+        sender_type="SYSTEM",
+        text=f"{result.data['new_xp'] - result.data['old_xp']} XP awarded{reason_text}. "
+             f"Total: {result.data['new_xp']} XP (Level {result.data['new_level']}).",
+        turn_number=meta.turn_number,
+    )
+    append_chat(campaign_id, sys_msg)
+
+    return result.data
+
+
+@router.post("/campaigns/{campaign_id}/characters/{character_id}/level-up")
+def apply_level_up(
+    campaign_id: str,
+    character_id: int,
+    req: LevelUpRequest,
+    request: Request,
+):
+    """
+    Apply level-up choices (hit die roll result and ASI selections) to a character.
+
+    Called from the frontend LevelUpDialog after the player confirms their choices.
+    """
+    session = get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load world")
+
+    char_obj = campaign.world.get_object(character_id)
+    if not char_obj:
+        raise HTTPException(status_code=404, detail=f"Character {character_id} not found")
+
+    # Apply HP gain
+    if req.hp_gain > 0:
+        hp = char_obj.properties.get("hp", {"current": 1, "max": 1})
+        hp["max"] = hp.get("max", 1) + req.hp_gain
+        hp["current"] = hp.get("current", 1) + req.hp_gain
+        char_obj.properties["hp"] = hp
+
+    # Apply ASI choices
+    if req.asi_choices:
+        abilities = char_obj.properties.get("abilities", {})
+        for ab_key, bonus in req.asi_choices.items():
+            if ab_key in abilities:
+                abilities[ab_key] = abilities[ab_key] + bonus
+        char_obj.properties["abilities"] = abilities
+
+    save_campaign_world(campaign_id, campaign)
+
+    # Update player record with new HP
+    hp_data = char_obj.properties.get("hp", {})
+    update_player_character(
+        campaign_id,
+        session.user_id,
+        char_obj.id,
+        char_obj.name,
+        char_obj.properties.get("race"),
+        char_obj.properties.get("classes", [{}])[0].get("type") if char_obj.properties.get("classes") else None,
+        hp_data.get("max", 0),
+        hp_data.get("current", 0),
+    )
+
+    return {
+        "character_id": character_id,
+        "hp": char_obj.properties.get("hp"),
+        "abilities": char_obj.properties.get("abilities"),
+    }
 
 
 @router.get("/campaigns/{campaign_id}/chat")

@@ -360,6 +360,52 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                     _run_dm_response(campaign_id, action_text, session.username, char_name)
                 )
 
+            elif msg_type == "award_xp":
+                char_id = data.get("character_id")
+                xp_amount = data.get("amount", 0)
+                reason = data.get("reason", "")
+                if not isinstance(char_id, int) or xp_amount <= 0:
+                    await manager.send_personal(
+                        websocket,
+                        {"type": "error", "message": "award_xp requires integer character_id and positive amount"},
+                    )
+                else:
+                    campaign_xp = load_campaign_world(campaign_id)
+                    if campaign_xp:
+                        from src.backend.core.tools import WorldTools
+                        from src.backend.core.campaign_manager import append_chat as _append_chat
+                        from src.backend.models.user import ChatMessage as _ChatMessage
+                        tools_xp = WorldTools(campaign_xp.world)
+                        xp_result = tools_xp.award_xp(char_id, xp_amount)
+                        if xp_result.success:
+                            save_campaign_world(campaign_id, campaign_xp)
+                            reason_text = f" ({reason})" if reason else ""
+                            sys_msg = _ChatMessage(
+                                sender="SYSTEM",
+                                sender_type="SYSTEM",
+                                text=f"{xp_amount} XP awarded{reason_text}. "
+                                     f"Total: {xp_result.data['new_xp']} XP "
+                                     f"(Level {xp_result.data['new_level']}).",
+                                turn_number=meta.turn_number,
+                            )
+                            _append_chat(campaign_id, sys_msg)
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "xp_awarded",
+                                    "data": xp_result.data,
+                                    "message": sys_msg.model_dump(mode="json"),
+                                },
+                            )
+                            if xp_result.data.get("level_up"):
+                                await manager.broadcast(
+                                    campaign_id,
+                                    {
+                                        "type": "level_up",
+                                        "level_up": xp_result.data["level_up"],
+                                    },
+                                )
+
             elif msg_type == "snapshot":
                 label = str(data.get("label", f"Snapshot by {char_name}"))
                 snap = create_snapshot(campaign_id, label, session.username)
