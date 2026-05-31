@@ -1,6 +1,8 @@
 """AI client using Ollama via LlamaIndex for agent interactions."""
 
+import asyncio
 from typing import Optional
+from llama_index.core.agent import ReActAgent
 from llama_index.core.tools import FunctionTool
 from llama_index.llms.ollama import Ollama
 from rich.console import Console
@@ -12,13 +14,17 @@ from ..models.game import Campaign
 
 console = Console()
 
+_DM_SYSTEM_PROMPT = (
+    "You are the Dungeon Master for a D&D 5e campaign. You orchestrate events, enforce "
+    "the rules, narrate outcomes, and call tools to mutate the game world. Think step by "
+    "step: reason about the situation, decide what game-world changes are needed, call "
+    "the appropriate tools, then produce your final narration. Never invent object IDs — "
+    "use get_object or get_sub_world to discover them first."
+)
+
 
 class AIClient:
-    """
-    AI client for interacting with Ollama LLM.
-
-    Provides tool-calling capabilities for game agents.
-    """
+    """AI client for interacting with Ollama LLM."""
 
     def __init__(self):
         self._llm: Optional[Ollama] = None
@@ -46,60 +52,46 @@ class AIClient:
 
     def create_tools(self, world_tools: WorldTools) -> list[FunctionTool]:
         """Create LlamaIndex function tools from WorldTools."""
-        tools = []
-
-        tools.append(FunctionTool.from_defaults(
-            fn=world_tools.create_object,
-            name="create_object",
-            description="Create a new object in the world",
-        ))
-
-        tools.append(FunctionTool.from_defaults(
-            fn=world_tools.move_object,
-            name="move_object",
-            description="Move an object to a new parent location",
-        ))
-
-        tools.append(FunctionTool.from_defaults(
-            fn=world_tools.set_object_property,
-            name="set_object_property",
-            description="Set a property on an object",
-        ))
-
-        tools.append(FunctionTool.from_defaults(
-            fn=world_tools.add_hp,
-            name="add_hp",
-            description="Modify a player's HP (negative for damage, positive for healing)",
-        ))
-
-        tools.append(FunctionTool.from_defaults(
-            fn=world_tools.delete_object,
-            name="delete_object",
-            description="Delete an object from the world",
-        ))
-
-        tools.append(FunctionTool.from_defaults(
-            fn=world_tools.get_object,
-            name="get_object",
-            description="Get an object by ID",
-        ))
-
-        tools.append(FunctionTool.from_defaults(
-            fn=world_tools.get_sub_world,
-            name="get_sub_world",
-            description="Get the visible world from an observer's perspective",
-        ))
-
-        return tools
+        return [
+            FunctionTool.from_defaults(
+                fn=world_tools.create_object,
+                name="create_object",
+                description="Create a new object in the world",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.move_object,
+                name="move_object",
+                description="Move an object to a new parent location",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.set_object_property,
+                name="set_object_property",
+                description="Set a property on an object",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.add_hp,
+                name="add_hp",
+                description="Modify a player's HP (negative for damage, positive for healing)",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.delete_object,
+                name="delete_object",
+                description="Delete an object from the world",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.get_object,
+                name="get_object",
+                description="Get an object by ID",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.get_sub_world,
+                name="get_sub_world",
+                description="Get the visible world from an observer's perspective",
+            ),
+        ]
 
     def query_rules(self, query: str, n_results: int = 3) -> str:
-        """
-        Query the D&D rules corpus and return relevant context.
-
-        Args:
-            query: The rules question
-            n_results: Number of relevant chunks to retrieve
-        """
+        """Query the D&D rules corpus and return relevant context."""
         results = vector_store.search(query, n_results=n_results)
         if not results:
             return "No relevant rules found."
@@ -108,10 +100,26 @@ class AIClient:
         for result in results:
             source = result["metadata"].get("source", "Unknown")
             section = result["metadata"].get("section", "")
-            text = result["text"][:500]  # Truncate for context window
+            text = result["text"][:500]
             context_parts.append(f"[{source}: {section}]\n{text}")
 
         return "\n\n---\n\n".join(context_parts)
+
+    async def _run_dm_agent(self, user_message: str, tools: list[FunctionTool]) -> str:
+        """Run the DM ReAct agent asynchronously and return the narrative text."""
+        agent = ReActAgent(
+            tools=tools,
+            llm=self.llm,
+            system_prompt=_DM_SYSTEM_PROMPT,
+            verbose=True,
+            streaming=False,
+            max_iterations=10,
+            early_stopping_method="generate",
+        )
+        handler = agent.run(user_msg=user_message)
+        result = await handler
+        # result is AgentOutput; result.response is a ChatMessage
+        return result.response.content or ""
 
     def generate_dm_response(
         self,
@@ -120,24 +128,21 @@ class AIClient:
         world_tools: WorldTools,
     ) -> str:
         """
-        Generate a DM response for the current situation.
+        Run a full ReAct tool-calling loop as the DM agent.
 
-        The DM narrates events, determines outcomes, and calls tools to modify the world.
+        The agent receives the filtered world, may call world tools to mutate state,
+        and produces a final narrative string.
         """
-        # Get rules context
         rules_context = self.query_rules(situation)
 
-        # Get PCs from world
         pcs = campaign.world.get_pcs()
 
-        # Get visible world for context
         if pcs:
             visible_world = campaign.world.get_visible_world(pcs[0].id)
             world_context = str(visible_world.model_dump_yaml())
         else:
             world_context = "No players found"
 
-        # Build PC summary
         pc_summaries = []
         for pc in pcs:
             hp = pc.properties.get("hp", {})
@@ -148,32 +153,23 @@ class AIClient:
                 f"- {pc.name} ({race} {class_str}): HP {hp.get('current', '?')}/{hp.get('max', '?')}"
             )
 
-        # Build prompt
-        prompt = f"""You are the Dungeon Master for a D&D 5e campaign called "{campaign.name}".
+        user_message = (
+            f'Campaign: "{campaign.name}"\n\n'
+            f"CURRENT SITUATION:\n{situation}\n\n"
+            f"VISIBLE WORLD STATE:\n{world_context}\n\n"
+            f"RELEVANT D&D RULES:\n{rules_context}\n\n"
+            f"PLAYERS:\n{chr(10).join(pc_summaries) if pc_summaries else 'No players'}\n\n"
+            "As the DM, narrate what happens next. Call world tools as needed to update "
+            "game state (e.g. apply damage with add_hp, move objects with move_object). "
+            "End with your narration."
+        )
 
-CURRENT SITUATION:
-{situation}
+        tools = self.create_tools(world_tools)
 
-VISIBLE WORLD STATE:
-{world_context}
-
-RELEVANT D&D RULES:
-{rules_context}
-
-PLAYERS:
-{chr(10).join(pc_summaries) if pc_summaries else "No players"}
-
-As the DM, narrate what happens next. If any game mechanics are involved (combat, skill checks, etc.),
-describe the dice rolls and their outcomes. Use the tools available to modify the game state.
-
-Respond with your narration."""
-
-        # Generate response
         try:
-            response = self.llm.complete(prompt)
-            return response.text
+            return asyncio.run(self._run_dm_agent(user_message, tools))
         except Exception as e:
-            console.print(f"[red]Error generating DM response: {e}[/red]")
+            console.print(f"[red]Error in DM ReAct agent: {e}[/red]")
             return f"[DM is thinking...] (Error: {e})"
 
     def generate_player_action(
