@@ -249,18 +249,17 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                     },
                 )
 
-                # Trigger DM AI if addressed to the Dungeon Master
-                if text.upper().startswith("DM:") or text.upper().startswith("DM,"):
-                    await manager.broadcast(
-                        campaign_id,
-                        {
-                            "type": "dm_thinking",
-                            "message": "The Dungeon Master is considering...",
-                        },
-                    )
-                    asyncio.create_task(
-                        _run_dm_response(campaign_id, text, session.username, char_name)
-                    )
+                # Every player message triggers the DM agent
+                await manager.broadcast(
+                    campaign_id,
+                    {
+                        "type": "dm_thinking",
+                        "message": "The Dungeon Master is considering...",
+                    },
+                )
+                asyncio.create_task(
+                    _run_dm_response(campaign_id, text, session.username, char_name)
+                )
 
             elif msg_type == "action":
                 action = str(data.get("action", ""))
