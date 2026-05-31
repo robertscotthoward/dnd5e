@@ -185,6 +185,16 @@
 
       <hr class="gold-divider-plain" />
 
+      <!-- Quest Tracker -->
+      <div class="sidebar-section">
+        <div class="dnd-section-heading">
+          <span>📋</span> Quests
+        </div>
+        <QuestTracker />
+      </div>
+
+      <hr class="gold-divider-plain" />
+
       <!-- Snapshots -->
       <div class="sidebar-section">
         <div
@@ -287,6 +297,7 @@ import CharacterSheet from '../components/CharacterSheet.vue'
 import InitiativeTracker from '../components/InitiativeTracker.vue'
 import LootSummary from '../components/LootSummary.vue'
 import JournalTab from '../components/JournalTab.vue'
+import QuestTracker from '../components/QuestTracker.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -421,6 +432,7 @@ onMounted(async () => {
   campaignStore.connectWs(campaignId)
   await campaignStore.fetchSnapshots(campaignId)
   await campaignStore.fetchJournal(campaignId)
+  await campaignStore.fetchQuests(campaignId)
 })
 
 onUnmounted(() => {

@@ -641,6 +641,78 @@ def get_character(campaign_id: str, character_id: int, request: Request):
     }
 
 
+class AddQuestRequest(BaseModel):
+    title: str
+    milestones: list[str]
+
+
+class CompleteMilestoneRequest(BaseModel):
+    quest_id: int
+    milestone_idx: int
+
+
+@router.get("/campaigns/{campaign_id}/quests")
+def get_quests(campaign_id: str, request: Request):
+    """Return all quests for a campaign."""
+    get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load world")
+
+    from src.backend.core.tools import WorldTools
+
+    tools = WorldTools(campaign.world)
+    result = tools.get_quests()
+    return {"quests": result.data["quests"]}
+
+
+@router.post("/campaigns/{campaign_id}/quests")
+def post_quest(campaign_id: str, req: AddQuestRequest, request: Request):
+    """Add a new quest to the campaign world."""
+    get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load world")
+
+    from src.backend.core.tools import WorldTools
+
+    tools = WorldTools(campaign.world)
+    result = tools.add_quest(req.title, req.milestones)
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.message)
+
+    save_campaign_world(campaign_id, campaign)
+    return result.data
+
+
+@router.post("/campaigns/{campaign_id}/quests/complete-milestone")
+def post_complete_milestone(campaign_id: str, req: CompleteMilestoneRequest, request: Request):
+    """Mark a quest milestone as completed."""
+    get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load world")
+
+    from src.backend.core.tools import WorldTools
+
+    tools = WorldTools(campaign.world)
+    result = tools.complete_milestone(req.quest_id, req.milestone_idx)
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.message)
+
+    save_campaign_world(campaign_id, campaign)
+    return result.data
+
+
 @router.get("/campaigns/{campaign_id}/journal")
 def get_campaign_journal(campaign_id: str):
     """Return the full journal.md text for a campaign."""

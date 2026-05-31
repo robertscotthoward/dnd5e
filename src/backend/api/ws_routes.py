@@ -588,6 +588,34 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                                 {"type": "error", "message": move_result.message},
                             )
 
+            elif msg_type == "complete_milestone":
+                quest_id = data.get("quest_id")
+                milestone_idx = data.get("milestone_idx")
+                if not isinstance(quest_id, int) or not isinstance(milestone_idx, int):
+                    await manager.send_personal(
+                        websocket,
+                        {"type": "error", "message": "complete_milestone requires integer quest_id and milestone_idx"},
+                    )
+                else:
+                    q_campaign = load_campaign_world(campaign_id)
+                    if q_campaign:
+                        q_tools = WorldTools(q_campaign.world)
+                        q_result = q_tools.complete_milestone(quest_id, milestone_idx)
+                        if q_result.success:
+                            save_campaign_world(campaign_id, q_campaign)
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "quest_updated",
+                                    "quest": q_result.data["quest"],
+                                },
+                            )
+                        else:
+                            await manager.send_personal(
+                                websocket,
+                                {"type": "error", "message": q_result.message},
+                            )
+
             elif msg_type == "snapshot":
                 label = str(data.get("label", f"Snapshot by {char_name}"))
                 snap = create_snapshot(campaign_id, label, session.username)

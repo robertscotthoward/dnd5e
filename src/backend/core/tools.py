@@ -542,6 +542,97 @@ class WorldTools:
             },
         )
 
+    def add_quest(self, title: str, milestones: list[str]) -> ToolResult:
+        """
+        Add a new quest to the campaign world.
+
+        Quests are stored under world root properties.quests as a list of dicts.
+        Each quest has: id, title, milestones (list of {text, completed}).
+
+        Args:
+            title: Quest title
+            milestones: List of milestone description strings
+        """
+        root = next(
+            (obj for obj in self.world.objects.values() if obj.parent is None),
+            None,
+        )
+        if not root:
+            return ToolResult(success=False, message="World root object not found")
+
+        quests = root.properties.get("quests", [])
+        quest_id = len(quests)
+        quest = {
+            "id": quest_id,
+            "title": title,
+            "milestones": [{"text": m, "completed": False} for m in milestones],
+        }
+        quests.append(quest)
+        root.properties["quests"] = quests
+
+        return ToolResult(
+            success=True,
+            message=f"Quest '{title}' added with {len(milestones)} milestone(s)",
+            data={"quest": quest},
+        )
+
+    def complete_milestone(self, quest_id: int, milestone_idx: int) -> ToolResult:
+        """
+        Mark a quest milestone as completed.
+
+        Args:
+            quest_id: Index of the quest in the quests list
+            milestone_idx: Index of the milestone within the quest
+        """
+        root = next(
+            (obj for obj in self.world.objects.values() if obj.parent is None),
+            None,
+        )
+        if not root:
+            return ToolResult(success=False, message="World root object not found")
+
+        quests = root.properties.get("quests", [])
+        if quest_id < 0 or quest_id >= len(quests):
+            return ToolResult(success=False, message=f"Quest {quest_id} not found")
+
+        quest = quests[quest_id]
+        milestones = quest.get("milestones", [])
+        if milestone_idx < 0 or milestone_idx >= len(milestones):
+            return ToolResult(
+                success=False,
+                message=f"Milestone {milestone_idx} not found in quest {quest_id}",
+            )
+
+        milestone = milestones[milestone_idx]
+        if milestone["completed"]:
+            return ToolResult(
+                success=True,
+                message=f"Milestone already completed: {milestone['text']}",
+                data={"quest": quest},
+            )
+
+        milestone["completed"] = True
+        root.properties["quests"] = quests
+
+        return ToolResult(
+            success=True,
+            message=f"Milestone completed: {milestone['text']}",
+            data={"quest": quest, "milestone_idx": milestone_idx},
+        )
+
+    def get_quests(self) -> ToolResult:
+        """Return all quests stored on the world root."""
+        root = next(
+            (obj for obj in self.world.objects.values() if obj.parent is None),
+            None,
+        )
+        quests = root.properties.get("quests", []) if root else []
+        return ToolResult(
+            success=True,
+            message=f"{len(quests)} quest(s) found",
+            data={"quests": quests},
+        )
+
     def get_object(self, id: int) -> ToolResult:
         """
         Get an object by ID.
@@ -844,6 +935,40 @@ TOOL_DEFINITIONS = [
                 "id": {"type": "integer", "description": "Object ID of the unconscious PC"},
             },
             "required": ["id"],
+        },
+    },
+    {
+        "name": "add_quest",
+        "description": (
+            "Add a new quest to the campaign with a title and a list of milestone descriptions. "
+            "Call when the story introduces a new objective or side quest."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Quest title"},
+                "milestones": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Ordered list of milestone descriptions",
+                },
+            },
+            "required": ["title", "milestones"],
+        },
+    },
+    {
+        "name": "complete_milestone",
+        "description": (
+            "Mark a quest milestone as completed. "
+            "Call when the party achieves a quest objective."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "quest_id": {"type": "integer", "description": "Index of the quest"},
+                "milestone_idx": {"type": "integer", "description": "Index of the milestone within the quest"},
+            },
+            "required": ["quest_id", "milestone_idx"],
         },
     },
 ]

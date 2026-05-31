@@ -38,6 +38,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   const initiativeOrder = ref([])   // [{ id, name, initiative }] sorted highest first
   const pendingLoot = ref(null)     // { enemies_defeated, coins, items, loot_container_id }
   const journal = ref([])           // [{ turn_number, entry }] ordered oldest-first
+  const quests = ref([])            // [{ id, title, milestones: [{text, completed}] }]
 
   async function fetchCampaigns() {
     loading.value = true
@@ -301,6 +302,16 @@ export const useCampaignStore = defineStore('campaign', () => {
       case 'journal_updated':
         journal.value.push({ turn_number: msg.turn_number, entry: msg.entry })
         break
+      case 'quest_updated': {
+        const updated = msg.quest
+        const idx = quests.value.findIndex(q => q.id === updated.id)
+        if (idx !== -1) {
+          quests.value[idx] = updated
+        } else {
+          quests.value.push(updated)
+        }
+        break
+      }
     }
   }
 
@@ -371,6 +382,23 @@ export const useCampaignStore = defineStore('campaign', () => {
     pendingLoot.value = null
   }
 
+  async function fetchQuests(id) {
+    try {
+      const res = await fetch(`/api/campaigns/${id}/quests`, { credentials: 'include' })
+      const data = await res.json()
+      if (!res.ok) return
+      quests.value = data.quests || []
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function sendCompleteMilestone(questId, milestoneIdx) {
+    if (ws.value && ws.value.readyState === WebSocket.OPEN) {
+      ws.value.send(JSON.stringify({ type: 'complete_milestone', quest_id: questId, milestone_idx: milestoneIdx }))
+    }
+  }
+
   async function fetchJournal(id) {
     try {
       const res = await fetch(`/api/campaigns/${id}/journal`, { credentials: 'include' })
@@ -423,10 +451,10 @@ export const useCampaignStore = defineStore('campaign', () => {
   return {
     campaigns, currentMeta, players, chat, gameMode, activeTurn,
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
-    pendingLevelUp, pendingDiceRoll, initiativeOrder, pendingLoot, journal,
+    pendingLevelUp, pendingDiceRoll, initiativeOrder, pendingLoot, journal, quests,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
-    fetchSnapshots, fetchJournal, restoreSnapshot, sendAwardXp, awardXp, clearLevelUp, clearDiceRoll,
-    sendTakeLoot, clearLoot,
+    fetchSnapshots, fetchJournal, fetchQuests, restoreSnapshot, sendAwardXp, awardXp,
+    clearLevelUp, clearDiceRoll, sendTakeLoot, clearLoot, sendCompleteMilestone,
   }
 })
