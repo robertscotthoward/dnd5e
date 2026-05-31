@@ -36,7 +36,13 @@ from src.backend.models.player import RACE_MODIFIERS
 from src.backend.core.ai_client import ai_client
 from src.backend.models.user import CampaignMeta, CharacterCreate, ChatMessage, Snapshot
 from src.backend.models.world import Object, Location
-from src.backend.models.player import CLASS_HIT_DICE, get_ability_modifier, apply_racial_modifiers
+from src.backend.models.player import (
+    CLASS_HIT_DICE,
+    get_ability_modifier,
+    apply_racial_modifiers,
+    build_initial_spell_slots,
+    CASTER_CLASSES,
+)
 
 router = APIRouter(tags=["campaigns"])
 
@@ -243,6 +249,8 @@ def create_character(campaign_id: str, char_req: CharacterCreate, request: Reque
     parties = campaign.world.get_parties()
     party_id = parties[0].id if parties else 7
 
+    spell_slots = build_initial_spell_slots(char_req.class_type, 1)
+
     char_obj = Object(
         id=campaign.world.next_id(),
         parent=party_id,
@@ -262,6 +270,7 @@ def create_character(campaign_id: str, char_req: CharacterCreate, request: Reque
             "experience": 0,
             "player_controlled": True,
             "user_id": session.user_id,
+            "spell_slots": spell_slots,
         },
     )
     campaign.world.add_object(char_obj)
@@ -444,6 +453,61 @@ def apply_level_up(
     }
 
 
+class CastSpellRequest(BaseModel):
+    slot_level: int
+
+
+@router.post("/campaigns/{campaign_id}/characters/{character_id}/cast-spell")
+def cast_spell(campaign_id: str, character_id: int, req: CastSpellRequest, request: Request):
+    """
+    Consume one spell slot of the given level for a caster character.
+
+    Returns updated spell_slots for the character.
+    """
+    get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load world")
+
+    from src.backend.core.tools import WorldTools
+
+    tools = WorldTools(campaign.world)
+    result = tools.cast_spell(character_id, req.slot_level)
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.message)
+
+    save_campaign_world(campaign_id, campaign)
+    char_obj = campaign.world.get_object(character_id)
+    return {"spell_slots": char_obj.properties.get("spell_slots", {}), "message": result.message}
+
+
+@router.post("/campaigns/{campaign_id}/characters/{character_id}/long-rest")
+def long_rest(campaign_id: str, character_id: int, request: Request):
+    """
+    Perform a long rest: restore all spell slots and full HP for the character.
+    """
+    get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load world")
+
+    from src.backend.core.tools import WorldTools
+
+    tools = WorldTools(campaign.world)
+    result = tools.long_rest(character_id)
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.message)
+
+    save_campaign_world(campaign_id, campaign)
+    return result.data
+
+
 @router.get("/campaigns/{campaign_id}/characters/{character_id}")
 def get_character(campaign_id: str, character_id: int, request: Request):
     """
@@ -505,6 +569,7 @@ def get_character(campaign_id: str, character_id: int, request: Request):
         "features": props.get("features", []),
         "conditions": props.get("conditions", []),
         "death_saves": props.get("death_saves", {"successes": 0, "failures": 0}),
+        "spell_slots": props.get("spell_slots", {}),
         "items": items,
         "personality": props.get("personality", ""),
         "goals": props.get("goals", []),

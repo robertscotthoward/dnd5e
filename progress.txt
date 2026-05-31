@@ -1,7 +1,7 @@
 # Project Progress: D&D 5e Agentic Campaign Engine
 
 Total Tasks: 47
-Completed Tasks: 12
+Completed Tasks: 13
 
 ---
 
@@ -33,6 +33,7 @@ Completed Tasks: 12
 - WS turn enforcement (ws_routes.py) — in Combat mode, only active combatant's action is forwarded to DM
 - CampaignMeta.combat_queue field added (user.py)
 - 35 new tests in tests/test_combat.py — all pass
+- Spell slot tracker: FULL/HALF/WARLOCK slot tables in player.py; cast_spell + long_rest tools in tools.py; spell_slots seeded on character creation; CharacterSheet.vue shows pip rows per spell level with Long Rest button; /cast-spell and /long-rest API endpoints; 23 new tests in test_spell_slots.py — all pass
 
 ## In Progress / Remaining
 - Typer CLI `new-campaign` command in main.py (randomized race/class/stats, seeded world YAML, seeds.log)

@@ -369,6 +369,102 @@ class WorldTools:
             },
         )
 
+    def cast_spell(self, id: int, slot_level: int) -> ToolResult:
+        """
+        Consume one spell slot of the given level for a caster character.
+
+        Args:
+            id: Object ID of the PC
+            slot_level: Spell slot level to consume (1-9)
+        """
+        obj = self.world.get_object(id)
+        if not obj:
+            return ToolResult(success=False, message=f"Object {id} not found")
+
+        spell_slots = obj.properties.get("spell_slots")
+        if not spell_slots:
+            return ToolResult(success=False, message=f"Object {id} has no spell slots")
+
+        key = str(slot_level)
+        slot = spell_slots.get(key)
+        if not slot:
+            return ToolResult(
+                success=False,
+                message=f"No level-{slot_level} spell slots available",
+            )
+
+        available = slot["max"] - slot["used"]
+        if available <= 0:
+            return ToolResult(
+                success=False,
+                message=f"No level-{slot_level} spell slots remaining",
+            )
+
+        slot["used"] += 1
+        obj.properties["spell_slots"] = spell_slots
+
+        remaining = available - 1
+        return ToolResult(
+            success=True,
+            message=(
+                f"{obj.name or 'Caster'} expends a level-{slot_level} spell slot "
+                f"({remaining} remaining)."
+            ),
+            data={
+                "id": id,
+                "slot_level": slot_level,
+                "used": slot["used"],
+                "max": slot["max"],
+                "remaining": remaining,
+            },
+        )
+
+    def long_rest(self, id: int) -> ToolResult:
+        """
+        Perform a long rest for a character: restore all spell slots and full HP.
+
+        Args:
+            id: Object ID of the PC
+        """
+        obj = self.world.get_object(id)
+        if not obj:
+            return ToolResult(success=False, message=f"Object {id} not found")
+
+        restored = []
+
+        # Restore spell slots
+        spell_slots = obj.properties.get("spell_slots")
+        if spell_slots:
+            for slot_data in spell_slots.values():
+                slot_data["used"] = 0
+            obj.properties["spell_slots"] = spell_slots
+            restored.append("spell slots")
+
+        # Restore HP to max
+        hp = obj.properties.get("hp")
+        if hp:
+            old_hp = hp["current"]
+            hp["current"] = hp["max"]
+            obj.properties["hp"] = hp
+            if old_hp < hp["max"]:
+                restored.append(f"HP ({old_hp} -> {hp['max']})")
+
+        name = obj.name or "Character"
+        if restored:
+            msg = f"{name} takes a long rest and recovers: {', '.join(restored)}."
+        else:
+            msg = f"{name} takes a long rest."
+
+        return ToolResult(
+            success=True,
+            message=msg,
+            data={
+                "id": id,
+                "spell_slots": obj.properties.get("spell_slots"),
+                "hp": obj.properties.get("hp"),
+            },
+        )
+
     def roll_death_save(self, id: int) -> ToolResult:
         """
         Roll a death saving throw for an unconscious PC (HP = 0).
@@ -704,6 +800,34 @@ TOOL_DEFINITIONS = [
                 "amount": {"type": "integer", "description": "XP to award (positive integer)"},
             },
             "required": ["id", "amount"],
+        },
+    },
+    {
+        "name": "cast_spell",
+        "description": (
+            "Consume one spell slot of the given level for a caster. "
+            "Call this when a player casts a leveled spell. Returns an error if no slots remain."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "description": "Object ID of the caster PC"},
+                "slot_level": {"type": "integer", "description": "Spell slot level to consume (1-9)"},
+            },
+            "required": ["id", "slot_level"],
+        },
+    },
+    {
+        "name": "long_rest",
+        "description": (
+            "Perform a long rest for a character: restore all spell slots and full HP."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "description": "Object ID of the PC"},
+            },
+            "required": ["id"],
         },
     },
     {

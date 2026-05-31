@@ -138,6 +138,39 @@
               </div>
             </section>
 
+            <!-- Spell Slots -->
+            <div v-if="spellSlotRows.length" class="gold-divider-plain"></div>
+            <section v-if="spellSlotRows.length" class="sheet-section">
+              <div class="sheet-section-title">Spell Slots</div>
+              <div class="spell-slot-table">
+                <div
+                  v-for="row in spellSlotRows"
+                  :key="row.level"
+                  class="spell-slot-row"
+                >
+                  <span class="spell-level-label">Lvl {{ row.level }}</span>
+                  <div class="pip-row">
+                    <span
+                      v-for="n in row.max"
+                      :key="n"
+                      class="pip"
+                      :class="n <= row.remaining ? 'pip-filled' : 'pip-empty'"
+                      :title="n <= row.remaining ? 'Available' : 'Expended'"
+                    ></span>
+                  </div>
+                  <span class="spell-slot-count">{{ row.remaining }}/{{ row.max }}</span>
+                </div>
+              </div>
+              <button
+                v-if="spellSlotRows.length"
+                class="long-rest-btn"
+                :disabled="longRestBusy"
+                @click="doLongRest"
+              >
+                {{ longRestBusy ? 'Resting...' : 'Long Rest' }}
+              </button>
+            </section>
+
             <!-- Goals -->
             <div v-if="char.goals?.length" class="gold-divider-plain"></div>
             <section v-if="char.goals?.length" class="sheet-section">
@@ -172,6 +205,7 @@ defineEmits(['close'])
 
 const char = ref(null)
 const loading = ref(false)
+const longRestBusy = ref(false)
 
 async function fetchCharacter() {
   if (!props.characterId || !props.campaignId) return
@@ -220,6 +254,33 @@ const totalWeight = computed(() => {
   if (!char.value?.items) return 0
   return char.value.items.reduce((s, i) => s + (i.weight || 0), 0).toFixed(1)
 })
+
+// spell_slots: {"1": {"max": 2, "used": 0}, ...}
+const spellSlotRows = computed(() => {
+  const slots = char.value?.spell_slots
+  if (!slots || Object.keys(slots).length === 0) return []
+  return Object.entries(slots)
+    .map(([lvl, data]) => ({
+      level: parseInt(lvl),
+      max: data.max,
+      remaining: data.max - data.used,
+    }))
+    .sort((a, b) => a.level - b.level)
+})
+
+async function doLongRest() {
+  if (!props.characterId || !props.campaignId) return
+  longRestBusy.value = true
+  try {
+    await fetch(
+      `/api/campaigns/${props.campaignId}/characters/${props.characterId}/long-rest`,
+      { method: 'POST', credentials: 'include' }
+    )
+    await fetchCharacter()
+  } finally {
+    longRestBusy.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -571,6 +632,90 @@ const totalWeight = computed(() => {
   font-family: 'Crimson Text', serif;
   font-size: 0.88rem;
   color: #c8b48a;
+}
+
+/* Spell Slots */
+.spell-slot-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.spell-slot-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spell-level-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #8a7355;
+  text-transform: uppercase;
+  width: 2.4rem;
+  flex-shrink: 0;
+}
+
+.pip-row {
+  display: flex;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.pip {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px solid #7a6115;
+  flex-shrink: 0;
+  cursor: default;
+  transition: background 0.15s;
+}
+
+.pip-filled {
+  background: #c9a227;
+  box-shadow: 0 0 4px rgba(201, 162, 39, 0.5);
+}
+
+.pip-empty {
+  background: #1a1109;
+}
+
+.spell-slot-count {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  color: #8a7355;
+  flex-shrink: 0;
+  min-width: 2.2rem;
+  text-align: right;
+}
+
+.long-rest-btn {
+  margin-top: 0.6rem;
+  width: 100%;
+  padding: 0.35rem 0;
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c9a227;
+  background: rgba(201, 162, 39, 0.06);
+  border: 1px solid #7a6115;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.long-rest-btn:hover:not(:disabled) {
+  background: rgba(201, 162, 39, 0.14);
+  border-color: #c9a227;
+}
+
+.long-rest-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Divider reuse */
