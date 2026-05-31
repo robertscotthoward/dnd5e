@@ -260,6 +260,18 @@ def new_campaign_object(name: str, seed: Optional[int] = None) -> Campaign:
     return Campaign(name=name, seed=seed, world=world)
 
 
+def get_turn_seed(campaign_seed: int, turn_number: int) -> int:
+    """Derive a deterministic, unique-per-turn seed from the campaign seed and turn number."""
+    return random.Random(campaign_seed + turn_number).randint(1, 999_999)
+
+
+def append_seed_log(campaign_dir: Path, entry: str) -> None:
+    """Append one line to <campaign_dir>/seeds.log (creates the file if absent)."""
+    seeds_log = campaign_dir / "seeds.log"
+    with open(seeds_log, "a", encoding="utf-8") as f:
+        f.write(entry + "\n")
+
+
 def save_campaign(campaign: Campaign, path: Path) -> None:
     """Save campaign to YAML file."""
     path.parent.mkdir(parents=True, exist_ok=True)

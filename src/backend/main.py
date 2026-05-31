@@ -56,11 +56,10 @@ def cmd_new_campaign(
         hp = obj.properties.get("hp", {})
         console.print(f"  - {obj.name} ({race} {cls}) — HP {hp.get('current', 0)}/{hp.get('max', 0)}")
 
-    # Log seed to seeds.log
-    seeds_log = campaigns_dir / "seeds.log"
-    with open(seeds_log, "a", encoding="utf-8") as f:
-        f.write(f"campaign_created seed={seed} name={name}\n")
-    console.print(f"\n[dim]Seed logged to {seeds_log}[/dim]")
+    # Log campaign seed
+    from src.backend.core.campaign_io import append_seed_log
+    append_seed_log(campaigns_dir, f"campaign_created seed={seed} name={name}")
+    console.print(f"\n[dim]Seed logged to {campaigns_dir / 'seeds.log'}[/dim]")
 
 
 @cli.command("turn")
@@ -139,11 +138,14 @@ def cmd_turn(
     save_campaign(campaign_obj, world_path)
     console.print(f"\n[green]World saved:[/green] {world_path}")
 
-    # Append to seeds.log
-    seeds_log = world_path.parent / "seeds.log"
-    with open(seeds_log, "a", encoding="utf-8") as f:
-        f.write(f"turn={campaign_obj.turn_number} seed={campaign_obj.seed} campaign={campaign_obj.name}\n")
-    console.print(f"[dim]Seed logged to {seeds_log}[/dim]")
+    # Append per-turn seed entry
+    from src.backend.core.campaign_io import append_seed_log, get_turn_seed
+    turn_seed = get_turn_seed(campaign_obj.seed, campaign_obj.turn_number)
+    append_seed_log(
+        world_path.parent,
+        f"turn={campaign_obj.turn_number} campaign_seed={campaign_obj.seed} turn_seed={turn_seed} campaign={campaign_obj.name}",
+    )
+    console.print(f"[dim]Seed logged to {world_path.parent / 'seeds.log'}[/dim]")
 
     # Print narrative
     console.print("\n[bold cyan]--- DM Narrative ---[/bold cyan]")

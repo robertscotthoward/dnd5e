@@ -19,7 +19,7 @@
 * [x] **Corpus seed data** — Populate `data/corpus/` with D&D 5e markdown files (basic rules: combat, spells, classes, races).
 * [x] **Combat mode** — Initiative rolling, turn order enforcement, attack/damage resolution, saving throws. DM agent must queue turns and only advance on current player's tool call.
 * [x] **Visibility / `get_sub_world`** — Refine LOS/range/occlusion rules; currently only ancestry+siblings are visible. Add light/dark state and perception check filtering.
-* [ ] **Seed logging** — Log campaign seed and per-turn random seeds to a `data/campaigns/<name>/seeds.log` file.
+* [x] **Seed logging** — Log campaign seed and per-turn random seeds to a `data/campaigns/<name>/seeds.log` file.
 
 ## Phase 4: Web — Authentication & Lobby
 

@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Optional
 
 from src.backend.models.user import CampaignMeta, CampaignPlayer, ChatMessage, Snapshot
-from src.backend.core.campaign_io import load_campaign_from_file, save_campaign, new_campaign_object
+from src.backend.core.campaign_io import load_campaign_from_file, save_campaign, new_campaign_object, append_seed_log
 
 
 def campaigns_root() -> Path:
@@ -252,6 +252,9 @@ def create_campaign(name: str, created_by: str, seed: Optional[int] = None) -> C
     save_raw_players(campaign_id, [])
     with open(path / "chat.json", "w", encoding="utf-8") as f:
         json.dump({"messages": []}, f)
+
+    # Log campaign seed
+    append_seed_log(path, f"campaign_created seed={campaign_obj.seed} name={name}")
 
     return meta
 
