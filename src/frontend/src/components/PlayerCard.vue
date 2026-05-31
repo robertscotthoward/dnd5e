@@ -53,6 +53,17 @@
       </div>
     </div>
 
+    <!-- Conditions badges -->
+    <div v-if="conditions.length > 0" class="conditions-section">
+      <span
+        v-for="cond in conditions"
+        :key="cond"
+        class="condition-badge"
+        :class="conditionClass(cond)"
+        :title="cond"
+      >{{ cond }}</span>
+    </div>
+
     <!-- Death Saves Panel (only shown when HP = 0) -->
     <div v-if="isUnconscious" class="death-saves-panel">
       <div class="ds-label">Death Saves</div>
@@ -134,6 +145,30 @@ const encPercent = computed(() => {
   const pct = (props.player.encumbrance_current / props.player.encumbrance_max) * 100
   return Math.max(0, Math.min(100, pct))
 })
+
+const conditions = computed(() => {
+  return Array.isArray(props.player.conditions) ? props.player.conditions : []
+})
+
+const DEBILITATING = new Set([
+  'blinded', 'charmed', 'deafened', 'exhaustion', 'frightened',
+  'incapacitated', 'invisible', 'paralyzed', 'petrified', 'poisoned',
+  'restrained', 'stunned', 'unconscious',
+])
+
+function conditionClass(cond) {
+  const key = cond.toLowerCase()
+  if (key === 'poisoned') return 'cond-poison'
+  if (key === 'blinded' || key === 'deafened') return 'cond-sensory'
+  if (key === 'prone') return 'cond-prone'
+  if (key === 'restrained' || key === 'paralyzed' || key === 'petrified' || key === 'stunned') return 'cond-restrained'
+  if (key === 'frightened' || key === 'charmed') return 'cond-mental'
+  if (key === 'exhaustion') return 'cond-exhaustion'
+  if (key === 'incapacitated' || key === 'unconscious') return 'cond-incapacitated'
+  if (key === 'invisible') return 'cond-invisible'
+  if (DEBILITATING.has(key)) return 'cond-debuff'
+  return 'cond-neutral'
+}
 
 const isUnconscious = computed(() => {
   return props.player.hp_current !== undefined && props.player.hp_current <= 0 && props.player.hp_max > 0
@@ -370,4 +405,36 @@ const statusClass = computed(() => {
 .text-green-400 { color: #4ade80; }
 .text-yellow-400 { color: #facc15; }
 .text-red-400 { color: #f87171; }
+
+/* Condition badges */
+.conditions-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.condition-badge {
+  display: inline-block;
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.cond-poison     { color: #86efac; border-color: #14532d; background: rgba(34,197,94,0.15); }
+.cond-sensory    { color: #94a3b8; border-color: #334155; background: rgba(51,65,85,0.3); }
+.cond-prone      { color: #fcd34d; border-color: #713f12; background: rgba(113,63,18,0.2); }
+.cond-restrained { color: #f87171; border-color: #7f1d1d; background: rgba(139,26,26,0.25); }
+.cond-mental     { color: #c084fc; border-color: #6b21a8; background: rgba(107,33,168,0.2); }
+.cond-exhaustion { color: #fb923c; border-color: #7c2d12; background: rgba(124,45,18,0.2); }
+.cond-incapacitated { color: #64748b; border-color: #1e293b; background: rgba(15,23,42,0.5); }
+.cond-invisible  { color: #e2e8f0; border-color: #475569; background: rgba(71,85,105,0.15); }
+.cond-debuff     { color: #f87171; border-color: #7f1d1d; background: rgba(139,26,26,0.2); }
+.cond-neutral    { color: #8a7355; border-color: #3d2e10; background: rgba(61,46,16,0.2); }
 </style>
