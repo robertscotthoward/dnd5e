@@ -219,15 +219,59 @@ class World(BaseModel):
             if obj.parent == party_id and obj.type in ("PC", "NPC")
         ]
 
-    def get_visible_world(self, observer_id: int) -> "World":
-        """
-        Get a subset of the world visible from the observer's location.
+    def _euclidean_distance(self, a: "Object", b: "Object") -> float:
+        """Euclidean distance between two objects in feet (same-parent coordinate space)."""
+        dx = a.location.x - b.location.x
+        dy = a.location.y - b.location.y
+        dz = a.location.z - b.location.z
+        return (dx * dx + dy * dy + dz * dz) ** 0.5
 
-        Visibility rules:
-        - All ancestors are visible
-        - Siblings and their immediate containers are visible
-        - Objects at the same location level are visible
-        - Contents of closed containers are not visible
+    def _is_location_dark(self, obj_id: int) -> bool:
+        """
+        Walk ancestors to find the nearest room/area and check its light property.
+
+        Returns True when the nearest enclosing container with a light property
+        has light == "dark".  Defaults to lit (False) when no such ancestor exists.
+        """
+        obj = self.objects.get(obj_id)
+        while obj and obj.parent is not None:
+            parent = self.objects.get(obj.parent)
+            if parent is None:
+                break
+            light_state = parent.properties.get("light")
+            if light_state is not None:
+                return str(light_state).lower() == "dark"
+            obj = parent
+        return False
+
+    def get_visible_world(
+        self,
+        observer_id: int,
+        perception_bonus: int = 0,
+        vision_range: float = 60.0,
+        darkvision_range: float = 0.0,
+    ) -> "World":
+        """
+        Return the subset of the world visible to the observer.
+
+        Visibility rules applied in order:
+        1. The observer itself is always visible.
+        2. All ancestors (containers, rooms, continents, etc.) are always visible —
+           the observer must know what they are inside.
+        3. Siblings sharing the same direct parent are visible when within
+           `vision_range` feet AND the location is lit (or within `darkvision_range`
+           if the location is dark).
+        4. Children of a sibling are only visible when the sibling is not a closed
+           container (`properties.closed` is falsy).
+        5. Stealth / hidden objects require the observer to beat the object's
+           `properties.stealth_dc` with a passive perception check
+           (10 + perception_bonus).
+
+        Args:
+            observer_id: World object ID of the perceiving character.
+            perception_bonus: Observer's Perception skill modifier (default 0).
+            vision_range: Normal sight radius in feet (default 60).
+            darkvision_range: Darkvision radius in feet (default 0 = none).
         """
         observer = self.objects.get(observer_id)
         if not observer:
@@ -235,17 +279,43 @@ class World(BaseModel):
 
         visible_ids: set[int] = {observer_id}
 
-        # Add all ancestors
+        # --- 1. Ancestors always visible ---
         for ancestor in self.get_ancestors(observer_id):
             visible_ids.add(ancestor.id)
 
-        # Add siblings (same parent)
+        # --- 2. Siblings and range / light / stealth filtering ---
+        passive_perception = 10 + perception_bonus
+        is_dark = self._is_location_dark(observer_id)
+
         if observer.parent is not None:
             siblings = self.get_children(observer.parent)
             for sibling in siblings:
+                if sibling.id == observer_id:
+                    continue
+
+                # Range check — objects at [0,0,0] are "same room" (always in range)
+                dist = self._euclidean_distance(observer, sibling)
+                if dist > 0.0:
+                    effective_range = darkvision_range if is_dark else vision_range
+                    if dist > effective_range:
+                        continue
+
+                # Stealth / hidden check
+                stealth_dc = sibling.properties.get("stealth_dc")
+                if stealth_dc is not None and passive_perception < int(stealth_dc):
+                    continue
+
                 visible_ids.add(sibling.id)
 
-        # Create visible world
+                # --- 3. Contents of non-closed siblings ---
+                if not sibling.properties.get("closed", False):
+                    for child in self.get_children(sibling.id):
+                        stealth_dc_child = child.properties.get("stealth_dc")
+                        if stealth_dc_child is not None and passive_perception < int(stealth_dc_child):
+                            continue
+                        visible_ids.add(child.id)
+
+        # --- Build visible world ---
         visible_world = World(
             name=f"{self.name}_visible",
             max_id=self.max_id,

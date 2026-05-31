@@ -231,14 +231,30 @@ class WorldTools:
             data=obj.model_dump(),
         )
 
-    def get_sub_world(self, observer_id: int) -> ToolResult:
+    def get_sub_world(
+        self,
+        observer_id: int,
+        perception_bonus: int = 0,
+        vision_range: float = 60.0,
+        darkvision_range: float = 0.0,
+    ) -> ToolResult:
         """
         Get the visible world from an observer's perspective.
 
+        Applies range, light/dark, and stealth perception filtering.
+
         Args:
             observer_id: Object ID of the observer
+            perception_bonus: Observer's Perception modifier (default 0)
+            vision_range: Normal sight radius in feet (default 60)
+            darkvision_range: Darkvision radius in feet (default 0 = none)
         """
-        visible_world = self.world.get_visible_world(observer_id)
+        visible_world = self.world.get_visible_world(
+            observer_id,
+            perception_bonus=perception_bonus,
+            vision_range=vision_range,
+            darkvision_range=darkvision_range,
+        )
         return ToolResult(
             success=True,
             message=f"Retrieved visible world with {len(visible_world.objects)} objects",
