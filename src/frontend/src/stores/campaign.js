@@ -19,6 +19,16 @@ export function xpToNextLevel(totalXp) {
   return XP_THRESHOLDS[cur + 1] - totalXp
 }
 
+function _computeTimeDescription(hour) {
+  if (hour < 6) return 'night'
+  if (hour < 9) return 'dawn'
+  if (hour < 12) return 'morning'
+  if (hour < 14) return 'midday'
+  if (hour < 18) return 'afternoon'
+  if (hour < 20) return 'dusk'
+  return 'night'
+}
+
 export const useCampaignStore = defineStore('campaign', () => {
   const campaigns = ref([])
   const currentMeta = ref(null)
@@ -40,6 +50,10 @@ export const useCampaignStore = defineStore('campaign', () => {
   const journal = ref([])           // [{ turn_number, entry }] ordered oldest-first
   const quests = ref([])            // [{ id, title, milestones: [{text, completed}] }]
   const npcRelationships = ref([])  // [{ id, name, disposition, notes }]
+  const dayNumber = ref(1)
+  const hourOfDay = ref(9)
+  const isNight = ref(false)
+  const timeDescription = ref('morning')
 
   async function fetchCampaigns() {
     loading.value = true
@@ -146,6 +160,11 @@ export const useCampaignStore = defineStore('campaign', () => {
       activeTurn.value = data.meta?.active_player_turn || null
       if (data.initiative_order) initiativeOrder.value = data.initiative_order
       else if (data.meta?.game_mode !== 'Combat') initiativeOrder.value = []
+      // Sync day/night state from meta
+      dayNumber.value = data.meta?.day_number ?? 1
+      hourOfDay.value = data.meta?.hour_of_day ?? 9
+      isNight.value = data.meta?.is_night ?? false
+      timeDescription.value = _computeTimeDescription(data.meta?.hour_of_day ?? 9)
     } catch (e) {
       error.value = e.message
     } finally {
@@ -323,6 +342,17 @@ export const useCampaignStore = defineStore('campaign', () => {
         }
         break
       }
+      case 'time_updated':
+        dayNumber.value = msg.day_number
+        hourOfDay.value = msg.hour_of_day
+        isNight.value = msg.is_night
+        timeDescription.value = msg.time_description || _computeTimeDescription(msg.hour_of_day)
+        if (currentMeta.value) {
+          currentMeta.value.day_number = msg.day_number
+          currentMeta.value.hour_of_day = msg.hour_of_day
+          currentMeta.value.is_night = msg.is_night
+        }
+        break
     }
   }
 
@@ -474,7 +504,7 @@ export const useCampaignStore = defineStore('campaign', () => {
     campaigns, currentMeta, players, chat, gameMode, activeTurn,
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
     pendingLevelUp, pendingDiceRoll, initiativeOrder, pendingLoot, journal, quests,
-    npcRelationships,
+    npcRelationships, dayNumber, hourOfDay, isNight, timeDescription,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
     fetchSnapshots, fetchJournal, fetchQuests, fetchNpcs, restoreSnapshot, sendAwardXp, awardXp,

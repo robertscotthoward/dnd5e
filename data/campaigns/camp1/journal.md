@@ -88,3 +88,21 @@ In the shadowed depths of the Whispering Caverns, the party found themselves ent
 
 ---
 
+## Turn 1 — 2026-05-30 23:34
+
+Under the dim glow of flickering torches within the ancient catacombs beneath Oldcastle, the party had their first encounter with the mysterious entity known as the Whispering Wraith. As they navigated the labyrinthine tunnels, a chilling breeze swept through the narrow passage, carrying whispers in a language none could understand. Suddenly, the air grew cold, and before them materialized the translucent form of the wraith, its presence casting eerie shadows on the damp stone walls. The party, armed with spells and steel, prepared themselves for what promised to be a formidable challenge.
+
+---
+
+## Turn 2 — 2026-05-30 23:34
+
+As the party ventured deeper into the Whispering Woods under the dim light of dusk, they stumbled upon a sneaky goblin lurking behind an overturned tree stump near the edge of the clearing. The creature, armed with a crude spear and wearing tattered green clothing that blended with the foliage, immediately spotted them and cackled with delight at the prospect of easy prey. Without hesitation, the rogue quickly signaled for everyone to remain silent and motioned towards the east where a potential escape route through dense underbrush lay hidden from immediate sight.
+
+---
+
+## Turn 1 — 2026-05-30 23:34
+
+In the dimly lit tavern of Whistling Mugs in the bustling town of Elbion, the party convened to discuss their next move under the watchful gaze of the flickering torches adorning the walls. As they deliberated over their strategy, news arrived that a mysterious figure had been seen near the old, abandoned castle on the outskirts of town, rumored to be haunted by spirits and cursed relics. Intrigued by this development, the party decided to investigate the castle at first light, hoping to uncover secrets that could aid them in their quest against the looming darkness threatening the land.
+
+---
+

@@ -116,6 +116,10 @@ class CampaignMeta(BaseModel):
     combat_queue: list[int] = Field(default_factory=list)  # ordered combatant IDs
     player_count: int = 0
     current_snapshot_id: Optional[str] = None  # snapshot we last restored to; parent for next snapshot
+    # Day/night cycle
+    day_number: int = 1
+    hour_of_day: int = 9  # 0-23; campaign starts at 9 AM
+    is_night: bool = False  # True when hour < 6 or hour >= 20
 
 
 class Snapshot(BaseModel):

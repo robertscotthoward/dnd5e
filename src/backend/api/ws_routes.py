@@ -21,6 +21,7 @@ from src.backend.models.user import ChatMessage
 from src.backend.core.tools import WorldTools
 from src.backend.core.loot import generate_loot
 from src.backend.core.ai_client import ai_client
+from src.backend.core.time_cycle import advance_time
 
 router = APIRouter(tags=["websocket"])
 
@@ -125,6 +126,13 @@ async def _run_dm_response(
     # Update meta turn info
     meta.turn_number = campaign.turn_number
     meta.updated_at = datetime.now().isoformat()
+
+    # Advance in-game time one hour per turn
+    time_state = advance_time(meta.day_number, meta.hour_of_day)
+    meta.day_number = time_state["day_number"]
+    meta.hour_of_day = time_state["hour_of_day"]
+    meta.is_night = time_state["is_night"]
+
     save_campaign_meta(meta)
 
     dm_msg = ChatMessage(
@@ -140,6 +148,18 @@ async def _run_dm_response(
         {
             "type": "dm_response",
             "message": dm_msg.model_dump(mode="json"),
+        },
+    )
+
+    # Broadcast updated time state
+    await manager.broadcast(
+        campaign_id,
+        {
+            "type": "time_updated",
+            "day_number": meta.day_number,
+            "hour_of_day": meta.hour_of_day,
+            "is_night": meta.is_night,
+            "time_description": time_state["time_description"],
         },
     )
 

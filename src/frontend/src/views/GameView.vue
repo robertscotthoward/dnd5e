@@ -64,6 +64,11 @@
         <span v-if="campaignStore.gameMode === 'Combat' && campaignStore.activeTurn" class="active-turn-info">
           Active: {{ activeTurnName }}
         </span>
+        <span class="time-badge" :class="{ 'time-night': campaignStore.isNight }">
+          Day {{ campaignStore.dayNumber }} &bull; {{ campaignStore.timeDescription }}
+          <span class="time-hour">({{ String(campaignStore.hourOfDay).padStart(2, '0') }}:00)</span>
+          <span v-if="campaignStore.isNight" class="night-icon" title="Night — non-darkvision penalty on Perception">&#x1F319;</span>
+        </span>
         <div class="ws-indicator" :class="wsClass">
           <span class="ws-dot"></span>
           {{ campaignStore.wsStatus }}
@@ -634,6 +639,33 @@ onUnmounted(() => {
   color: #c9a227;
   border-color: #7a6115;
   background: rgba(201, 162, 39, 0.1);
+}
+
+.time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+  color: #c9a227;
+  background: rgba(201, 162, 39, 0.08);
+  border: 1px solid rgba(201, 162, 39, 0.25);
+  border-radius: 4px;
+  padding: 0.1rem 0.5rem;
+}
+.time-badge.time-night {
+  color: #94a3b8;
+  background: rgba(30, 27, 75, 0.4);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+.time-hour {
+  opacity: 0.7;
+  font-size: 0.6rem;
+}
+.night-icon {
+  font-size: 0.7rem;
 }
 
 .ws-indicator {

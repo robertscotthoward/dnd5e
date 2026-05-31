@@ -250,6 +250,8 @@ class World(BaseModel):
         perception_bonus: int = 0,
         vision_range: float = 60.0,
         darkvision_range: float = 0.0,
+        is_night: bool = False,
+        observer_race: str = "",
     ) -> "World":
         """
         Return the subset of the world visible to the observer.
@@ -266,13 +268,19 @@ class World(BaseModel):
         5. Stealth / hidden objects require the observer to beat the object's
            `properties.stealth_dc` with a passive perception check
            (10 + perception_bonus).
+        6. At night, non-darkvision races suffer disadvantage on Perception
+           (modelled as -5 to passive perception).
 
         Args:
             observer_id: World object ID of the perceiving character.
             perception_bonus: Observer's Perception skill modifier (default 0).
             vision_range: Normal sight radius in feet (default 60).
             darkvision_range: Darkvision radius in feet (default 0 = none).
+            is_night: True when the campaign is in night time.
+            observer_race: Race name of the observer; used for darkvision check.
         """
+        from src.backend.core.time_cycle import perception_disadvantage  # local import avoids circular
+
         observer = self.objects.get(observer_id)
         if not observer:
             return World(name=f"{self.name}_visible")
@@ -284,7 +292,9 @@ class World(BaseModel):
             visible_ids.add(ancestor.id)
 
         # --- 2. Siblings and range / light / stealth filtering ---
-        passive_perception = 10 + perception_bonus
+        # Night disadvantage: -5 penalty to passive perception for non-darkvision races
+        night_penalty = 5 if perception_disadvantage(is_night, observer_race) else 0
+        passive_perception = 10 + perception_bonus - night_penalty
         is_dark = self._is_location_dark(observer_id)
 
         if observer.parent is not None:

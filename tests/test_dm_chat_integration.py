@@ -80,6 +80,9 @@ def test_every_chat_message_triggers_dm():
     mock_meta.turn_number = 1
     mock_meta.active_player_turn = None
     mock_meta.combat_queue = []
+    mock_meta.day_number = 1
+    mock_meta.hour_of_day = 9
+    mock_meta.is_night = False
     mock_meta.model_dump = MagicMock(return_value={})
 
     mock_campaign = MagicMock()
@@ -120,6 +123,9 @@ def test_dm_response_message_prefixed_as_dm():
     mock_meta.turn_number = 2
     mock_meta.active_player_turn = None
     mock_meta.combat_queue = []
+    mock_meta.day_number = 1
+    mock_meta.hour_of_day = 9
+    mock_meta.is_night = False
     mock_meta.model_dump = MagicMock(return_value={})
 
     mock_campaign = MagicMock()
@@ -162,6 +168,9 @@ def test_dm_unavailable_broadcasts_error_message():
     mock_meta.turn_number = 1
     mock_meta.active_player_turn = None
     mock_meta.combat_queue = []
+    mock_meta.day_number = 1
+    mock_meta.hour_of_day = 9
+    mock_meta.is_night = False
     mock_meta.model_dump = MagicMock(return_value={})
 
     mock_campaign = MagicMock()
