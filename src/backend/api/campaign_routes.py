@@ -457,6 +457,10 @@ class CastSpellRequest(BaseModel):
     slot_level: int
 
 
+class EquipItemRequest(BaseModel):
+    equipped: bool
+
+
 @router.post("/campaigns/{campaign_id}/characters/{character_id}/cast-spell")
 def cast_spell(campaign_id: str, character_id: int, req: CastSpellRequest, request: Request):
     """
@@ -508,13 +512,54 @@ def long_rest(campaign_id: str, character_id: int, request: Request):
     return result.data
 
 
+@router.post("/campaigns/{campaign_id}/characters/{character_id}/items/{item_id}/equip")
+def equip_item(
+    campaign_id: str,
+    character_id: int,
+    item_id: int,
+    req: EquipItemRequest,
+    request: Request,
+):
+    """
+    Set the equipped state of an item carried by a character.
+
+    The item must be a direct child of the character object. Calls
+    set_object_property(item_id, 'equipped', req.equipped).
+    """
+    get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load world")
+
+    char_obj = campaign.world.get_object(character_id)
+    if not char_obj or char_obj.type != "PC":
+        raise HTTPException(status_code=404, detail="Character not found")
+
+    item_obj = campaign.world.get_object(item_id)
+    if not item_obj or item_obj.parent != character_id:
+        raise HTTPException(status_code=404, detail="Item not found on character")
+
+    from src.backend.core.tools import WorldTools
+
+    tools = WorldTools(campaign.world)
+    result = tools.set_object_property(item_id, "equipped", req.equipped)
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.message)
+
+    save_campaign_world(campaign_id, campaign)
+    return {"item_id": item_id, "equipped": req.equipped}
+
+
 @router.get("/campaigns/{campaign_id}/characters/{character_id}")
 def get_character(campaign_id: str, character_id: int, request: Request):
     """
     Return full character sheet data for a PC from their world object properties.
 
     Includes ability scores, modifiers, classes, proficiencies, features,
-    equipped/carried items, and current HP.
+    equipped/carried items, carry capacity (STR * 15), and current HP.
     """
     get_current_user(request)
     meta = get_campaign_meta(campaign_id)
@@ -538,6 +583,10 @@ def get_character(campaign_id: str, character_id: int, request: Request):
         key: {"score": score, "modifier": mod(score)}
         for key, score in abilities.items()
     }
+
+    # Carry capacity = STR score * 15 (D&D 5e rule)
+    str_score = abilities.get("str", 10)
+    carry_capacity = str_score * 15
 
     # Gather carried items from world children
     children = campaign.world.get_children(character_id)
@@ -571,6 +620,7 @@ def get_character(campaign_id: str, character_id: int, request: Request):
         "death_saves": props.get("death_saves", {"successes": 0, "failures": 0}),
         "spell_slots": props.get("spell_slots", {}),
         "items": items,
+        "carry_capacity": carry_capacity,
         "personality": props.get("personality", ""),
         "goals": props.get("goals", []),
     }

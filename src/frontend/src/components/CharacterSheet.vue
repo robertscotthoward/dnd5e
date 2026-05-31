@@ -118,23 +118,38 @@
 
             <div v-if="char.conditions?.length" class="gold-divider-plain"></div>
 
-            <!-- Equipped Items -->
+            <!-- Inventory / Equipment -->
             <section class="sheet-section">
-              <div class="sheet-section-title">Equipment</div>
+              <div class="sheet-section-title">Inventory</div>
               <div v-if="!char.items?.length" class="empty-note">No items carried.</div>
               <ul v-else class="item-list">
                 <li
                   v-for="item in char.items"
                   :key="item.id"
                   class="item-row"
+                  :class="{ 'item-row-equipped': item.equipped, 'item-row-busy': equippingId === item.id }"
+                  :title="item.equipped ? 'Click to stow' : 'Click to equip'"
+                  @click="toggleEquip(item)"
                 >
                   <span class="item-name">{{ item.name }}</span>
-                  <span v-if="item.equipped" class="item-badge equipped-badge">Equipped</span>
+                  <span v-if="equippingId === item.id" class="item-badge busy-badge">...</span>
+                  <span v-else-if="item.equipped" class="item-badge equipped-badge">Equipped</span>
+                  <span v-else class="item-badge stowed-badge">Stowed</span>
                   <span class="item-weight">{{ item.weight > 0 ? item.weight + ' lb' : '' }}</span>
                 </li>
               </ul>
               <div v-if="char.items?.length" class="enc-summary">
-                Total: {{ totalWeight }} lb
+                <div class="enc-bar-row">
+                  <span class="enc-label">Carried</span>
+                  <div class="enc-bar-track">
+                    <div
+                      class="enc-bar-fill"
+                      :class="encBarClass"
+                      :style="{ width: encBarPct + '%' }"
+                    ></div>
+                  </div>
+                  <span class="enc-numbers">{{ totalWeight }} / {{ char.carry_capacity ?? '—' }} lb</span>
+                </div>
               </div>
             </section>
 
@@ -206,6 +221,7 @@ defineEmits(['close'])
 const char = ref(null)
 const loading = ref(false)
 const longRestBusy = ref(false)
+const equippingId = ref(null)
 
 async function fetchCharacter() {
   if (!props.characterId || !props.campaignId) return
@@ -255,6 +271,19 @@ const totalWeight = computed(() => {
   return char.value.items.reduce((s, i) => s + (i.weight || 0), 0).toFixed(1)
 })
 
+const encBarPct = computed(() => {
+  const cap = char.value?.carry_capacity
+  if (!cap) return 0
+  return Math.min(100, (parseFloat(totalWeight.value) / cap) * 100)
+})
+
+const encBarClass = computed(() => {
+  const pct = encBarPct.value
+  if (pct >= 100) return 'enc-over'
+  if (pct >= 66) return 'enc-warn'
+  return 'enc-ok'
+})
+
 // spell_slots: {"1": {"max": 2, "used": 0}, ...}
 const spellSlotRows = computed(() => {
   const slots = char.value?.spell_slots
@@ -267,6 +296,29 @@ const spellSlotRows = computed(() => {
     }))
     .sort((a, b) => a.level - b.level)
 })
+
+async function toggleEquip(item) {
+  if (equippingId.value !== null) return
+  equippingId.value = item.id
+  try {
+    const res = await fetch(
+      `/api/campaigns/${props.campaignId}/characters/${props.characterId}/items/${item.id}/equip`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ equipped: !item.equipped }),
+      }
+    )
+    if (res.ok) {
+      item.equipped = !item.equipped
+    }
+  } catch {
+    // silently ignore network errors
+  } finally {
+    equippingId.value = null
+  }
+}
 
 async function doLongRest() {
   if (!props.characterId || !props.campaignId) return
@@ -567,6 +619,20 @@ async function doLongRest() {
   background: #1a1109;
   border: 1px solid #3d2e10;
   border-radius: 3px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.item-row:hover {
+  border-color: #7a6115;
+  background: #211708;
+}
+.item-row-equipped {
+  border-color: #7a6115;
+  background: rgba(201, 162, 39, 0.06);
+}
+.item-row-busy {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 .item-name {
@@ -596,6 +662,18 @@ async function doLongRest() {
   border: 1px solid #7a6115;
 }
 
+.stowed-badge {
+  background: transparent;
+  color: #5a4530;
+  border: 1px solid #3d2e10;
+}
+
+.busy-badge {
+  background: transparent;
+  color: #8a7355;
+  border: 1px solid #3d2e10;
+}
+
 .item-weight {
   font-family: 'Crimson Text', serif;
   font-size: 0.78rem;
@@ -604,11 +682,50 @@ async function doLongRest() {
 }
 
 .enc-summary {
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.enc-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.enc-label {
   font-family: 'Cinzel', serif;
-  font-size: 0.65rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: #8a7355;
-  text-align: right;
+  flex-shrink: 0;
+  width: 2.8rem;
+}
+
+.enc-bar-track {
+  flex: 1;
+  height: 5px;
+  background: #1a1109;
+  border: 1px solid #3d2e10;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.enc-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.enc-ok   { background: #4ade80; }
+.enc-warn { background: #facc15; }
+.enc-over { background: #f87171; }
+
+.enc-numbers {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  color: #8a7355;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .empty-note {
