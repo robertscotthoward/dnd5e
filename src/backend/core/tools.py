@@ -699,6 +699,51 @@ class WorldTools:
             data={"npcs": npcs},
         )
 
+    def trigger_travel_encounter(
+        self,
+        location_type: str = "default",
+        party_level: int = 1,
+        seed: Optional[int] = None,
+    ) -> ToolResult:
+        """
+        Roll a hidden d20 encounter check for a travel segment.
+
+        On a hit (d20 >= 15), returns encounter data so the DM can spawn
+        enemies and switch to Combat mode.
+
+        Args:
+            location_type: Terrain type (forest, dungeon, road, mountain, swamp,
+                           plains, desert, urban, or default)
+            party_level: Average party level (used for future scaling)
+            seed: Optional RNG seed for reproducible tests
+        """
+        from .travel_encounter import TravelEncounterEngine
+
+        engine = TravelEncounterEngine(seed=seed)
+        roll_result = engine.roll_encounter(
+            location_type=location_type,
+            party_level=party_level,
+        )
+
+        if roll_result["triggered"]:
+            enc = roll_result["encounter"]
+            return ToolResult(
+                success=True,
+                message=(
+                    f"Encounter triggered! (d20={roll_result['d20_roll']} >= {roll_result['encounter_dc']}) "
+                    f"{enc['count']}x {enc['enemy_name']} (CR {enc['cr']}) appear."
+                ),
+                data=roll_result,
+            )
+        else:
+            return ToolResult(
+                success=True,
+                message=(
+                    f"Travel uneventful. (d20={roll_result['d20_roll']} < {roll_result['encounter_dc']})"
+                ),
+                data=roll_result,
+            )
+
     def get_object(self, id: int) -> ToolResult:
         """
         Get an object by ID.

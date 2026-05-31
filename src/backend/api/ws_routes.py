@@ -631,6 +631,113 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                                 {"type": "error", "message": q_result.message},
                             )
 
+            elif msg_type == "travel":
+                # Travel segment: roll hidden d20 encounter check.
+                # If triggered, switch to Combat mode and broadcast encounter details.
+                location_type = str(data.get("location_type", "default"))
+                meta = get_campaign_meta(campaign_id) or meta
+                travel_campaign = load_campaign_world(campaign_id)
+                if not travel_campaign:
+                    await manager.send_personal(
+                        websocket, {"type": "error", "message": "Campaign world not found"}
+                    )
+                else:
+                    travel_tools = WorldTools(travel_campaign.world)
+                    # Determine average party level from PC objects
+                    pcs = travel_campaign.world.get_pcs()
+                    party_level = 1
+                    if pcs:
+                        levels = []
+                        for pc in pcs:
+                            classes = pc.properties.get("classes", [])
+                            if classes:
+                                levels.append(classes[0].get("level", 1))
+                        if levels:
+                            party_level = max(1, sum(levels) // len(levels))
+
+                    enc_result = travel_tools.trigger_travel_encounter(
+                        location_type=location_type,
+                        party_level=party_level,
+                    )
+                    roll_data = enc_result.data or {}
+
+                    # Broadcast the (hidden) roll outcome to all connected clients
+                    await manager.broadcast(
+                        campaign_id,
+                        {
+                            "type": "travel_roll",
+                            "d20_roll": roll_data.get("d20_roll"),
+                            "encounter_dc": roll_data.get("encounter_dc"),
+                            "triggered": roll_data.get("triggered", False),
+                            "location_type": location_type,
+                            "encounter": roll_data.get("encounter"),
+                        },
+                    )
+
+                    if roll_data.get("triggered") and roll_data.get("encounter"):
+                        enc = roll_data["encounter"]
+                        enc_msg = ChatMessage(
+                            sender="DM",
+                            sender_type="DM",
+                            text=(
+                                f"As the party travels through the {location_type}, "
+                                f"danger stirs! {enc['count']}x {enc['enemy_name']} "
+                                f"(CR {enc['cr']}) emerge — roll for initiative!"
+                            ),
+                            turn_number=meta.turn_number,
+                        )
+                        append_chat(campaign_id, enc_msg)
+                        await manager.broadcast(
+                            campaign_id,
+                            {
+                                "type": "chat",
+                                "message": enc_msg.model_dump(mode="json"),
+                            },
+                        )
+
+                        # Switch game mode to Combat
+                        meta.game_mode = "Combat"
+                        save_campaign_meta(meta)
+                        await manager.broadcast(
+                            campaign_id,
+                            {
+                                "type": "encounter_started",
+                                "encounter": enc,
+                                "location_type": location_type,
+                                "game_mode": "Combat",
+                            },
+                        )
+
+                        # Ask DM agent to narrate and spawn enemies
+                        spawn_prompt = (
+                            f"Random encounter during travel through {location_type}! "
+                            f"Spawn {enc['count']}x {enc['enemy_name']} (CR {enc['cr']}) "
+                            f"as NPC objects in the current location, start combat with all "
+                            f"party members and the spawned enemies, and narrate the ambush."
+                        )
+                        await manager.broadcast(
+                            campaign_id,
+                            {"type": "dm_thinking", "message": "The Dungeon Master prepares an encounter..."},
+                        )
+                        asyncio.create_task(
+                            _run_dm_response(campaign_id, spawn_prompt, session.username, char_name)
+                        )
+                    else:
+                        safe_msg = ChatMessage(
+                            sender="DM",
+                            sender_type="DM",
+                            text=f"The party travels through the {location_type} without incident.",
+                            turn_number=meta.turn_number,
+                        )
+                        append_chat(campaign_id, safe_msg)
+                        await manager.broadcast(
+                            campaign_id,
+                            {
+                                "type": "chat",
+                                "message": safe_msg.model_dump(mode="json"),
+                            },
+                        )
+
             elif msg_type == "snapshot":
                 label = str(data.get("label", f"Snapshot by {char_name}"))
                 snap = create_snapshot(campaign_id, label, session.username)
