@@ -300,17 +300,31 @@ def create_character(campaign_id: str, char_req: CharacterCreate, request: Reque
 
 @router.get("/campaigns/{campaign_id}/state")
 def get_state(campaign_id: str, request: Request):
-    """Return the full campaign state: meta, players, and recent chat."""
+    """Return the full campaign state: meta, players, recent chat, and initiative order."""
     session = get_current_user(request)
     meta = get_campaign_meta(campaign_id)
     if not meta:
         raise HTTPException(status_code=404, detail="Campaign not found")
     players = get_players(campaign_id)
     chat = get_chat(campaign_id, limit=100)
+
+    initiative_order = []
+    if meta.game_mode == "Combat" and meta.combat_queue:
+        campaign = load_campaign_world(campaign_id)
+        if campaign:
+            for obj_id in meta.combat_queue:
+                obj = campaign.world.get_object(obj_id)
+                initiative_order.append({
+                    "id": obj_id,
+                    "name": (obj.name if obj else f"Combatant #{obj_id}"),
+                    "initiative": obj.properties.get("initiative", 0) if obj else 0,
+                })
+
     return {
         "meta": meta,
         "players": players,
         "chat": chat,
+        "initiative_order": initiative_order,
     }
 
 

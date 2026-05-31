@@ -84,6 +84,12 @@ class CombatEngine:
 
         initiatives.sort(key=lambda x: x["initiative"], reverse=True)
 
+        # Persist initiative scores on world objects for later lookup
+        for entry in initiatives:
+            obj = self.world.get_object(entry["id"])
+            if obj:
+                obj.properties["initiative"] = entry["initiative"]
+
         self.meta.game_mode = "Combat"
         self.meta.combat_queue = [e["id"] for e in initiatives]
         self.meta.active_player_turn = self.meta.combat_queue[0] if self.meta.combat_queue else None

@@ -35,6 +35,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   const joinResult = ref(null)  // { needs_character, player, summary }
   const pendingLevelUp = ref(null)  // { character_id, character_name, old_level, new_level, hit_die, class_type, has_asi }
   const pendingDiceRoll = ref(null) // { die: 'd20', result: 15, queued_message: {...} }
+  const initiativeOrder = ref([])   // [{ id, name, initiative }] sorted highest first
 
   async function fetchCampaigns() {
     loading.value = true
@@ -139,6 +140,8 @@ export const useCampaignStore = defineStore('campaign', () => {
       chat.value = data.chat || []
       gameMode.value = data.meta?.game_mode || 'Exploration'
       activeTurn.value = data.meta?.active_player_turn || null
+      if (data.initiative_order) initiativeOrder.value = data.initiative_order
+      else if (data.meta?.game_mode !== 'Combat') initiativeOrder.value = []
     } catch (e) {
       error.value = e.message
     } finally {
@@ -235,9 +238,19 @@ export const useCampaignStore = defineStore('campaign', () => {
         }
         break
       }
+      case 'combat_state':
+        activeTurn.value = msg.active_turn
+        if (msg.initiative_order) {
+          initiativeOrder.value = msg.initiative_order
+        }
+        break
       case 'mode_change':
         gameMode.value = msg.game_mode
-        if (msg.initiative_order) activeTurn.value = msg.initiative_order[0]
+        if (msg.initiative_order) {
+          initiativeOrder.value = msg.initiative_order
+          activeTurn.value = msg.initiative_order[0]?.id ?? null
+        }
+        if (msg.game_mode !== 'Combat') initiativeOrder.value = []
         break
       case 'turn_change':
         activeTurn.value = msg.active_player_turn
@@ -363,7 +376,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   return {
     campaigns, currentMeta, players, chat, gameMode, activeTurn,
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
-    pendingLevelUp, pendingDiceRoll,
+    pendingLevelUp, pendingDiceRoll, initiativeOrder,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
     fetchSnapshots, restoreSnapshot, sendAwardXp, awardXp, clearLevelUp, clearDiceRoll,

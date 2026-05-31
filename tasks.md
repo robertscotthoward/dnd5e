@@ -67,7 +67,7 @@
 ## Phase 10: Combat UX
 
 * [x] **Visual dice roll animation** — Before posting a roll result in chat, display a brief spinning die animation (d4/d6/d8/d10/d12/d20 SVG based on die type) then reveal the number. Pure tactile satisfaction.
-* [ ] **Initiative order tracker** — Persistent strip in the game sidebar listing combatants in initiative order with a highlight on the active turn. Updated via WS broadcast whenever the DM advances the turn queue.
+* [x] **Initiative order tracker** — Persistent strip in the game sidebar listing combatants in initiative order with a highlight on the active turn. Updated via WS broadcast whenever the DM advances the turn queue.
 * [ ] **Conditions badge system** — Render condition tags (`Poisoned`, `Prone`, `Restrained`, `Blinded`, etc.) on each PlayerCard, read from the world object's `properties.conditions` list. DM agent sets conditions via `set_object_property`.
 * [ ] **Loot summary after combat** — When the DM kills the last enemy (all enemy HP ≤ 0), auto-generate a loot card listing coin and item drops. Each player can click "Take" to move an item to their inventory via `move_object`.
 

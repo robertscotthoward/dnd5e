@@ -153,12 +153,23 @@ async def _run_dm_response(
 
     # Broadcast updated combat state if still in Combat mode
     if meta.game_mode == "Combat":
+        # Build initiative_order with names for the frontend tracker
+        world_snap = load_campaign_world(campaign_id)
+        initiative_order = []
+        for obj_id in meta.combat_queue:
+            obj = world_snap.world.get_object(obj_id) if world_snap else None
+            initiative_order.append({
+                "id": obj_id,
+                "name": (obj.name if obj else f"Combatant #{obj_id}"),
+                "initiative": obj.properties.get("initiative", 0) if obj else 0,
+            })
         await manager.broadcast(
             campaign_id,
             {
                 "type": "combat_state",
                 "active_turn": meta.active_player_turn,
                 "combat_queue": meta.combat_queue,
+                "initiative_order": initiative_order,
             },
         )
 

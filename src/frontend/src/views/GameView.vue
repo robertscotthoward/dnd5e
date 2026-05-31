@@ -133,6 +133,16 @@
 
       <hr class="gold-divider-plain" />
 
+      <!-- Initiative Tracker (Combat only) -->
+      <div v-if="campaignStore.gameMode === 'Combat'" class="sidebar-section">
+        <InitiativeTracker
+          :order="campaignStore.initiativeOrder"
+          :activeTurn="campaignStore.activeTurn"
+        />
+      </div>
+
+      <hr v-if="campaignStore.gameMode === 'Combat'" class="gold-divider-plain" />
+
       <!-- Recent Events -->
       <div class="sidebar-section">
         <div class="dnd-section-heading">
@@ -251,6 +261,7 @@ import ActionBar from '../components/ActionBar.vue'
 import SnapshotNode from '../components/SnapshotNode.vue'
 import LevelUpDialog from '../components/LevelUpDialog.vue'
 import CharacterSheet from '../components/CharacterSheet.vue'
+import InitiativeTracker from '../components/InitiativeTracker.vue'
 
 const route = useRoute()
 const router = useRouter()
