@@ -233,6 +233,88 @@ class TestTurnCoreLogic:
         result = client.generate_npc_action(campaign, npc_id=99999, dm_directive="attack", world_tools=wt)
         assert result == "NPC not found"
 
+    def test_world_agent_tools_exclude_add_hp_and_delete(self, tmp_path):
+        """World Agent tool set must not include add_hp or delete_object."""
+        from src.backend.core.ai_client import AIClient
+        from src.backend.core.tools import WorldTools as WT
+
+        campaign, _ = _make_campaign(tmp_path)
+        client = AIClient()
+        wt = WT(campaign.world)
+        tools = client.create_world_tools(wt)
+        tool_names = {t.metadata.name for t in tools}
+
+        assert "get_object" in tool_names
+        assert "get_sub_world" in tool_names
+        assert "move_object" in tool_names
+        assert "set_object_property" in tool_names
+        assert "create_object" in tool_names
+        assert "add_hp" not in tool_names
+        assert "delete_object" not in tool_names
+
+    def test_world_agent_with_mocked_ai(self, tmp_path):
+        """World agent returns a narrator summary string (mocked, no Ollama required)."""
+        from src.backend.core.tools import WorldTools as WT
+
+        campaign, _ = _make_campaign(tmp_path)
+
+        mock_summary = "A cold wind sweeps through the valley; a stray cat knocks over a bucket in the market."
+        mock_ai = MagicMock()
+        mock_ai.generate_world_update.return_value = mock_summary
+
+        with patch("src.backend.core.ai_client.ai_client", mock_ai):
+            from src.backend.core.ai_client import ai_client as patched_ai
+
+            wt = WT(campaign.world)
+            result = patched_ai.generate_world_update(campaign, wt)
+
+        assert result == mock_summary
+
+    def test_world_agent_fires_before_dm_in_turn(self, tmp_path):
+        """turn command invokes generate_world_update before generate_dm_response."""
+        campaign, world_path = _make_campaign(tmp_path)
+
+        call_order = []
+
+        mock_ai = MagicMock()
+        mock_ai.query_rules.return_value = "No relevant rules found."
+        mock_ai.generate_world_update.side_effect = lambda *a, **kw: call_order.append("world") or "Clouds roll in."
+        mock_ai.generate_dm_response.side_effect = lambda *a, **kw: call_order.append("dm") or "The DM speaks."
+
+        from src.backend.core.campaign_io import load_campaign_from_file
+        from src.backend.core.tools import WorldTools as WT
+
+        loaded = load_campaign_from_file(world_path)
+        wt = WT(loaded.world)
+        situation = "The party enters a dungeon."
+
+        world_summary = mock_ai.generate_world_update(loaded, wt)
+        loaded.add_event(event_type="world_update", description=world_summary, seed=loaded.seed)
+        narrative = mock_ai.generate_dm_response(loaded, situation, wt)
+        loaded.advance_turn()
+        loaded.add_event(event_type="dm_narrative", description=narrative, seed=loaded.seed)
+
+        assert call_order == ["world", "dm"]
+        world_events = [e for e in loaded.event_log if e.event_type == "world_update"]
+        dm_events = [e for e in loaded.event_log if e.event_type == "dm_narrative"]
+        assert len(world_events) == 1
+        assert len(dm_events) == 1
+        assert "Clouds" in world_events[0].description
+
+    def test_world_agent_missing_world_tools_creates_default(self, tmp_path):
+        """generate_world_update creates its own WorldTools if none supplied."""
+        from src.backend.core.ai_client import AIClient
+
+        campaign, _ = _make_campaign(tmp_path)
+        client = AIClient()
+
+        # Patch asyncio.run so no Ollama call happens; verify it was called with a coroutine
+        with patch("asyncio.run", return_value="Mist settles over the hills.") as mock_run:
+            result = client.generate_world_update(campaign)
+
+        assert result == "Mist settles over the hills."
+        mock_run.assert_called_once()
+
     def test_npc_agent_uses_npc_properties(self, tmp_path):
         """NPC agent system prompt uses creature_type, role, and behavior from properties."""
         from src.backend.core.ai_client import AIClient, _NPC_SYSTEM_PROMPT_TEMPLATE

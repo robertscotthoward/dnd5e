@@ -104,6 +104,17 @@ def cmd_turn(
     # Build world tools
     world_tools = WorldTools(campaign_obj.world)
 
+    # Run World Agent before the DM agent each turn
+    console.print("\n[bold]Running World agent...[/bold]")
+    world_update = ai_client.generate_world_update(campaign_obj, world_tools)
+    if world_update:
+        console.print(f"[dim]World update: {world_update[:120]}...[/dim]")
+        campaign_obj.add_event(
+            event_type="world_update",
+            description=world_update,
+            seed=campaign_obj.seed,
+        )
+
     # Query rules for current situation
     console.print("\n[bold]Querying rules corpus...[/bold]")
     rules_context = ai_client.query_rules(situation)

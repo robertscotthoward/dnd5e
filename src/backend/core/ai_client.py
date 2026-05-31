@@ -47,6 +47,22 @@ _NPC_SYSTEM_PROMPT_TEMPLATE = (
     "Never invent object IDs — use get_object or get_sub_world to discover them first."
 )
 
+_WORLD_SYSTEM_PROMPT = (
+    "You are the World Agent for a D&D 5e campaign. You run autonomously before the "
+    "Dungeon Master each turn to advance the living world: shift weather conditions, "
+    "move NPCs along their daily routines, trigger opportunistic theft or item movement, "
+    "and introduce minor environmental events. Keep changes subtle and believable — the "
+    "world must feel alive without overshadowing the players' story.\n\n"
+    "Guidelines:\n"
+    "- Use set_object_property to update weather or environmental state on region objects.\n"
+    "- Use move_object to relocate wandering NPCs or stolen items.\n"
+    "- Use create_object sparingly — only for ephemeral world objects like weather effects.\n"
+    "- Use get_sub_world or get_object to discover valid IDs before acting on them.\n"
+    "- Never kill a PC or damage a PC directly — that is the DM's job.\n"
+    "- After making world changes, produce a brief narrator summary of what shifted.\n"
+    "Never invent object IDs — always discover them with tools first."
+)
+
 
 class AIClient:
     """AI client for interacting with Ollama LLM."""
@@ -137,6 +153,36 @@ class AIClient:
                 fn=world_tools.set_object_property,
                 name="set_object_property",
                 description="Update a property on yourself (e.g. equipped item, stance)",
+            ),
+        ]
+
+    def create_world_tools(self, world_tools: WorldTools) -> list[FunctionTool]:
+        """Create the World Agent tool set: read, movement, state update, and create."""
+        return [
+            FunctionTool.from_defaults(
+                fn=world_tools.get_object,
+                name="get_object",
+                description="Get an object by ID to inspect its properties",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.get_sub_world,
+                name="get_sub_world",
+                description="Get the visible world from an observer's perspective",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.move_object,
+                name="move_object",
+                description="Move an NPC or item to a new location in the world",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.set_object_property,
+                name="set_object_property",
+                description="Update a property on a world object (e.g. weather, NPC state)",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.create_object,
+                name="create_object",
+                description="Create a new ephemeral world object (e.g. weather effect, dropped item)",
             ),
         ]
 
@@ -398,37 +444,70 @@ class AIClient:
             console.print(f"[red]Error in NPC ReAct agent: {e}[/red]")
             return f"[{npc.name or 'NPC'} hesitates...] (Error: {e})"
 
+    async def _run_world_agent(self, user_message: str, tools: list[FunctionTool]) -> str:
+        """Run the World ReAct agent asynchronously and return the narrator summary."""
+        agent = ReActAgent(
+            tools=tools,
+            llm=self.llm,
+            system_prompt=_WORLD_SYSTEM_PROMPT,
+            verbose=True,
+            streaming=False,
+            max_iterations=8,
+            early_stopping_method="generate",
+        )
+        handler = agent.run(user_msg=user_message)
+        result = await handler
+        return result.response.content or ""
+
     def generate_world_update(
         self,
         campaign: Campaign,
+        world_tools: Optional[WorldTools] = None,
         time_passed: str = "a few moments",
     ) -> str:
         """
-        Generate world updates (weather, NPC actions, events).
+        Run a full ReAct tool-calling loop as the World Agent.
+
+        The agent runs before the DM each turn, autonomously advancing weather,
+        NPC movement, item theft, and minor environmental events.
 
         Args:
             campaign: The current campaign
-            time_passed: Description of time that has passed
+            world_tools: WorldTools instance; created from campaign.world if omitted
+            time_passed: Narrative description of elapsed time
         """
-        prompt = f"""You are the World agent for a D&D 5e campaign. {time_passed} have passed.
+        if world_tools is None:
+            world_tools = WorldTools(campaign.world)
 
-Consider what might change in the world:
-- Weather conditions
-- NPC movements and actions
-- Environmental changes
-- Random events
+        # Build a root-level world snapshot for context
+        root_objects = list(campaign.world.objects.values())
+        object_summary_lines = []
+        for obj in root_objects[:30]:  # cap to avoid token overflow
+            object_summary_lines.append(
+                f"  [{obj.id}] {obj.type} '{obj.name or 'unnamed'}' (parent={obj.parent})"
+            )
+        object_summary = "\n".join(object_summary_lines)
 
-Current turn: {campaign.turn_number}
-World: {campaign.world.name}
+        user_message = (
+            f'Campaign: "{campaign.name}" | Turn: {campaign.turn_number}\n\n'
+            f"TIME PASSED: {time_passed}\n\n"
+            f"WORLD OBJECTS (first 30):\n{object_summary}\n\n"
+            "Advance the living world. Consider:\n"
+            "- Shift weather or light conditions on region/area objects.\n"
+            "- Move wandering NPCs to new locations.\n"
+            "- Trigger opportunistic theft: move a small item from an unattended location.\n"
+            "- Introduce a minor environmental event (sound, smell, distant activity).\n\n"
+            "Use tools to inspect objects before acting on them. After making your changes, "
+            "provide a brief narrator summary (1–3 sentences) of what shifted in the world."
+        )
 
-Describe any world changes that should occur. Keep it brief and relevant to the story."""
+        tools = self.create_world_tools(world_tools)
 
         try:
-            response = self.llm.complete(prompt)
-            return response.text
+            return asyncio.run(self._run_world_agent(user_message, tools))
         except Exception as e:
-            console.print(f"[red]Error generating world update: {e}[/red]")
-            return ""
+            console.print(f"[red]Error in World ReAct agent: {e}[/red]")
+            return f"[World Agent silent] (Error: {e})"
 
 
 # Global AI client instance
