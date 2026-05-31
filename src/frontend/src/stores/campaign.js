@@ -186,7 +186,17 @@ export const useCampaignStore = defineStore('campaign', () => {
         break
       case 'hp_update': {
         const p = players.value.find(pl => pl.character_object_id === msg.character_object_id)
-        if (p) { p.hp_current = msg.hp.current; p.hp_max = msg.hp.max }
+        if (p) {
+          p.hp_current = msg.hp.current
+          p.hp_max = msg.hp.max
+          // Auto-sync unconscious condition based on HP
+          if (!p.conditions) p.conditions = []
+          if (p.hp_current <= 0 && p.hp_max > 0) {
+            if (!p.conditions.includes('unconscious')) p.conditions.push('unconscious')
+          } else {
+            p.conditions = p.conditions.filter(c => c !== 'unconscious')
+          }
+        }
         break
       }
       case 'mode_change':

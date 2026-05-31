@@ -119,6 +119,11 @@ def get_players(campaign_id: str) -> list[CampaignPlayer]:
                 str_score = obj.properties.get("abilities", {}).get("str", 10)
                 cp.encumbrance_current = total_weight
                 cp.encumbrance_max = str_score * 15.0
+                # Conditions: from world object properties, plus auto-derive unconscious
+                world_conditions = list(obj.properties.get("conditions", []))
+                if cp.hp_current <= 0 and cp.hp_max > 0 and "unconscious" not in world_conditions:
+                    world_conditions.append("unconscious")
+                cp.conditions = world_conditions
         result.append(cp)
     return result
 

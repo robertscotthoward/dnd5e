@@ -67,6 +67,7 @@ class CampaignPlayer(BaseModel):
     hp_max: int = 0
     encumbrance_current: float = 0.0
     encumbrance_max: float = 150.0  # default STR 10 * 15
+    conditions: list[str] = Field(default_factory=list)  # active D&D 5e conditions
     joined_at: str
     last_seen: Optional[str] = None
 

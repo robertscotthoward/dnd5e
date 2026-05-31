@@ -80,6 +80,7 @@
         :gameMode="campaignStore.gameMode"
         :activeTurn="campaignStore.activeTurn"
         :myCharacterId="myCharacterId"
+        :characterConditions="myCharacterConditions"
       />
     </main>
 
@@ -224,6 +225,12 @@ const myCharacterId = computed(() => {
   if (!authStore.user) return null
   const me = campaignStore.players.find(p => p.user_id === authStore.user.user_id)
   return me?.character_object_id || null
+})
+
+const myCharacterConditions = computed(() => {
+  if (!authStore.user) return []
+  const me = campaignStore.players.find(p => p.user_id === authStore.user.user_id)
+  return me?.conditions || []
 })
 
 const modeBadgeClass = computed(() => {
