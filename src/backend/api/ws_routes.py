@@ -9,6 +9,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from src.backend.core.auth import get_session
 from src.backend.core.campaign_manager import (
     append_chat,
+    append_journal,
     create_snapshot,
     get_campaign_meta,
     get_players,
@@ -141,6 +142,30 @@ async def _run_dm_response(
             "message": dm_msg.model_dump(mode="json"),
         },
     )
+
+    # Generate and append a journal entry for this turn
+    try:
+        player_names = [p.character_name or p.username for p in get_players(campaign_id) if p.character_name or p.username]
+        journal_entry = await asyncio.get_event_loop().run_in_executor(
+            None,
+            lambda: ai_client.generate_journal_entry(
+                campaign_name=meta.name,
+                turn_number=meta.turn_number,
+                narration=narration,
+                player_names=player_names,
+            ),
+        )
+        append_journal(campaign_id, meta.turn_number, journal_entry)
+        await manager.broadcast(
+            campaign_id,
+            {
+                "type": "journal_updated",
+                "turn_number": meta.turn_number,
+                "entry": journal_entry,
+            },
+        )
+    except Exception:
+        pass
 
     # Detect all-enemies-dead: if in Combat mode, check whether every NPC in
     # the combat queue has HP <= 0.  If so, generate loot and broadcast.

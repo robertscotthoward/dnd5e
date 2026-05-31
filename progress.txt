@@ -1,7 +1,7 @@
 # Project Progress: D&D 5e Agentic Campaign Engine
 
 Total Tasks: 47
-Completed Tasks: 14
+Completed Tasks: 15
 
 ---
 
@@ -27,6 +27,9 @@ Completed Tasks: 14
 - AdminWorldView.vue — expandable world tree with right-click create/delete and detail panel
 
 ## Completed (added this session)
+- Campaign journal: append_journal/get_journal in campaign_manager.py; generate_journal_entry in ai_client.py; WS broadcast of journal_updated after each DM response in ws_routes.py; GET /api/campaigns/{id}/journal endpoint in campaign_routes.py; JournalTab.vue scrollable component; Chat/Journal tab switcher in GameView.vue center panel; fetchJournal in campaign store; 13 new tests in test_campaign_journal.py — all pass
+
+
 - Loot summary after combat: src/backend/core/loot.py — generate_loot() creates world objects and returns a summary dict; ws_routes.py detects all-enemies-dead after DM response and broadcasts loot_summary; take_loot WS handler calls move_object to transfer items to player inventory; LootSummary.vue modal shows coins + item list with Take buttons; campaign store handles loot_summary/loot_taken WS messages; 10 new tests in test_loot_summary.py — all pass
 - Combat mode: CombatEngine (src/backend/core/combat.py) — initiative rolling, turn queue, attack rolls, saving throws, damage rolls
 - CombatTools (src/backend/core/tools.py) — LlamaIndex-callable wrappers for all combat operations

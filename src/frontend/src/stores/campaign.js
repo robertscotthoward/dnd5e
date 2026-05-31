@@ -37,6 +37,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   const pendingDiceRoll = ref(null) // { die: 'd20', result: 15, queued_message: {...} }
   const initiativeOrder = ref([])   // [{ id, name, initiative }] sorted highest first
   const pendingLoot = ref(null)     // { enemies_defeated, coins, items, loot_container_id }
+  const journal = ref([])           // [{ turn_number, entry }] ordered oldest-first
 
   async function fetchCampaigns() {
     loading.value = true
@@ -297,6 +298,9 @@ export const useCampaignStore = defineStore('campaign', () => {
         }
         break
       }
+      case 'journal_updated':
+        journal.value.push({ turn_number: msg.turn_number, entry: msg.entry })
+        break
     }
   }
 
@@ -367,6 +371,25 @@ export const useCampaignStore = defineStore('campaign', () => {
     pendingLoot.value = null
   }
 
+  async function fetchJournal(id) {
+    try {
+      const res = await fetch(`/api/campaigns/${id}/journal`, { credentials: 'include' })
+      const data = await res.json()
+      if (!res.ok) return
+      // Parse the markdown blocks into structured entries
+      const raw = data.journal || ''
+      const blocks = raw.split('---').map(b => b.trim()).filter(Boolean)
+      journal.value = blocks.map(block => {
+        const headerMatch = block.match(/^##\s+Turn\s+(\d+)/)
+        const turnNumber = headerMatch ? parseInt(headerMatch[1]) : 0
+        const entry = block.replace(/^##[^\n]*\n/, '').trim()
+        return { turn_number: turnNumber, entry }
+      })
+    } catch (e) {
+      // ignore
+    }
+  }
+
   async function fetchSnapshots(id) {
     try {
       const res = await fetch(`/api/campaigns/${id}/snapshots`, { credentials: 'include' })
@@ -400,10 +423,10 @@ export const useCampaignStore = defineStore('campaign', () => {
   return {
     campaigns, currentMeta, players, chat, gameMode, activeTurn,
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
-    pendingLevelUp, pendingDiceRoll, initiativeOrder, pendingLoot,
+    pendingLevelUp, pendingDiceRoll, initiativeOrder, pendingLoot, journal,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
-    fetchSnapshots, restoreSnapshot, sendAwardXp, awardXp, clearLevelUp, clearDiceRoll,
+    fetchSnapshots, fetchJournal, restoreSnapshot, sendAwardXp, awardXp, clearLevelUp, clearDiceRoll,
     sendTakeLoot, clearLoot,
   }
 })

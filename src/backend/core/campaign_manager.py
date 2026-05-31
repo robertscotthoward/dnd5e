@@ -395,6 +395,26 @@ def restore_snapshot(campaign_id: str, snapshot_id: str) -> Snapshot:
     )
 
 
+def append_journal(campaign_id: str, turn_number: int, entry: str) -> None:
+    """Append a one-paragraph journal entry to journal.md inside the campaign folder."""
+    p = campaign_path(campaign_id)
+    p.mkdir(parents=True, exist_ok=True)
+    journal_file = p / "journal.md"
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+    block = f"## Turn {turn_number} — {timestamp}\n\n{entry.strip()}\n\n---\n\n"
+    with open(journal_file, "a", encoding="utf-8") as f:
+        f.write(block)
+
+
+def get_journal(campaign_id: str) -> str:
+    """Return the full journal.md content for a campaign, or empty string if none."""
+    journal_file = campaign_path(campaign_id) / "journal.md"
+    if not journal_file.exists():
+        return ""
+    with open(journal_file, encoding="utf-8") as f:
+        return f.read()
+
+
 def delete_campaign(campaign_id: str) -> str:
     """
     Zip the campaign folder into the campaigns root, then delete the folder.

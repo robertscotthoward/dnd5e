@@ -79,13 +79,33 @@
         </button>
       </div>
 
+      <!-- Tab bar -->
+      <div class="center-tab-bar">
+        <button
+          class="center-tab"
+          :class="{ active: centerTab === 'chat' }"
+          @click="centerTab = 'chat'"
+        >Chat</button>
+        <button
+          class="center-tab"
+          :class="{ active: centerTab === 'journal' }"
+          @click="centerTab = 'journal'"
+        >Journal <span v-if="campaignStore.journal.length" class="tab-badge">{{ campaignStore.journal.length }}</span></button>
+      </div>
+
       <!-- Chat window -->
-      <div class="chat-area">
+      <div v-show="centerTab === 'chat'" class="chat-area">
         <ChatWindow />
       </div>
 
-      <!-- Action bar -->
+      <!-- Journal -->
+      <div v-show="centerTab === 'journal'" class="chat-area">
+        <JournalTab />
+      </div>
+
+      <!-- Action bar (chat tab only) -->
       <ActionBar
+        v-if="centerTab === 'chat'"
         :gameMode="campaignStore.gameMode"
         :activeTurn="campaignStore.activeTurn"
         :myCharacterId="myCharacterId"
@@ -266,6 +286,7 @@ import LevelUpDialog from '../components/LevelUpDialog.vue'
 import CharacterSheet from '../components/CharacterSheet.vue'
 import InitiativeTracker from '../components/InitiativeTracker.vue'
 import LootSummary from '../components/LootSummary.vue'
+import JournalTab from '../components/JournalTab.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -273,6 +294,7 @@ const campaignStore = useCampaignStore()
 const authStore = useAuthStore()
 
 const campaignId = route.params.id
+const centerTab = ref('chat')
 const snapshotsOpen = ref(false)
 const showSnapshotModal = ref(false)
 const snapshotLabel = ref('')
@@ -398,6 +420,7 @@ onMounted(async () => {
   await campaignStore.loadState(campaignId)
   campaignStore.connectWs(campaignId)
   await campaignStore.fetchSnapshots(campaignId)
+  await campaignStore.fetchJournal(campaignId)
 })
 
 onUnmounted(() => {
@@ -609,6 +632,48 @@ onUnmounted(() => {
 .ws-connecting   { color: #fde68a; }
 .ws-disconnected { color: #8a7355; }
 .ws-error        { color: #f87171; }
+
+/* Center tab bar */
+.center-tab-bar {
+  display: flex;
+  flex-shrink: 0;
+  background: #110d05;
+  border-bottom: 1px solid #3d2e10;
+}
+
+.center-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #8a7355;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.9rem;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.center-tab:hover {
+  color: #c9a227;
+}
+
+.center-tab.active {
+  color: #c9a227;
+  border-bottom-color: #c9a227;
+}
+
+.tab-badge {
+  display: inline-block;
+  background: rgba(201,162,39,0.2);
+  color: #c9a227;
+  font-size: 0.55rem;
+  padding: 0 0.3rem;
+  border-radius: 8px;
+  margin-left: 0.25rem;
+  line-height: 1.4;
+}
 
 /* Chat area */
 .chat-area {

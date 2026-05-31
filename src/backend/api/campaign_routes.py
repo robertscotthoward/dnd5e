@@ -18,6 +18,7 @@ from src.backend.core.campaign_manager import (
     find_player,
     get_campaign_meta,
     get_chat,
+    get_journal,
     get_players,
     list_campaigns,
     list_snapshots,
@@ -638,6 +639,15 @@ def get_character(campaign_id: str, character_id: int, request: Request):
         "personality": props.get("personality", ""),
         "goals": props.get("goals", []),
     }
+
+
+@router.get("/campaigns/{campaign_id}/journal")
+def get_campaign_journal(campaign_id: str):
+    """Return the full journal.md text for a campaign."""
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    return {"journal": get_journal(campaign_id)}
 
 
 @router.get("/campaigns/{campaign_id}/chat")

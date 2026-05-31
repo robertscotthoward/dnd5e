@@ -530,6 +530,35 @@ class AIClient:
         result = await handler
         return result.response.content or ""
 
+    def generate_journal_entry(
+        self,
+        campaign_name: str,
+        turn_number: int,
+        narration: str,
+        player_names: list[str],
+    ) -> str:
+        """
+        Generate a one-paragraph journal entry summarising the turn's events.
+
+        Called after each DM response so the journal accumulates a narrative log.
+        Falls back to the raw narration on LLM error.
+        """
+        names_str = ", ".join(player_names) if player_names else "the party"
+        prompt = (
+            f"You are chronicling a D&D 5e campaign called \"{campaign_name}\".\n\n"
+            f"TURN {turn_number} EVENTS:\n{narration}\n\n"
+            f"PARTY MEMBERS: {names_str}\n\n"
+            "Write a single evocative paragraph (3-5 sentences) summarising what happened "
+            "this turn as a campaign journal entry. Write in past tense, third person. "
+            "Be specific about events, characters, and locations. Do not add headers or "
+            "bullet points — only a flowing prose paragraph."
+        )
+        try:
+            return self.llm.complete(prompt).text.strip()
+        except Exception as e:
+            console.print(f"[red]Error generating journal entry: {e}[/red]")
+            return narration[:500] if narration else f"Turn {turn_number} passed uneventfully."
+
     def generate_dm_recap(
         self,
         character_name: str,
