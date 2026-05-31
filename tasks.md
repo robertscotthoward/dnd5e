@@ -28,7 +28,7 @@
 * [x] **Character creation wizard** — `CharacterCreator.vue` implements a multi-step wizard (name, region, race, class, attributes, background).
 * [x] **AI-generated background** — Step in CharacterCreator that calls backend to generate a background narrative using the LLM based on region and race. Backend endpoint needed.
 * [x] **Returning player DM recap** — On re-join, trigger DM agent to generate a narrative recap of the player's last session. Surface in lobby view.
-* [ ] **Attribute dice roll UI** — Verify re-roll and bonus point allocation work end-to-end; confirm save persists correct attributes to world.yaml.
+* [x] **Attribute dice roll UI** — Verify re-roll and bonus point allocation work end-to-end; confirm save persists correct attributes to world.yaml.
 
 ## Phase 5: Web — Game View
 
