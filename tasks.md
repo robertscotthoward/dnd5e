@@ -86,6 +86,6 @@
 
 ## Phase 13: Quality & Deployment
 
-* [ ] **`dev.bat` Typer CLI mode** — Update `dev.bat` to also support running `python -m src.backend.main` CLI commands alongside the Vite/FastAPI servers.
+* [x] **`dev.bat` Typer CLI mode** — Update `dev.bat` to also support running `python -m src.backend.main` CLI commands alongside the Vite/FastAPI servers.
 * [ ] **Integration smoke test** — Script that runs `index-corpus` → `new-campaign TestRun` → `turn --campaign TestRun` and asserts a non-empty narrative and updated world.yaml.
 * [ ] **Frontend production build** — Confirm `npm run build` outputs to `dist/` and FastAPI serves it correctly at `/`.
