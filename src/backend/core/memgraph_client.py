@@ -120,3 +120,75 @@ def delete_object(obj_id: int, url: str = _BOLT_URL) -> None:
             )
     finally:
         driver.close()
+
+
+def get_path_between(id1: int, id2: int, url: str = _BOLT_URL) -> list[dict]:
+    """Return the shortest path between two WorldObject nodes via CHILD_OF edges.
+
+    Uses bidirectional BFS through the parent hierarchy (undirected CHILD_OF).
+    Each hop is returned as a dict with ``obj_id``, ``type``, and ``name``.
+    Returns an empty list when no path exists or either node is absent.
+    """
+    driver = _get_driver(url)
+    try:
+        with driver.session() as session:
+            result = session.run(
+                """
+                MATCH path = shortestPath(
+                    (a:WorldObject {obj_id: $id1})-[:CHILD_OF*]-(b:WorldObject {obj_id: $id2})
+                )
+                RETURN [n IN nodes(path) | {obj_id: n.obj_id, type: n.type, name: n.name}] AS hops
+                """,
+                id1=id1,
+                id2=id2,
+            )
+            record = result.single()
+            if record is None:
+                return []
+            return list(record["hops"])
+    finally:
+        driver.close()
+
+
+def get_nearby_objects(obj_id: int, radius: float, url: str = _BOLT_URL) -> list[dict]:
+    """Return WorldObject nodes within *radius* feet of the given object.
+
+    Distance is computed in the flat (x, y) plane using the ``loc_x`` / ``loc_y``
+    properties stored on each node.  The source object itself is excluded.
+    Each result is a dict with ``obj_id``, ``type``, ``name``, and ``distance``.
+    Returns an empty list when the source object is not found.
+    """
+    driver = _get_driver(url)
+    try:
+        with driver.session() as session:
+            result = session.run(
+                """
+                MATCH (src:WorldObject {obj_id: $obj_id})
+                MATCH (other:WorldObject)
+                WHERE other.obj_id <> $obj_id
+                WITH other,
+                     sqrt(
+                         (other.loc_x - src.loc_x)^2 +
+                         (other.loc_y - src.loc_y)^2
+                     ) AS dist
+                WHERE dist <= $radius
+                RETURN other.obj_id AS obj_id,
+                       other.type   AS type,
+                       other.name   AS name,
+                       dist         AS distance
+                ORDER BY dist
+                """,
+                obj_id=obj_id,
+                radius=radius,
+            )
+            return [
+                {
+                    "obj_id": r["obj_id"],
+                    "type": r["type"],
+                    "name": r["name"],
+                    "distance": r["distance"],
+                }
+                for r in result
+            ]
+    finally:
+        driver.close()
