@@ -61,6 +61,14 @@ def cmd_new_campaign(
     append_seed_log(campaigns_dir, f"campaign_created seed={seed} name={name}")
     console.print(f"\n[dim]Seed logged to {campaigns_dir / 'seeds.log'}[/dim]")
 
+    # Seed Memgraph with the object graph
+    try:
+        from src.backend.core.memgraph_client import seed_world
+        node_count = seed_world(campaign.world)
+        console.print(f"[green]Memgraph seeded:[/green] {node_count} nodes")
+    except Exception as exc:  # noqa: BLE001
+        console.print(f"[yellow]Memgraph unavailable — skipping graph seed ({exc})[/yellow]")
+
 
 @cli.command("turn")
 def cmd_turn(
