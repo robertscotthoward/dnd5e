@@ -44,11 +44,52 @@
         <span class="action-text">{{ action.label.split(' ').slice(1).join(' ') }}</span>
       </button>
     </div>
+
+    <!-- Rest buttons (Exploration mode only) -->
+    <div v-if="gameMode === 'Exploration' && myCharacterId" class="rest-buttons">
+      <button
+        class="rest-btn rest-btn-short"
+        :disabled="isResting"
+        @click="doShortRest"
+        title="Short Rest: Roll hit dice to recover HP. Warlocks also recover pact magic slots."
+      >
+        <span class="rest-emoji">🌙</span>
+        <span class="rest-label">Short Rest</span>
+        <span class="rest-hint">Roll hit die</span>
+      </button>
+      <button
+        class="rest-btn rest-btn-long"
+        :disabled="isResting"
+        @click="confirmLongRest"
+        title="Long Rest: Restore all HP, spell slots, and abilities."
+      >
+        <span class="rest-emoji">🌅</span>
+        <span class="rest-label">Long Rest</span>
+        <span class="rest-hint">Full restore</span>
+      </button>
+    </div>
+
+    <!-- Long rest confirm overlay -->
+    <Teleport to="body">
+      <div v-if="showLongRestConfirm" class="rest-overlay" @click.self="showLongRestConfirm = false">
+        <div class="rest-confirm-box">
+          <div class="rest-confirm-title">Take a Long Rest?</div>
+          <p class="rest-confirm-desc">
+            The party camps until dawn. All HP, spell slots, and abilities are restored.
+            This advances in-game time by 8 hours.
+          </p>
+          <div class="rest-confirm-actions">
+            <button class="rest-confirm-cancel" @click="showLongRestConfirm = false">Cancel</button>
+            <button class="rest-confirm-ok" @click="doLongRest">Rest Until Dawn</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useCampaignStore } from '../stores/campaign'
 
 const props = defineProps({
@@ -70,6 +111,9 @@ const props = defineProps({
   },
 })
 
+const showLongRestConfirm = ref(false)
+const isResting = ref(false)
+
 const campaignStore = useCampaignStore()
 
 const ACTIONS = {
@@ -77,7 +121,6 @@ const ACTIONS = {
     { label: '👁 Look Around',  action: 'Look Around',  blockedBy: [] },
     { label: '🔍 Search',       action: 'Search',       blockedBy: ['blinded'] },
     { label: '🚪 Investigate',  action: 'Investigate',  blockedBy: [] },
-    { label: '🏕 Rest',         action: 'Rest',         blockedBy: [] },
     { label: '🤫 Stealth',      action: 'Stealth',      blockedBy: ['prone', 'restrained', 'paralyzed'] },
   ],
   Social: [
@@ -200,6 +243,26 @@ const modeIcon = computed(() => {
 
 function doAction(action) {
   campaignStore.sendAction(action)
+}
+
+function doShortRest() {
+  if (!props.myCharacterId || isResting.value) return
+  isResting.value = true
+  campaignStore.sendShortRest(props.myCharacterId, 1)
+  setTimeout(() => { isResting.value = false }, 3000)
+}
+
+function confirmLongRest() {
+  if (!props.myCharacterId || isResting.value) return
+  showLongRestConfirm.value = true
+}
+
+function doLongRest() {
+  showLongRestConfirm.value = false
+  if (!props.myCharacterId || isResting.value) return
+  isResting.value = true
+  campaignStore.sendLongRest(props.myCharacterId)
+  setTimeout(() => { isResting.value = false }, 3000)
 }
 </script>
 
@@ -342,5 +405,158 @@ function doAction(action) {
 
 .action-text {
   font-size: 0.68rem;
+}
+
+/* Rest buttons */
+.rest-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #3d2e10;
+}
+
+.rest-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  font-family: 'Cinzel', serif;
+  padding: 0.4rem 0.9rem;
+  border-radius: 4px;
+  border: 1px solid #3d2e10;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 90px;
+}
+
+.rest-btn-short {
+  background: linear-gradient(135deg, #0f1a2e 0%, #142238 100%);
+  color: #93c5fd;
+  border-color: #1e3a5f;
+}
+
+.rest-btn-long {
+  background: linear-gradient(135deg, #1a1109 0%, #2a1a06 100%);
+  color: #fde68a;
+  border-color: #713f12;
+}
+
+.rest-btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+  box-shadow: 0 0 8px rgba(147,197,253,0.15);
+}
+
+.rest-btn-long:hover:not(:disabled) {
+  box-shadow: 0 0 8px rgba(253,230,138,0.15);
+}
+
+.rest-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rest-emoji {
+  font-size: 1rem;
+}
+
+.rest-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rest-hint {
+  font-size: 0.55rem;
+  opacity: 0.65;
+  font-family: 'Crimson Text', serif;
+  font-style: italic;
+}
+
+/* Long rest confirm overlay */
+.rest-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 1rem;
+}
+
+.rest-confirm-box {
+  background: #110d05;
+  border: 1px solid #7a6115;
+  border-radius: 6px;
+  padding: 1.5rem;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 0 24px rgba(201,162,39,0.15);
+}
+
+.rest-confirm-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fde68a;
+  margin-bottom: 0.5rem;
+}
+
+.rest-confirm-desc {
+  font-family: 'Crimson Text', serif;
+  color: #8a7355;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+  font-style: italic;
+}
+
+.rest-confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.rest-confirm-cancel {
+  background: transparent;
+  border: 1px solid #3d2e10;
+  color: #8a7355;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.8rem;
+  border-radius: 4px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.rest-confirm-cancel:hover {
+  color: #c9a227;
+  border-color: #7a6115;
+}
+
+.rest-confirm-ok {
+  background: linear-gradient(135deg, #1a1109 0%, #2a1a06 100%);
+  border: 1px solid #7a6115;
+  color: #fde68a;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.8rem;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.rest-confirm-ok:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 8px rgba(253,230,138,0.2);
 }
 </style>

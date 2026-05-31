@@ -81,7 +81,7 @@
 
 ## Phase 12: Quality of Life
 
-* [ ] **Short rest / long rest buttons** — Buttons visible during Exploration mode. Short rest: player rolls hit dice to recover HP. Long rest: restore all HP, spell slots, and abilities. DM agent narrates the rest sequence.
+* [x] **Short rest / long rest buttons** — Buttons visible during Exploration mode. Short rest: player rolls hit dice to recover HP. Long rest: restore all HP, spell slots, and abilities. DM agent narrates the rest sequence.
 * [ ] **Ambient sound toggle** — Settings toggle to play looped ambient audio matching current location type (tavern, dungeon, forest, outdoor). Audio files stored under `src/frontend/public/audio/`. Location type inferred from the party's parent object type.
 
 ## Phase 13: Quality & Deployment

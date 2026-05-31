@@ -342,6 +342,18 @@ export const useCampaignStore = defineStore('campaign', () => {
         }
         break
       }
+      case 'rest_result': {
+        if (msg.message) chat.value.push(msg.message)
+        // Trigger dice animation for short rest rolls
+        if (msg.rest_type === 'short' && msg.dice_roll) {
+          pendingDiceRoll.value = {
+            die: msg.dice_roll.die || 'd8',
+            result: msg.dice_roll.result,
+            queued_message: null,
+          }
+        }
+        break
+      }
       case 'time_updated':
         dayNumber.value = msg.day_number
         hourOfDay.value = msg.hour_of_day
@@ -440,6 +452,18 @@ export const useCampaignStore = defineStore('campaign', () => {
     }
   }
 
+  function sendShortRest(characterId, numHitDice = 1) {
+    if (ws.value && ws.value.readyState === WebSocket.OPEN) {
+      ws.value.send(JSON.stringify({ type: 'short_rest', character_id: characterId, num_hit_dice: numHitDice }))
+    }
+  }
+
+  function sendLongRest(characterId) {
+    if (ws.value && ws.value.readyState === WebSocket.OPEN) {
+      ws.value.send(JSON.stringify({ type: 'long_rest', character_id: characterId }))
+    }
+  }
+
   async function fetchNpcs(id) {
     try {
       const res = await fetch(`/api/campaigns/${id}/npcs`, { credentials: 'include' })
@@ -509,5 +533,6 @@ export const useCampaignStore = defineStore('campaign', () => {
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
     fetchSnapshots, fetchJournal, fetchQuests, fetchNpcs, restoreSnapshot, sendAwardXp, awardXp,
     clearLevelUp, clearDiceRoll, sendTakeLoot, clearLoot, sendCompleteMilestone,
+    sendShortRest, sendLongRest,
   }
 })

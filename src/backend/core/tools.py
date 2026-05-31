@@ -419,6 +419,87 @@ class WorldTools:
             },
         )
 
+    def short_rest(self, id: int, num_hit_dice: int = 1) -> ToolResult:
+        """
+        Perform a short rest for a character: roll hit dice to recover HP.
+
+        The player rolls their class hit die once per requested die (capped at level),
+        adds their CON modifier, and recovers that much HP (cannot exceed max HP).
+        Warlocks also recover their pact magic spell slots on a short rest.
+
+        Args:
+            id: Object ID of the PC
+            num_hit_dice: How many hit dice to spend (default 1, capped at character level)
+        """
+        obj = self.world.get_object(id)
+        if not obj:
+            return ToolResult(success=False, message=f"Object {id} not found")
+
+        hp = obj.properties.get("hp")
+        if not hp:
+            return ToolResult(success=False, message=f"Object {id} has no HP")
+
+        classes = obj.properties.get("classes", [])
+        class_type = classes[0].get("type", "Fighter") if classes else "Fighter"
+        level = classes[0].get("level", 1) if classes else 1
+
+        from ..models.player import CLASS_HIT_DICE
+        hit_die = CLASS_HIT_DICE.get(class_type, 8)
+
+        # Cap dice to character level
+        dice_to_roll = max(1, min(num_hit_dice, level))
+
+        # CON modifier
+        abilities = obj.properties.get("abilities", {})
+        con_score = abilities.get("con", 10)
+        con_mod = (con_score - 10) // 2
+
+        total_heal = 0
+        rolls = []
+        for _ in range(dice_to_roll):
+            roll = random.randint(1, hit_die)
+            heal = max(0, roll + con_mod)
+            total_heal += heal
+            rolls.append(roll)
+
+        old_hp = hp["current"]
+        new_hp = min(hp["max"], old_hp + total_heal)
+        hp["current"] = new_hp
+        obj.properties["hp"] = hp
+
+        restored = [f"HP ({old_hp} -> {new_hp})"]
+
+        # Warlocks recover pact magic slots on a short rest
+        spell_slots = obj.properties.get("spell_slots")
+        if spell_slots and class_type == "Warlock":
+            for slot_data in spell_slots.values():
+                slot_data["used"] = 0
+            obj.properties["spell_slots"] = spell_slots
+            restored.append("Warlock spell slots")
+
+        name = obj.name or "Character"
+        dice_str = "+".join(f"d{hit_die}({r})" for r in rolls)
+        msg = (
+            f"{name} takes a short rest, rolling {dice_to_roll}d{hit_die} "
+            f"[{dice_str}]{'+' if con_mod >= 0 else ''}{con_mod if con_mod else ''}: "
+            f"recovers {new_hp - old_hp} HP. ({', '.join(restored)})"
+        )
+
+        return ToolResult(
+            success=True,
+            message=msg,
+            data={
+                "id": id,
+                "rolls": rolls,
+                "con_modifier": con_mod,
+                "total_heal": new_hp - old_hp,
+                "old_hp": old_hp,
+                "new_hp": new_hp,
+                "hit_die": hit_die,
+                "spell_slots": obj.properties.get("spell_slots"),
+            },
+        )
+
     def long_rest(self, id: int) -> ToolResult:
         """
         Perform a long rest for a character: restore all spell slots and full HP.
@@ -1017,6 +1098,22 @@ TOOL_DEFINITIONS = [
                 "slot_level": {"type": "integer", "description": "Spell slot level to consume (1-9)"},
             },
             "required": ["id", "slot_level"],
+        },
+    },
+    {
+        "name": "short_rest",
+        "description": (
+            "Perform a short rest for a character: roll hit dice to recover HP. "
+            "Warlocks also recover their pact magic spell slots. "
+            "Call this when a player takes a short rest during Exploration."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "description": "Object ID of the PC"},
+                "num_hit_dice": {"type": "integer", "description": "Number of hit dice to roll (default 1)"},
+            },
+            "required": ["id"],
         },
     },
     {

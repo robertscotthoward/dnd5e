@@ -758,6 +758,117 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                             },
                         )
 
+            elif msg_type == "short_rest":
+                char_id = data.get("character_id")
+                num_dice = data.get("num_hit_dice", 1)
+                if not isinstance(char_id, int):
+                    await manager.send_personal(
+                        websocket,
+                        {"type": "error", "message": "short_rest requires integer character_id"},
+                    )
+                else:
+                    rest_campaign = load_campaign_world(campaign_id)
+                    if rest_campaign:
+                        rest_tools = WorldTools(rest_campaign.world)
+                        rest_result = rest_tools.short_rest(char_id, num_dice)
+                        if rest_result.success:
+                            save_campaign_world(campaign_id, rest_campaign)
+                            rest_msg = ChatMessage(
+                                sender="DM",
+                                sender_type="DM",
+                                text=rest_result.message,
+                                turn_number=meta.turn_number,
+                            )
+                            append_chat(campaign_id, rest_msg)
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "rest_result",
+                                    "rest_type": "short",
+                                    "data": rest_result.data,
+                                    "message": rest_msg.model_dump(mode="json"),
+                                    "dice_roll": {
+                                        "die": f"d{rest_result.data.get('hit_die', 8)}",
+                                        "result": sum(rest_result.data.get("rolls", [0])),
+                                    },
+                                },
+                            )
+                            rest_players = get_players(campaign_id)
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "player_list",
+                                    "players": [p.model_dump(mode="json") for p in rest_players],
+                                },
+                            )
+                            # Ask DM to narrate the short rest
+                            asyncio.create_task(
+                                _run_dm_response(
+                                    campaign_id,
+                                    f"{char_name} takes a short rest. {rest_result.message}",
+                                    session.username,
+                                    char_name,
+                                )
+                            )
+                        else:
+                            await manager.send_personal(
+                                websocket,
+                                {"type": "error", "message": rest_result.message},
+                            )
+
+            elif msg_type == "long_rest":
+                char_id = data.get("character_id")
+                if not isinstance(char_id, int):
+                    await manager.send_personal(
+                        websocket,
+                        {"type": "error", "message": "long_rest requires integer character_id"},
+                    )
+                else:
+                    lrest_campaign = load_campaign_world(campaign_id)
+                    if lrest_campaign:
+                        lrest_tools = WorldTools(lrest_campaign.world)
+                        lrest_result = lrest_tools.long_rest(char_id)
+                        if lrest_result.success:
+                            save_campaign_world(campaign_id, lrest_campaign)
+                            lrest_msg = ChatMessage(
+                                sender="DM",
+                                sender_type="DM",
+                                text=lrest_result.message,
+                                turn_number=meta.turn_number,
+                            )
+                            append_chat(campaign_id, lrest_msg)
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "rest_result",
+                                    "rest_type": "long",
+                                    "data": lrest_result.data,
+                                    "message": lrest_msg.model_dump(mode="json"),
+                                },
+                            )
+                            lrest_players = get_players(campaign_id)
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "player_list",
+                                    "players": [p.model_dump(mode="json") for p in lrest_players],
+                                },
+                            )
+                            # Ask DM to narrate the long rest
+                            asyncio.create_task(
+                                _run_dm_response(
+                                    campaign_id,
+                                    f"{char_name} takes a long rest. {lrest_result.message}",
+                                    session.username,
+                                    char_name,
+                                )
+                            )
+                        else:
+                            await manager.send_personal(
+                                websocket,
+                                {"type": "error", "message": lrest_result.message},
+                            )
+
             elif msg_type == "snapshot":
                 label = str(data.get("label", f"Snapshot by {char_name}"))
                 snap = create_snapshot(campaign_id, label, session.username)
