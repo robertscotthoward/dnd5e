@@ -169,6 +169,8 @@ def create_app():
     """Create and return the FastAPI application."""
     from fastapi import FastAPI
     from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import FileResponse
     from src.backend.api.routes import router
 
     application = FastAPI(title="D&D 5e AI Game Engine")
@@ -180,6 +182,17 @@ def create_app():
         allow_headers=["*"],
     )
     application.include_router(router, prefix="/api")
+
+    # Serve frontend production build — must come after API routes
+    _dist = Path(__file__).parent.parent / "frontend" / "dist"
+    if _dist.exists():
+        application.mount("/assets", StaticFiles(directory=str(_dist / "assets")), name="assets")
+        application.mount("/audio", StaticFiles(directory=str(_dist / "audio")), name="audio")
+
+        @application.get("/{full_path:path}", include_in_schema=False)
+        async def spa_fallback(full_path: str):
+            return FileResponse(str(_dist / "index.html"))
+
     return application
 
 
