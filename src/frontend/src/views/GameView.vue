@@ -163,7 +163,14 @@
             class="snapshot-item"
           >
             <span class="snap-label">{{ snap.label || 'Snapshot' }}</span>
-            <span class="snap-turn">Turn {{ snap.turn_number || '?' }}</span>
+            <button
+              class="snap-restore-btn"
+              :disabled="restoringSnapshotId === (snap.id || snap.snapshot_id)"
+              @click="confirmRestore(snap)"
+              title="Restore to this snapshot"
+            >
+              {{ restoringSnapshotId === (snap.id || snap.snapshot_id) ? '...' : '↩' }}
+            </button>
           </div>
           <div v-if="campaignStore.snapshots.length === 0" class="no-snapshots">
             No snapshots yet.
@@ -191,7 +198,26 @@
           <div class="modal-actions">
             <button class="dnd-button-ghost" @click="showSnapshotModal = false">Cancel</button>
             <button class="dnd-button" @click="createSnapshot" :disabled="!snapshotLabel.trim()">
-              📸 Save Snapshot
+              Save Snapshot
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Restore Confirm Modal -->
+    <Teleport to="body">
+      <div v-if="restoreTarget" class="modal-overlay" @click.self="restoreTarget = null">
+        <div class="modal-box dnd-panel dnd-panel-gold">
+          <h3 class="modal-title">Restore Snapshot</h3>
+          <p class="modal-desc">
+            Restore to <strong class="snap-confirm-label">{{ restoreTarget.label }}</strong>?
+            Current world state will be overwritten.
+          </p>
+          <div class="modal-actions">
+            <button class="dnd-button-ghost" @click="restoreTarget = null">Cancel</button>
+            <button class="dnd-button dnd-button-danger" @click="doRestore">
+              Restore
             </button>
           </div>
         </div>
@@ -219,6 +245,8 @@ const snapshotsOpen = ref(false)
 const showSnapshotModal = ref(false)
 const snapshotLabel = ref('')
 const snapInputEl = ref(null)
+const restoreTarget = ref(null)
+const restoringSnapshotId = ref(null)
 
 // Computed
 const myCharacterId = computed(() => {
@@ -287,6 +315,20 @@ function createSnapshot() {
   campaignStore.sendSnapshot(snapshotLabel.value.trim())
   showSnapshotModal.value = false
   snapshotLabel.value = ''
+}
+
+function confirmRestore(snap) {
+  restoreTarget.value = snap
+}
+
+async function doRestore() {
+  const snap = restoreTarget.value
+  if (!snap) return
+  const snapId = snap.id || snap.snapshot_id
+  restoreTarget.value = null
+  restoringSnapshotId.value = snapId
+  await campaignStore.restoreSnapshot(campaignId, snapId)
+  restoringSnapshotId.value = null
 }
 
 function leaveGame() {
@@ -583,13 +625,31 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 160px;
+  flex: 1;
+  min-width: 0;
 }
-.snap-turn {
-  font-family: 'Cinzel', serif;
-  font-size: 0.62rem;
-  color: #8a7355;
+.snap-restore-btn {
   flex-shrink: 0;
+  background: transparent;
+  border: 1px solid #3d2e10;
+  color: #8a7355;
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s;
+}
+.snap-restore-btn:hover:not(:disabled) {
+  color: #c9a227;
+  border-color: #c9a227;
+}
+.snap-restore-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.snap-confirm-label {
+  color: #c9a227;
 }
 .no-snapshots {
   color: #5a4530;

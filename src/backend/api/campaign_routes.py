@@ -22,6 +22,7 @@ from src.backend.core.campaign_manager import (
     list_campaigns,
     list_snapshots,
     load_campaign_world,
+    restore_snapshot,
     save_campaign_meta,
     save_campaign_world,
     update_player_character,
@@ -357,3 +358,23 @@ def post_snapshot(campaign_id: str, req: SnapshotRequest, request: Request):
         raise HTTPException(status_code=404, detail="Campaign not found")
     snap = create_snapshot(campaign_id, req.label, session.username)
     return snap
+
+
+@router.post("/campaigns/{campaign_id}/snapshots/{snapshot_id}/restore")
+def post_snapshot_restore(campaign_id: str, snapshot_id: str, request: Request):
+    """
+    Restore a campaign to a snapshot state.
+
+    Copies snapshot files (world.yaml, players.json, chat.json) back to the
+    campaign root. The campaign meta.json is not overwritten so the campaign
+    identity (id, name, created_by) is preserved.
+    """
+    get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    try:
+        snap = restore_snapshot(campaign_id, snapshot_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    return {"restored": True, "snapshot": snap}

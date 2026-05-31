@@ -333,6 +333,44 @@ def create_snapshot(campaign_id: str, label: str, created_by: str) -> Snapshot:
     )
 
 
+def restore_snapshot(campaign_id: str, snapshot_id: str) -> Snapshot:
+    """
+    Restore a campaign to a snapshot state by copying snapshot files back to the campaign root.
+
+    Returns the Snapshot that was restored.
+    Raises FileNotFoundError if the campaign or snapshot does not exist.
+    """
+    src_dir = campaign_path(campaign_id)
+    if not src_dir.exists():
+        raise FileNotFoundError(f"Campaign '{campaign_id}' not found")
+
+    snap_dir = src_dir / "campaigns" / snapshot_id
+    if not snap_dir.exists():
+        raise FileNotFoundError(f"Snapshot '{snapshot_id}' not found in campaign '{campaign_id}'")
+
+    snap_meta_file = snap_dir / "meta.json"
+    if not snap_meta_file.exists():
+        raise FileNotFoundError(f"Snapshot '{snapshot_id}' has no meta.json")
+
+    with open(snap_meta_file, encoding="utf-8") as f:
+        snap_meta = json.load(f)
+
+    # Copy snapshot files back to the campaign root (skip meta.json — keep live campaign identity)
+    for fname in ["world.yaml", "players.json", "chat.json"]:
+        snap_file = snap_dir / fname
+        if snap_file.exists():
+            shutil.copy2(snap_file, src_dir / fname)
+
+    return Snapshot(
+        id=snap_meta.get("id", snapshot_id),
+        label=snap_meta.get("snapshot_label", snapshot_id),
+        campaign_id=campaign_id,
+        created_by=snap_meta.get("created_by", ""),
+        created_at=snap_meta.get("created_at", ""),
+        path=str((snap_dir).relative_to(campaigns_root())),
+    )
+
+
 def delete_campaign(campaign_id: str) -> str:
     """
     Zip the campaign folder into the campaigns root, then delete the folder.

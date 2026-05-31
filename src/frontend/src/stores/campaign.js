@@ -239,11 +239,32 @@ export const useCampaignStore = defineStore('campaign', () => {
     }
   }
 
+  async function restoreSnapshot(campaignId, snapshotId) {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/snapshots/${snapshotId}/restore`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Restore failed')
+      // Reload campaign state to reflect restored world
+      await loadState(campaignId)
+      return data
+    } catch (e) {
+      error.value = e.message
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     campaigns, currentMeta, players, chat, gameMode, activeTurn,
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
-    fetchSnapshots,
+    fetchSnapshots, restoreSnapshot,
   }
 })
