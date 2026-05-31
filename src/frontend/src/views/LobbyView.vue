@@ -79,10 +79,15 @@
             <span class="stat-nums">{{ existingPlayer.hp_current ?? '?' }} / {{ existingPlayer.hp_max ?? '?' }}</span>
           </div>
 
-          <!-- DM Summary -->
-          <div v-if="joinResult?.summary" class="dm-summary">
-            <div class="dnd-section-heading">DM's Note</div>
-            <p class="parchment-text">{{ joinResult.summary }}</p>
+          <!-- DM Recap -->
+          <div class="dm-summary">
+            <div class="dnd-section-heading">DM's Recap</div>
+            <div v-if="recapLoading" class="recap-loading">
+              <div class="spinner-sm"></div>
+              <span class="recap-loading-text">The DM is recalling your last adventure...</span>
+            </div>
+            <p v-else-if="joinResult?.summary" class="parchment-text">{{ joinResult.summary }}</p>
+            <p v-else class="parchment-text recap-placeholder">Your story continues...</p>
           </div>
         </div>
 
@@ -115,6 +120,7 @@ const authStore = useAuthStore()
 const campaignId = route.params.id
 const loading = ref(true)
 const needsCharacter = ref(false)
+const recapLoading = ref(false)
 
 const joinResult = computed(() => campaignStore.joinResult)
 const campaignName = computed(() => campaignStore.currentMeta?.name || `Campaign ${campaignId}`)
@@ -145,9 +151,11 @@ const statusClass = computed(() => {
 onMounted(async () => {
   // Join campaign if not already in joinResult
   if (!campaignStore.joinResult) {
+    // Show recap spinner for returning players (we don't know yet, so show after join)
+    recapLoading.value = true
     const result = await campaignStore.joinCampaign(campaignId)
+    recapLoading.value = false
     if (!result) {
-      // Failed - redirect back
       router.push('/campaigns')
       return
     }
@@ -381,6 +389,35 @@ function enterGame() {
 
 .dm-summary {
   margin-top: 1rem;
+}
+
+.recap-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+}
+
+.spinner-sm {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #3d2e10;
+  border-top-color: #c9a227;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  flex-shrink: 0;
+}
+
+.recap-loading-text {
+  font-family: 'Crimson Text', serif;
+  font-style: italic;
+  color: #8a7355;
+  font-size: 0.95rem;
+}
+
+.recap-placeholder {
+  color: #5a4a30;
+  font-style: italic;
 }
 
 /* Action buttons */

@@ -152,16 +152,28 @@ def join_campaign(campaign_id: str, request: Request):
     needs_character = player.get("character_object_id") is None
     summary = None
     if not needs_character:
-        # Generate a DM summary of where they left off
         campaign = load_campaign_world(campaign_id)
         if campaign:
             char_id = player["character_object_id"]
             char_obj = campaign.world.get_object(char_id)
             location = campaign.world.get_object(char_obj.parent) if char_obj else None
+            location_name = location.name if location else "an unknown location"
+            race = char_obj.properties.get("race", "Adventurer") if char_obj else "Adventurer"
+            classes = char_obj.properties.get("classes", []) if char_obj else []
+            class_str = "/".join(c.get("type", "?") for c in classes) if classes else "Unknown"
+            recent_messages = [m.model_dump(mode="json") for m in get_chat(campaign_id, limit=20)]
+            summary = ai_client.generate_dm_recap(
+                character_name=player["character_name"] or "Adventurer",
+                race=race,
+                class_str=class_str,
+                location_name=location_name,
+                turn_number=meta.turn_number,
+                recent_messages=recent_messages,
+            )
+        else:
             summary = (
                 f"Welcome back, {player['character_name']}! "
-                f"You are in {location.name if location else 'an unknown location'} "
-                f"on turn {meta.turn_number}."
+                f"Your adventure awaits on turn {meta.turn_number}."
             )
     return {
         "needs_character": needs_character,

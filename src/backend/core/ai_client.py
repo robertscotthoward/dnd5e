@@ -530,6 +530,53 @@ class AIClient:
         result = await handler
         return result.response.content or ""
 
+    def generate_dm_recap(
+        self,
+        character_name: str,
+        race: str,
+        class_str: str,
+        location_name: str,
+        turn_number: int,
+        recent_messages: list[dict],
+    ) -> str:
+        """
+        Generate a narrative DM recap for a returning player.
+
+        Summarises the character's last session using recent chat history and
+        current world state. Falls back to a simple contextual string on error.
+        """
+        if recent_messages:
+            history_lines = []
+            for m in recent_messages[-20:]:
+                sender = m.get("sender", "?")
+                text = m.get("text", "")
+                history_lines.append(f"{sender}: {text}")
+            history_block = "\n".join(history_lines)
+        else:
+            history_block = "(No prior chat history available.)"
+
+        prompt = (
+            f"You are the Dungeon Master recapping the last session for a returning player.\n\n"
+            f"CHARACTER: {character_name}, a {race} {class_str}\n"
+            f"CURRENT LOCATION: {location_name}\n"
+            f"CAMPAIGN TURN: {turn_number}\n\n"
+            f"RECENT SESSION LOG:\n{history_block}\n\n"
+            f"Write a 2-3 sentence in-character recap of what {character_name} experienced in "
+            f"their last session. Speak directly to the player in second person. "
+            f"Be evocative, reference specific events from the log if available, and end with "
+            f"a hook that draws them back into the current situation."
+        )
+
+        try:
+            return self.llm.complete(prompt).text.strip()
+        except Exception as e:
+            console.print(f"[red]Error generating DM recap: {e}[/red]")
+            return (
+                f"Welcome back, {character_name}! "
+                f"You find yourself in {location_name} on turn {turn_number}, "
+                f"ready to continue your adventure."
+            )
+
     def generate_world_update(
         self,
         campaign: Campaign,
