@@ -75,7 +75,7 @@
 
 * [x] **Campaign journal** — Auto-written narrative log: after each turn the DM agent generates a one-paragraph summary and appends it to `data/campaigns/<name>/journal.md`. Frontend shows a scrollable "Journal" tab in the game view.
 * [x] **Quest / objective tracker** — Small panel listing active quests with checkbox milestones. Add a `add_quest(title, milestones[])` DM tool and a `complete_milestone(quest_id, milestone_idx)` tool. Quest state stored in world properties.
-* [ ] **NPC relationship tracker** — Track per-NPC disposition (`friendly`, `neutral`, `hostile`, `allied`) toward the party in world object properties. DM agent updates via `set_object_property`. Display a "Known NPCs" panel in the game sidebar.
+* [x] **NPC relationship tracker** — Track per-NPC disposition (`friendly`, `neutral`, `hostile`, `allied`) toward the party in world object properties. DM agent updates via `set_object_property`. Display a "Known NPCs" panel in the game sidebar.
 * [ ] **Random encounter roll during Travel** — Each travel segment triggers a hidden d20 roll against a location-appropriate encounter table (loaded from corpus). On a hit, mode switches to Combat and DM spawns enemies.
 * [ ] **Day/night cycle** — Track in-game time (hours) in campaign meta. Advance time each turn. Night imposes `disadvantage` on perception checks for non-darkvision races. Display current time and light state in the game header.
 

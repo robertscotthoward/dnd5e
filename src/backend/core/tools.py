@@ -633,6 +633,72 @@ class WorldTools:
             data={"quests": quests},
         )
 
+    def set_npc_disposition(
+        self,
+        npc_id: int,
+        disposition: str,
+        notes: str = "",
+    ) -> ToolResult:
+        """
+        Set or update a known NPC's disposition toward the party.
+
+        Disposition must be one of: friendly, neutral, hostile, allied.
+        NPC data is stored under world root properties.known_npcs keyed by npc_id.
+
+        Args:
+            npc_id: ID of the NPC object
+            disposition: One of friendly, neutral, hostile, allied
+            notes: Optional DM notes about this NPC
+        """
+        valid = {"friendly", "neutral", "hostile", "allied"}
+        if disposition not in valid:
+            return ToolResult(
+                success=False,
+                message=f"Invalid disposition '{disposition}'. Must be one of: {', '.join(sorted(valid))}",
+            )
+
+        npc = self.world.get_object(npc_id)
+        if not npc:
+            return ToolResult(success=False, message=f"NPC {npc_id} not found")
+
+        root = next(
+            (obj for obj in self.world.objects.values() if obj.parent is None),
+            None,
+        )
+        if not root:
+            return ToolResult(success=False, message="World root object not found")
+
+        known_npcs = root.properties.get("known_npcs", {})
+        key = str(npc_id)
+        existing = known_npcs.get(key, {})
+        known_npcs[key] = {
+            "id": npc_id,
+            "name": npc.name or f"NPC {npc_id}",
+            "disposition": disposition,
+            "notes": notes if notes else existing.get("notes", ""),
+        }
+        root.properties["known_npcs"] = known_npcs
+
+        return ToolResult(
+            success=True,
+            message=f"Set {npc.name or npc_id} disposition to {disposition}",
+            data={"npc": known_npcs[key]},
+        )
+
+    def get_npc_relationships(self) -> ToolResult:
+        """Return all known NPCs and their dispositions from the world root."""
+        root = next(
+            (obj for obj in self.world.objects.values() if obj.parent is None),
+            None,
+        )
+        known_npcs = root.properties.get("known_npcs", {}) if root else {}
+        npcs = list(known_npcs.values())
+        return ToolResult(
+            success=True,
+            message=f"{len(npcs)} known NPC(s)",
+            data={"npcs": npcs},
+        )
+
     def get_object(self, id: int) -> ToolResult:
         """
         Get an object by ID.

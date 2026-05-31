@@ -195,6 +195,16 @@
 
       <hr class="gold-divider-plain" />
 
+      <!-- Known NPCs -->
+      <div class="sidebar-section">
+        <div class="dnd-section-heading">
+          <span>👥</span> Known NPCs
+        </div>
+        <NpcPanel />
+      </div>
+
+      <hr class="gold-divider-plain" />
+
       <!-- Snapshots -->
       <div class="sidebar-section">
         <div
@@ -298,6 +308,7 @@ import InitiativeTracker from '../components/InitiativeTracker.vue'
 import LootSummary from '../components/LootSummary.vue'
 import JournalTab from '../components/JournalTab.vue'
 import QuestTracker from '../components/QuestTracker.vue'
+import NpcPanel from '../components/NpcPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -433,6 +444,7 @@ onMounted(async () => {
   await campaignStore.fetchSnapshots(campaignId)
   await campaignStore.fetchJournal(campaignId)
   await campaignStore.fetchQuests(campaignId)
+  await campaignStore.fetchNpcs(campaignId)
 })
 
 onUnmounted(() => {

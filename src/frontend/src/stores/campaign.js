@@ -39,6 +39,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   const pendingLoot = ref(null)     // { enemies_defeated, coins, items, loot_container_id }
   const journal = ref([])           // [{ turn_number, entry }] ordered oldest-first
   const quests = ref([])            // [{ id, title, milestones: [{text, completed}] }]
+  const npcRelationships = ref([])  // [{ id, name, disposition, notes }]
 
   async function fetchCampaigns() {
     loading.value = true
@@ -312,6 +313,16 @@ export const useCampaignStore = defineStore('campaign', () => {
         }
         break
       }
+      case 'npc_updated': {
+        const npc = msg.npc
+        const npcIdx = npcRelationships.value.findIndex(n => n.id === npc.id)
+        if (npcIdx !== -1) {
+          npcRelationships.value[npcIdx] = npc
+        } else {
+          npcRelationships.value.push(npc)
+        }
+        break
+      }
     }
   }
 
@@ -399,6 +410,17 @@ export const useCampaignStore = defineStore('campaign', () => {
     }
   }
 
+  async function fetchNpcs(id) {
+    try {
+      const res = await fetch(`/api/campaigns/${id}/npcs`, { credentials: 'include' })
+      const data = await res.json()
+      if (!res.ok) return
+      npcRelationships.value = data.npcs || []
+    } catch (e) {
+      // ignore
+    }
+  }
+
   async function fetchJournal(id) {
     try {
       const res = await fetch(`/api/campaigns/${id}/journal`, { credentials: 'include' })
@@ -452,9 +474,10 @@ export const useCampaignStore = defineStore('campaign', () => {
     campaigns, currentMeta, players, chat, gameMode, activeTurn,
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
     pendingLevelUp, pendingDiceRoll, initiativeOrder, pendingLoot, journal, quests,
+    npcRelationships,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
-    fetchSnapshots, fetchJournal, fetchQuests, restoreSnapshot, sendAwardXp, awardXp,
+    fetchSnapshots, fetchJournal, fetchQuests, fetchNpcs, restoreSnapshot, sendAwardXp, awardXp,
     clearLevelUp, clearDiceRoll, sendTakeLoot, clearLoot, sendCompleteMilestone,
   }
 })

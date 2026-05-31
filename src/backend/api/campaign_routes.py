@@ -748,6 +748,24 @@ def post_snapshot(campaign_id: str, req: SnapshotRequest, request: Request):
     return snap
 
 
+@router.get("/campaigns/{campaign_id}/npcs")
+def get_npcs(campaign_id: str, request: Request):
+    """Return all known NPCs and their dispositions for a campaign."""
+    get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load world")
+
+    from src.backend.core.tools import WorldTools
+
+    tools = WorldTools(campaign.world)
+    result = tools.get_npc_relationships()
+    return {"npcs": result.data["npcs"]}
+
+
 @router.post("/campaigns/{campaign_id}/snapshots/{snapshot_id}/restore")
 def post_snapshot_restore(campaign_id: str, snapshot_id: str, request: Request):
     """

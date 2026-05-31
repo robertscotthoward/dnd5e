@@ -167,6 +167,21 @@ async def _run_dm_response(
     except Exception:
         pass
 
+    # Broadcast updated NPC relationship list after each DM turn
+    try:
+        npc_world = load_campaign_world(campaign_id)
+        if npc_world:
+            from src.backend.core.tools import WorldTools as _WorldTools
+            _npc_tools = _WorldTools(npc_world.world)
+            _npc_result = _npc_tools.get_npc_relationships()
+            for _npc in _npc_result.data["npcs"]:
+                await manager.broadcast(
+                    campaign_id,
+                    {"type": "npc_updated", "npc": _npc},
+                )
+    except Exception:
+        pass
+
     # Detect all-enemies-dead: if in Combat mode, check whether every NPC in
     # the combat queue has HP <= 0.  If so, generate loot and broadcast.
     if meta.game_mode == "Combat" and meta.combat_queue:
