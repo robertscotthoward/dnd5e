@@ -234,6 +234,27 @@ def status(
 
 
 @app.command()
+def serve(
+    host: str = typer.Option("127.0.0.1", "--host", "-h", help="Host to bind to"),
+    port: int = typer.Option(8000, "--port", "-p", help="Port to listen on"),
+    reload: bool = typer.Option(True, "--reload/--no-reload", "-r", help="Auto-reload on code changes (default: on)"),
+):
+    """Start the FastAPI web server (auto-rebuilds frontend before starting)."""
+    import subprocess
+    import uvicorn
+    frontend_dir = Path(__file__).parent / "src" / "frontend"
+    if frontend_dir.exists():
+        console.print("[dim]Building frontend...[/dim]")
+        result = subprocess.run("npm run build", cwd=str(frontend_dir), capture_output=True, text=True, shell=True)
+        if result.returncode == 0:
+            console.print("[green]Frontend built.[/green]")
+        else:
+            console.print(f"[yellow]Frontend build warning:[/yellow] {result.stderr[-200:] if result.stderr else 'unknown error'}")
+    console.print(f"[bold green]Starting D&D 5e server on http://{host}:{port}[/bold green]")
+    uvicorn.run("src.backend.main:app", host=host, port=port, reload=reload)
+
+
+@app.command()
 def index_corpus(
     force: bool = typer.Option(False, "--force", "-f", help="Force reindex even if already indexed"),
 ):

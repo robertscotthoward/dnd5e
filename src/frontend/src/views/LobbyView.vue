@@ -44,7 +44,7 @@
     <!-- Returning Hero mode -->
     <div v-else class="returning-wrapper">
       <div class="returning-header">
-        <h1 class="page-title">Welcome Back, Adventurer</h1>
+        <h1 class="page-title">{{ joinResult?.player?.character_name ? 'Welcome Back, ' + joinResult.player.character_name : 'Your Adventure Begins' }}</h1>
         <p class="page-sub">Campaign: <strong>{{ campaignName }}</strong></p>
         <div class="gold-divider"></div>
       </div>
@@ -81,7 +81,7 @@
 
           <!-- DM Recap -->
           <div class="dm-summary">
-            <div class="dnd-section-heading">DM's Recap</div>
+            <div class="dnd-section-heading">{{ joinResult?.is_new_character ? "Opening Scene" : "DM's Recap" }}</div>
             <div v-if="recapLoading" class="recap-loading">
               <div class="spinner-sm"></div>
               <span class="recap-loading-text">The DM is recalling your last adventure...</span>
@@ -165,9 +165,9 @@ onMounted(async () => {
   loading.value = false
 })
 
-function onCharacterCreated(charData) {
-  // Character created - navigate to game
-  router.push(`/campaigns/${campaignId}/game`)
+function onCharacterCreated() {
+  // createCharacter already ran inside CharacterCreator and updated joinResult with summary
+  needsCharacter.value = false
 }
 
 function enterGame() {

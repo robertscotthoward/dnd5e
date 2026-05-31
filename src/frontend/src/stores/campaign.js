@@ -138,6 +138,24 @@ export const useCampaignStore = defineStore('campaign', () => {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.detail || 'Failed to create character')
+      // Merge the opening-scene summary into joinResult so LobbyView can show it
+      if (data.summary && joinResult.value) {
+        joinResult.value = {
+          ...joinResult.value,
+          needs_character: false,
+          is_new_character: true,
+          summary: data.summary,
+          player: {
+            ...(joinResult.value.player || {}),
+            character_object_id: data.character_object_id,
+            character_name: data.name,
+            race: data.race,
+            class_type: data.class_type,
+            hp_current: data.hp?.current ?? 0,
+            hp_max: data.hp?.max ?? 0,
+          },
+        }
+      }
       return data
     } catch (e) {
       error.value = e.message

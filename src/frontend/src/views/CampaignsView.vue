@@ -155,11 +155,7 @@ async function handleJoin(id) {
   const result = await campaignStore.joinCampaign(id)
   joiningId.value = null
   if (result) {
-    if (result.needs_character) {
-      router.push(`/campaigns/${id}/lobby`)
-    } else {
-      router.push(`/campaigns/${id}/game`)
-    }
+    router.push(`/campaigns/${id}/lobby`)
   }
 }
 

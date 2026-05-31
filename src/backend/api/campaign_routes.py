@@ -180,6 +180,26 @@ def join_campaign(campaign_id: str, request: Request):
             race = char_obj.properties.get("race", "Adventurer") if char_obj else "Adventurer"
             classes = char_obj.properties.get("classes", []) if char_obj else []
             class_str = "/".join(c.get("type", "?") for c in classes) if classes else "Unknown"
+            hp = char_obj.properties.get("hp", {}) if char_obj else {}
+            conditions = list(char_obj.properties.get("conditions", [])) if char_obj else []
+            # Build visible surroundings list
+            visible_objects = []
+            if char_obj:
+                for sibling in campaign.world.get_children(char_obj.parent):
+                    if sibling.id != char_id and sibling.name:
+                        visible_objects.append(f"{sibling.name} ({sibling.type})")
+                # Also list notable items in the location container itself
+                loc_children = campaign.world.get_children(char_obj.parent) if location else []
+                for item in loc_children:
+                    if item.type not in ("PC", "NPC", "party") and item.name:
+                        if f"{item.name} ({item.type})" not in visible_objects:
+                            visible_objects.append(f"{item.name} ({item.type})")
+            # Nearby party members
+            nearby_party = []
+            if char_obj:
+                for sibling in campaign.world.get_children(char_obj.parent):
+                    if sibling.id != char_id and sibling.type in ("PC", "NPC") and sibling.name:
+                        nearby_party.append(sibling.name)
             recent_messages = [m.model_dump(mode="json") for m in get_chat(campaign_id, limit=20)]
             summary = ai_client.generate_dm_recap(
                 character_name=player["character_name"] or "Adventurer",
@@ -188,6 +208,12 @@ def join_campaign(campaign_id: str, request: Request):
                 location_name=location_name,
                 turn_number=meta.turn_number,
                 recent_messages=recent_messages,
+                hp_current=hp.get("current", 0),
+                hp_max=hp.get("max", 0),
+                conditions=conditions,
+                visible_objects=visible_objects,
+                nearby_party=nearby_party,
+                is_new_character=False,
             )
         else:
             summary = (
@@ -288,6 +314,34 @@ def create_character(campaign_id: str, char_req: CharacterCreate, request: Reque
         max_hp,
     )
 
+    # Build opening scene context
+    party_obj = campaign.world.get_object(party_id)
+    location_name = party_obj.name if party_obj else "the realm"
+    visible_objects = [
+        f"{o.name} ({o.type})"
+        for o in campaign.world.get_children(party_id)
+        if o.id != char_obj.id and o.name and o.type not in ("PC", "NPC")
+    ]
+    nearby_party = [
+        o.name
+        for o in campaign.world.get_children(party_id)
+        if o.id != char_obj.id and o.type in ("PC", "NPC") and o.name
+    ]
+    summary = ai_client.generate_dm_recap(
+        character_name=char_req.name,
+        race=char_req.race,
+        class_str=char_req.class_type,
+        location_name=location_name,
+        turn_number=meta.turn_number,
+        recent_messages=[],
+        hp_current=max_hp,
+        hp_max=max_hp,
+        conditions=[],
+        visible_objects=visible_objects,
+        nearby_party=nearby_party,
+        is_new_character=True,
+    )
+
     return {
         "character_object_id": char_obj.id,
         "name": char_req.name,
@@ -296,6 +350,7 @@ def create_character(campaign_id: str, char_req: CharacterCreate, request: Reque
         "hp": {"current": max_hp, "max": max_hp},
         "abilities": abilities,
         "background": background,
+        "summary": summary,
     }
 
 

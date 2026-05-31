@@ -257,9 +257,12 @@ class AIClient:
 
     def query_rules(self, query: str, n_results: int = 3) -> str:
         """Query the D&D rules corpus and return relevant context."""
-        results = vector_store.search(query, n_results=n_results)
+        try:
+            results = vector_store.search(query, n_results=n_results)
+        except Exception:
+            return ""
         if not results:
-            return "No relevant rules found."
+            return ""
 
         context_parts = []
         for result in results:
@@ -567,44 +570,77 @@ class AIClient:
         location_name: str,
         turn_number: int,
         recent_messages: list[dict],
+        hp_current: int = 0,
+        hp_max: int = 0,
+        conditions: list[str] | None = None,
+        visible_objects: list[str] | None = None,
+        nearby_party: list[str] | None = None,
+        is_new_character: bool = False,
     ) -> str:
         """
-        Generate a narrative DM recap for a returning player.
+        Generate a DM situational summary when a player joins or rejoins.
 
-        Summarises the character's last session using recent chat history and
-        current world state. Falls back to a simple contextual string on error.
+        For a new character: describes the opening scene, where they are, and who
+        they can see. For a returning player: recaps recent events and restates
+        current status. Falls back to a plain string on LLM error.
         """
-        if recent_messages:
-            history_lines = []
-            for m in recent_messages[-20:]:
-                sender = m.get("sender", "?")
-                text = m.get("text", "")
-                history_lines.append(f"{sender}: {text}")
-            history_block = "\n".join(history_lines)
-        else:
-            history_block = "(No prior chat history available.)"
+        hp_line = f"{hp_current}/{hp_max} HP" if hp_max else "unknown HP"
+        cond_line = ", ".join(conditions) if conditions else "none"
+        objects_block = "\n".join(f"- {o}" for o in visible_objects) if visible_objects else "(nothing notable nearby)"
+        party_block = ", ".join(nearby_party) if nearby_party else "none present"
 
-        prompt = (
-            f"You are the Dungeon Master recapping the last session for a returning player.\n\n"
-            f"CHARACTER: {character_name}, a {race} {class_str}\n"
-            f"CURRENT LOCATION: {location_name}\n"
-            f"CAMPAIGN TURN: {turn_number}\n\n"
-            f"RECENT SESSION LOG:\n{history_block}\n\n"
-            f"Write a 2-3 sentence in-character recap of what {character_name} experienced in "
-            f"their last session. Speak directly to the player in second person. "
-            f"Be evocative, reference specific events from the log if available, and end with "
-            f"a hook that draws them back into the current situation."
-        )
+        if is_new_character:
+            prompt = (
+                f"You are the Dungeon Master opening the first scene for a brand-new player character.\n\n"
+                f"CHARACTER: {character_name}, a {race} {class_str}\n"
+                f"STARTING LOCATION: {location_name}\n"
+                f"STATUS: {hp_line} | Conditions: {cond_line}\n"
+                f"NEARBY PARTY MEMBERS: {party_block}\n"
+                f"VISIBLE SURROUNDINGS:\n{objects_block}\n\n"
+                f"Write 2-3 sentences in second person describing what {character_name} sees and senses "
+                f"as they arrive in {location_name}. Name specific visible objects or people. "
+                f"End with a question or observation that invites the player to act."
+            )
+            fallback = (
+                f"You are {character_name}, a {race} {class_str}. "
+                f"You find yourself in {location_name}. "
+                f"{'Your companions ' + party_block + ' are nearby. ' if nearby_party else ''}"
+                f"What do you do?"
+            )
+        else:
+            if recent_messages:
+                history_lines = [
+                    f"{m.get('sender', '?')}: {m.get('text', '')}"
+                    for m in recent_messages[-20:]
+                ]
+                history_block = "\n".join(history_lines)
+            else:
+                history_block = "(No prior chat history available.)"
+
+            prompt = (
+                f"You are the Dungeon Master recapping the last session for a returning player.\n\n"
+                f"CHARACTER: {character_name}, a {race} {class_str}\n"
+                f"CURRENT LOCATION: {location_name}\n"
+                f"CAMPAIGN TURN: {turn_number}\n"
+                f"CURRENT STATUS: {hp_line} | Conditions: {cond_line}\n"
+                f"NEARBY PARTY MEMBERS: {party_block}\n"
+                f"VISIBLE SURROUNDINGS:\n{objects_block}\n\n"
+                f"RECENT SESSION LOG:\n{history_block}\n\n"
+                f"Write 3-4 sentences in second person. First, recap what {character_name} last experienced "
+                f"(reference specific log events if available). Then describe what they currently see around them "
+                f"and their present condition. End with a hook that draws them back into the action."
+            )
+            fallback = (
+                f"Welcome back, {character_name}! "
+                f"You find yourself in {location_name} on turn {turn_number} ({hp_line}). "
+                f"{'Nearby: ' + party_block + '.' if nearby_party else ''}"
+            )
 
         try:
             return self.llm.complete(prompt).text.strip()
         except Exception as e:
             console.print(f"[red]Error generating DM recap: {e}[/red]")
-            return (
-                f"Welcome back, {character_name}! "
-                f"You find yourself in {location_name} on turn {turn_number}, "
-                f"ready to continue your adventure."
-            )
+            return fallback
 
     def generate_world_update(
         self,

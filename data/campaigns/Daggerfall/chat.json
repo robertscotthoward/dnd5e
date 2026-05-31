@@ -1,1 +1,20 @@
-{"messages": []}
+{
+  "messages": [
+    {
+      "id": "d42c3db17c22",
+      "sender": "robeblade",
+      "sender_type": "PC",
+      "text": "Create a paragraph that describes the current state of my campaign from my perspective?",
+      "turn_number": 0,
+      "timestamp": "2026-05-31T10:48:29.549384"
+    },
+    {
+      "id": "cd1dbf802119",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "[DM is unavailable: `llama-index-embeddings-huggingface` package not found, please run `pip install ]",
+      "turn_number": 0,
+      "timestamp": "2026-05-31T10:48:29.650863"
+    }
+  ]
+}
