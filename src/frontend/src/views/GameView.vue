@@ -221,6 +221,9 @@
     <!-- Level-Up Dialog -->
     <LevelUpDialog :campaignId="campaignId" @confirmed="onLevelUpConfirmed" />
 
+    <!-- Loot Summary -->
+    <LootSummary />
+
     <!-- Character Sheet Panel -->
     <CharacterSheet
       :open="sheetOpen"
@@ -262,6 +265,7 @@ import SnapshotNode from '../components/SnapshotNode.vue'
 import LevelUpDialog from '../components/LevelUpDialog.vue'
 import CharacterSheet from '../components/CharacterSheet.vue'
 import InitiativeTracker from '../components/InitiativeTracker.vue'
+import LootSummary from '../components/LootSummary.vue'
 
 const route = useRoute()
 const router = useRouter()

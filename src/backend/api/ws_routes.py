@@ -18,6 +18,7 @@ from src.backend.core.campaign_manager import (
 )
 from src.backend.models.user import ChatMessage
 from src.backend.core.tools import WorldTools
+from src.backend.core.loot import generate_loot
 from src.backend.core.ai_client import ai_client
 
 router = APIRouter(tags=["websocket"])
@@ -140,6 +141,51 @@ async def _run_dm_response(
             "message": dm_msg.model_dump(mode="json"),
         },
     )
+
+    # Detect all-enemies-dead: if in Combat mode, check whether every NPC in
+    # the combat queue has HP <= 0.  If so, generate loot and broadcast.
+    if meta.game_mode == "Combat" and meta.combat_queue:
+        world_for_loot = load_campaign_world(campaign_id)
+        if world_for_loot:
+            pcs = {obj.id for obj in world_for_loot.world.get_pcs()}
+            enemies_in_queue = [
+                world_for_loot.world.get_object(oid)
+                for oid in meta.combat_queue
+                if oid not in pcs
+            ]
+            enemies_in_queue = [e for e in enemies_in_queue if e is not None]
+            all_enemies_dead = (
+                bool(enemies_in_queue)
+                and all(e.is_dead for e in enemies_in_queue)
+            )
+            if all_enemies_dead:
+                # Find a suitable loot container: the party object or world root
+                parties = world_for_loot.world.get_parties()
+                loot_parent_id = parties[0].id if parties else 1
+                loot_summary = generate_loot(
+                    enemies=enemies_in_queue,
+                    world=world_for_loot.world,
+                    loot_container_parent_id=loot_parent_id,
+                )
+                save_campaign_world(campaign_id, world_for_loot)
+                loot_msg = ChatMessage(
+                    sender="SYSTEM",
+                    sender_type="SYSTEM",
+                    text=(
+                        f"Victory! All enemies defeated. "
+                        f"Loot recovered: {len(loot_summary['items'])} item(s)."
+                    ),
+                    turn_number=meta.turn_number,
+                )
+                append_chat(campaign_id, loot_msg)
+                await manager.broadcast(
+                    campaign_id,
+                    {
+                        "type": "loot_summary",
+                        "loot": loot_summary,
+                        "message": loot_msg.model_dump(mode="json"),
+                    },
+                )
 
     # Broadcast refreshed player list with updated HP values
     players = get_players(campaign_id)
@@ -464,6 +510,57 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                             await manager.send_personal(
                                 websocket,
                                 {"type": "error", "message": ds_result.message},
+                            )
+
+            elif msg_type == "take_loot":
+                item_id = data.get("item_id")
+                character_id = data.get("character_id")
+                if not isinstance(item_id, int) or not isinstance(character_id, int):
+                    await manager.send_personal(
+                        websocket,
+                        {"type": "error", "message": "take_loot requires integer item_id and character_id"},
+                    )
+                else:
+                    loot_campaign = load_campaign_world(campaign_id)
+                    if loot_campaign:
+                        loot_tools = WorldTools(loot_campaign.world)
+                        move_result = loot_tools.move_object(item_id, character_id)
+                        if move_result.success:
+                            save_campaign_world(campaign_id, loot_campaign)
+                            char_obj = loot_campaign.world.get_object(character_id)
+                            char_name_loot = char_obj.name if char_obj else f"Character #{character_id}"
+                            item_obj = loot_campaign.world.get_object(item_id)
+                            item_name_loot = item_obj.name if item_obj else f"Item #{item_id}"
+                            take_msg = ChatMessage(
+                                sender="SYSTEM",
+                                sender_type="SYSTEM",
+                                text=f"{char_name_loot} takes {item_name_loot}.",
+                                turn_number=meta.turn_number,
+                            )
+                            append_chat(campaign_id, take_msg)
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "loot_taken",
+                                    "item_id": item_id,
+                                    "character_id": character_id,
+                                    "character_name": char_name_loot,
+                                    "message": take_msg.model_dump(mode="json"),
+                                },
+                            )
+                            # Refresh player list (encumbrance update)
+                            updated_players = get_players(campaign_id)
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "player_list",
+                                    "players": [p.model_dump(mode="json") for p in updated_players],
+                                },
+                            )
+                        else:
+                            await manager.send_personal(
+                                websocket,
+                                {"type": "error", "message": move_result.message},
                             )
 
             elif msg_type == "snapshot":

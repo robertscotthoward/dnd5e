@@ -36,6 +36,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   const pendingLevelUp = ref(null)  // { character_id, character_name, old_level, new_level, hit_die, class_type, has_asi }
   const pendingDiceRoll = ref(null) // { die: 'd20', result: 15, queued_message: {...} }
   const initiativeOrder = ref([])   // [{ id, name, initiative }] sorted highest first
+  const pendingLoot = ref(null)     // { enemies_defeated, coins, items, loot_container_id }
 
   async function fetchCampaigns() {
     loading.value = true
@@ -283,6 +284,19 @@ export const useCampaignStore = defineStore('campaign', () => {
         }
         break
       }
+      case 'loot_summary':
+        pendingLoot.value = msg.loot
+        if (msg.message) chat.value.push(msg.message)
+        break
+      case 'loot_taken': {
+        if (msg.message) chat.value.push(msg.message)
+        // Mark the item as taken in pendingLoot
+        if (pendingLoot.value) {
+          const item = pendingLoot.value.items.find(i => i.id === msg.item_id)
+          if (item) item.taken_by = msg.character_name
+        }
+        break
+      }
     }
   }
 
@@ -343,6 +357,16 @@ export const useCampaignStore = defineStore('campaign', () => {
     pendingDiceRoll.value = null
   }
 
+  function sendTakeLoot(itemId, characterId) {
+    if (ws.value && ws.value.readyState === WebSocket.OPEN) {
+      ws.value.send(JSON.stringify({ type: 'take_loot', item_id: itemId, character_id: characterId }))
+    }
+  }
+
+  function clearLoot() {
+    pendingLoot.value = null
+  }
+
   async function fetchSnapshots(id) {
     try {
       const res = await fetch(`/api/campaigns/${id}/snapshots`, { credentials: 'include' })
@@ -376,9 +400,10 @@ export const useCampaignStore = defineStore('campaign', () => {
   return {
     campaigns, currentMeta, players, chat, gameMode, activeTurn,
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
-    pendingLevelUp, pendingDiceRoll, initiativeOrder,
+    pendingLevelUp, pendingDiceRoll, initiativeOrder, pendingLoot,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
     fetchSnapshots, restoreSnapshot, sendAwardXp, awardXp, clearLevelUp, clearDiceRoll,
+    sendTakeLoot, clearLoot,
   }
 })
