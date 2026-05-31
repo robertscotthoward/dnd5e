@@ -34,6 +34,19 @@ _PC_SYSTEM_PROMPT_TEMPLATE = (
     "Never invent object IDs — use get_object or get_sub_world to discover them first."
 )
 
+_NPC_SYSTEM_PROMPT_TEMPLATE = (
+    "You are {name}, a {creature_type} in a D&D 5e campaign.\n\n"
+    "ROLE: {role}\n"
+    "BEHAVIOR: {behavior}\n\n"
+    "You act under the direction of the Dungeon Master. Execute DM directives faithfully "
+    "and in character. You may call tools to inspect the world (get_object, get_sub_world), "
+    "move yourself (move_object), update your own state (set_object_property), and apply "
+    "damage or healing (add_hp) when instructed to attack or heal. Think step by step: "
+    "assess the directive, check relevant world details with tools if needed, then carry out "
+    "the action and describe what {name} does in third person. "
+    "Never invent object IDs — use get_object or get_sub_world to discover them first."
+)
+
 
 class AIClient:
     """AI client for interacting with Ollama LLM."""
@@ -124,6 +137,36 @@ class AIClient:
                 fn=world_tools.set_object_property,
                 name="set_object_property",
                 description="Update a property on yourself (e.g. equipped item, stance)",
+            ),
+        ]
+
+    def create_npc_tools(self, world_tools: WorldTools) -> list[FunctionTool]:
+        """Create the NPC tool set: read, movement, state update, and combat damage."""
+        return [
+            FunctionTool.from_defaults(
+                fn=world_tools.get_object,
+                name="get_object",
+                description="Get an object by ID to inspect its properties",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.get_sub_world,
+                name="get_sub_world",
+                description="Get the visible world from an observer's perspective",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.move_object,
+                name="move_object",
+                description="Move yourself or a carried item to a new location",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.set_object_property,
+                name="set_object_property",
+                description="Update a property on yourself (e.g. stance, condition)",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.add_hp,
+                name="add_hp",
+                description="Apply damage (negative) or healing (positive) to a target by DM directive",
             ),
         ]
 
@@ -290,6 +333,70 @@ class AIClient:
         except Exception as e:
             console.print(f"[red]Error in PC ReAct agent: {e}[/red]")
             return f"[{pc.name or 'character'} hesitates...] (Error: {e})"
+
+    def generate_npc_action(
+        self,
+        campaign: Campaign,
+        npc_id: int,
+        dm_directive: str,
+        world_tools: Optional[WorldTools] = None,
+    ) -> str:
+        """
+        Run a ReAct agent as an NPC to execute a DM directive.
+
+        The NPC agent receives the DM's instruction, may call world tools to inspect
+        or mutate state, and produces a third-person action description.
+
+        Args:
+            campaign: The current campaign
+            npc_id: Object ID of the NPC (monster or townfolk)
+            dm_directive: The DM's instruction for what the NPC should do
+            world_tools: WorldTools instance; created from campaign.world if omitted
+        """
+        npc = campaign.world.get_object(npc_id)
+        if not npc:
+            return "NPC not found"
+
+        if world_tools is None:
+            world_tools = WorldTools(campaign.world)
+
+        hp = npc.properties.get("hp", {})
+        abilities = npc.properties.get("abilities", {})
+        creature_type = npc.properties.get("creature_type", npc.type)
+        role = npc.properties.get("role", npc.description or "a creature in the world")
+        behavior = npc.properties.get("behavior", "Acts according to its nature")
+
+        system_prompt = _NPC_SYSTEM_PROMPT_TEMPLATE.format(
+            name=npc.name or "the creature",
+            creature_type=creature_type,
+            role=role,
+            behavior=behavior,
+        )
+
+        visible_world = campaign.world.get_visible_world(npc_id)
+
+        user_message = (
+            f'Campaign: "{campaign.name}"\n\n'
+            f"NPC DETAILS:\n"
+            f"- Name: {npc.name or 'Unknown'}\n"
+            f"- Type: {creature_type}\n"
+            f"- HP: {hp.get('current', '?')}/{hp.get('max', '?')}\n"
+            f"- Abilities: STR {abilities.get('str', 10)}, DEX {abilities.get('dex', 10)}, "
+            f"CON {abilities.get('con', 10)}, INT {abilities.get('int', 10)}, "
+            f"WIS {abilities.get('wis', 10)}, CHR {abilities.get('chr', 10)}\n\n"
+            f"DM DIRECTIVE:\n{dm_directive}\n\n"
+            f"WHAT YOU CAN SEE:\n{visible_world.model_dump_yaml()}\n\n"
+            f"Carry out the directive as {npc.name or 'the NPC'}. "
+            "Describe your actions in third person."
+        )
+
+        tools = self.create_npc_tools(world_tools)
+
+        try:
+            return asyncio.run(self._run_pc_agent(user_message, system_prompt, tools))
+        except Exception as e:
+            console.print(f"[red]Error in NPC ReAct agent: {e}[/red]")
+            return f"[{npc.name or 'NPC'} hesitates...] (Error: {e})"
 
     def generate_world_update(
         self,

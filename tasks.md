@@ -11,7 +11,7 @@
 
 * [x] **DM Agent** — Full tool-calling loop using `qwen2.5:14b` via Ollama. DM receives filtered world, calls tools, produces narrative. Currently `ai_client.generate_dm_response` calls `llm.complete` (no tool loop); upgrade to ReAct agent.
 * [x] **PC Agent** — Per-character agent with personality and disposition driving decisions. Currently `generate_player_action` uses bare `complete`; upgrade to an agent that can also call tools.
-* [ ] **NPC Agent** — Reuse PC agent pattern for monsters/townfolk; controlled by DM directives.
+* [x] **NPC Agent** — Reuse PC agent pattern for monsters/townfolk; controlled by DM directives.
 * [ ] **World Agent** — Background event generator (weather, NPC movement, item theft) that runs each turn before the DM agent.
 
 ## Phase 3: World & Combat
