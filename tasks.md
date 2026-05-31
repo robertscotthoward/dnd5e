@@ -46,7 +46,7 @@
 * [x] **Admin routes** — `admin_routes.py` has campaign list, delete, player remove, world tree.
 * [x] **Admin world tree view** — `AdminWorldView.vue` renders expandable tree with detail panel and right-click create/delete.
 * [x] **Snapshot restore** — Backend endpoint to restore a campaign to a snapshot state (copy snapshot files back to campaign root). Frontend restore button in snapshot list.
-* [ ] **Snapshot tree UI** — Display snapshots as a branching tree (parent→child) rather than a flat list.
+* [x] **Snapshot tree UI** — Display snapshots as a branching tree (parent→child) rather than a flat list.
 * [ ] **Admin character attribute roll** — When creating a PC from admin, auto-roll attributes and show results in the create-object dialog.
 * [ ] **Admin left nav** — Verify "Console" nav link is present and links to `/admin`; add "World" nav section if missing.
 

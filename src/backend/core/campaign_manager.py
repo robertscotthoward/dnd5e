@@ -284,6 +284,7 @@ def list_snapshots(campaign_id: str) -> list[Snapshot]:
                         created_by=meta.get("created_by", ""),
                         created_at=meta.get("created_at", ""),
                         path=str(d.relative_to(campaigns_root())),
+                        parent_snapshot=meta.get("parent_snapshot_id"),
                     )
                 )
     return result
@@ -299,6 +300,10 @@ def create_snapshot(campaign_id: str, label: str, created_by: str) -> Snapshot:
     src = campaign_path(campaign_id)
     dst = src / "campaigns" / snap_id
     dst.mkdir(parents=True, exist_ok=True)
+
+    # Determine the parent snapshot from the live meta's current_snapshot_id
+    live_meta = get_campaign_meta(campaign_id)
+    parent_snapshot_id: Optional[str] = live_meta.current_snapshot_id if live_meta else None
 
     # Copy key files into the snapshot folder
     for fname in ["world.yaml", "players.json", "chat.json", "meta.json"]:
@@ -317,6 +322,7 @@ def create_snapshot(campaign_id: str, label: str, created_by: str) -> Snapshot:
     snap_meta["id"] = snap_id
     snap_meta["snapshot_label"] = label
     snap_meta["parent_snapshot"] = campaign_id
+    snap_meta["parent_snapshot_id"] = parent_snapshot_id
     snap_meta["created_by"] = created_by
     snap_meta["created_at"] = now
 
@@ -330,6 +336,7 @@ def create_snapshot(campaign_id: str, label: str, created_by: str) -> Snapshot:
         created_by=created_by,
         created_at=now,
         path=str((src / "campaigns" / snap_id).relative_to(campaigns_root())),
+        parent_snapshot=parent_snapshot_id,
     )
 
 
@@ -361,6 +368,15 @@ def restore_snapshot(campaign_id: str, snapshot_id: str) -> Snapshot:
         if snap_file.exists():
             shutil.copy2(snap_file, src_dir / fname)
 
+    # Record the restored snapshot ID so future snapshots know their parent
+    try:
+        live_meta = get_campaign_meta(campaign_id)
+        if live_meta:
+            live_meta.current_snapshot_id = snapshot_id
+            save_campaign_meta(live_meta)
+    except Exception:
+        pass
+
     return Snapshot(
         id=snap_meta.get("id", snapshot_id),
         label=snap_meta.get("snapshot_label", snapshot_id),
@@ -368,6 +384,7 @@ def restore_snapshot(campaign_id: str, snapshot_id: str) -> Snapshot:
         created_by=snap_meta.get("created_by", ""),
         created_at=snap_meta.get("created_at", ""),
         path=str((snap_dir).relative_to(campaigns_root())),
+        parent_snapshot=snap_meta.get("parent_snapshot_id"),
     )
 
 

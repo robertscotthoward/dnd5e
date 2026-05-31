@@ -107,6 +107,7 @@ class CampaignMeta(BaseModel):
     active_player_turn: Optional[int] = None  # object_id during combat
     combat_queue: list[int] = Field(default_factory=list)  # ordered combatant IDs
     player_count: int = 0
+    current_snapshot_id: Optional[str] = None  # snapshot we last restored to; parent for next snapshot
 
 
 class Snapshot(BaseModel):
@@ -116,3 +117,4 @@ class Snapshot(BaseModel):
     created_by: str
     created_at: str
     path: str  # relative path from data/campaigns root
+    parent_snapshot: Optional[str] = None  # snapshot ID of the parent, or None for root

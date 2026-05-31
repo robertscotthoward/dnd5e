@@ -157,24 +157,18 @@
           <span class="toggle-icon">{{ snapshotsOpen ? '▲' : '▼' }}</span>
         </div>
         <div v-if="snapshotsOpen" class="snapshots-list">
-          <div
-            v-for="snap in campaignStore.snapshots"
-            :key="snap.snapshot_id || snap.id"
-            class="snapshot-item"
-          >
-            <span class="snap-label">{{ snap.label || 'Snapshot' }}</span>
-            <button
-              class="snap-restore-btn"
-              :disabled="restoringSnapshotId === (snap.id || snap.snapshot_id)"
-              @click="confirmRestore(snap)"
-              title="Restore to this snapshot"
-            >
-              {{ restoringSnapshotId === (snap.id || snap.snapshot_id) ? '...' : '↩' }}
-            </button>
-          </div>
-          <div v-if="campaignStore.snapshots.length === 0" class="no-snapshots">
-            No snapshots yet.
-          </div>
+          <template v-if="campaignStore.snapshots.length === 0">
+            <div class="no-snapshots">No snapshots yet.</div>
+          </template>
+          <template v-else>
+            <SnapshotNode
+              v-for="node in snapshotTree"
+              :key="node.snap.id"
+              :node="node"
+              :restoringId="restoringSnapshotId"
+              @restore="confirmRestore"
+            />
+          </template>
         </div>
       </div>
     </aside>
@@ -234,6 +228,7 @@ import { useAuthStore } from '../stores/auth'
 import PlayerCard from '../components/PlayerCard.vue'
 import ChatWindow from '../components/ChatWindow.vue'
 import ActionBar from '../components/ActionBar.vue'
+import SnapshotNode from '../components/SnapshotNode.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -287,6 +282,24 @@ const activeTurnName = computed(() => {
   if (!campaignStore.activeTurn) return null
   const p = campaignStore.players.find(pl => pl.character_object_id === campaignStore.activeTurn)
   return p?.character_name || `Player #${campaignStore.activeTurn}`
+})
+
+// Build parent→child tree from the flat snapshot list.
+// Each node: { snap, children[] }
+const snapshotTree = computed(() => {
+  const snaps = campaignStore.snapshots
+  const byId = {}
+  snaps.forEach(s => { byId[s.id] = { snap: s, children: [] } })
+  const roots = []
+  snaps.forEach(s => {
+    const parent = s.parent_snapshot && byId[s.parent_snapshot]
+    if (parent) {
+      parent.children.push(byId[s.id])
+    } else {
+      roots.push(byId[s.id])
+    }
+  })
+  return roots
 })
 
 // Methods
