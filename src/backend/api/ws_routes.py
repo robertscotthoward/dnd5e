@@ -434,6 +434,10 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                                     "type": "death_save_result",
                                     "data": ds_result.data,
                                     "message": ds_msg.model_dump(mode="json"),
+                                    "dice_roll": {
+                                        "die": "d20",
+                                        "result": ds_result.data.get("roll"),
+                                    },
                                 },
                             )
                             # Refresh player list so death_saves pips update

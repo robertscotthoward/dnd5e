@@ -1,5 +1,13 @@
 <template>
   <div class="chat-window">
+    <!-- Dice roll animation overlay -->
+    <DiceRollAnimation
+      :visible="!!campaignStore.pendingDiceRoll"
+      :die="campaignStore.pendingDiceRoll?.die || 'd20'"
+      :result="campaignStore.pendingDiceRoll?.result"
+      @done="campaignStore.clearDiceRoll()"
+    />
+
     <!-- Messages Area -->
     <div ref="messagesEl" class="chat-messages">
       <!-- Empty state -->
@@ -74,6 +82,7 @@
 <script setup>
 import { ref, watchEffect, nextTick, computed } from 'vue'
 import { useCampaignStore } from '../stores/campaign'
+import DiceRollAnimation from './DiceRollAnimation.vue'
 
 const campaignStore = useCampaignStore()
 const messagesEl = ref(null)
@@ -148,6 +157,7 @@ watchEffect(async () => {
   display: flex;
   flex-direction: column;
   height: 100%;
+  position: relative;
   background: #0d0a06;
   border: 1px solid #3d2e10;
   border-radius: 6px;

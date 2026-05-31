@@ -34,6 +34,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   const wsStatus = ref('disconnected')
   const joinResult = ref(null)  // { needs_character, player, summary }
   const pendingLevelUp = ref(null)  // { character_id, character_name, old_level, new_level, hit_die, class_type, has_asi }
+  const pendingDiceRoll = ref(null) // { die: 'd20', result: 15, queued_message: {...} }
 
   async function fetchCampaigns() {
     loading.value = true
@@ -198,7 +199,23 @@ export const useCampaignStore = defineStore('campaign', () => {
         break
       case 'dm_response':
         dmThinking.value = false
-        chat.value.push(msg.message)
+        // Check if the message contains a dice roll result to animate
+        if (msg.dice_roll) {
+          pendingDiceRoll.value = {
+            die: msg.dice_roll.die || 'd20',
+            result: msg.dice_roll.result,
+            queued_message: msg.message,
+          }
+        } else {
+          chat.value.push(msg.message)
+        }
+        break
+      case 'dice_roll':
+        pendingDiceRoll.value = {
+          die: msg.die || 'd20',
+          result: msg.result,
+          queued_message: msg.message || null,
+        }
         break
       case 'player_list':
         players.value = msg.players
@@ -240,6 +257,19 @@ export const useCampaignStore = defineStore('campaign', () => {
       case 'level_up':
         pendingLevelUp.value = msg.level_up
         break
+      case 'death_save_result': {
+        const diceInfo = msg.dice_roll || (msg.data?.roll !== undefined ? { die: 'd20', result: msg.data.roll } : null)
+        if (diceInfo && msg.message) {
+          pendingDiceRoll.value = {
+            die: diceInfo.die || 'd20',
+            result: diceInfo.result,
+            queued_message: msg.message,
+          }
+        } else if (msg.message) {
+          chat.value.push(msg.message)
+        }
+        break
+      }
     }
   }
 
@@ -293,6 +323,13 @@ export const useCampaignStore = defineStore('campaign', () => {
     pendingLevelUp.value = null
   }
 
+  function clearDiceRoll() {
+    if (pendingDiceRoll.value?.queued_message) {
+      chat.value.push(pendingDiceRoll.value.queued_message)
+    }
+    pendingDiceRoll.value = null
+  }
+
   async function fetchSnapshots(id) {
     try {
       const res = await fetch(`/api/campaigns/${id}/snapshots`, { credentials: 'include' })
@@ -326,9 +363,9 @@ export const useCampaignStore = defineStore('campaign', () => {
   return {
     campaigns, currentMeta, players, chat, gameMode, activeTurn,
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
-    pendingLevelUp,
+    pendingLevelUp, pendingDiceRoll,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
-    fetchSnapshots, restoreSnapshot, sendAwardXp, awardXp, clearLevelUp,
+    fetchSnapshots, restoreSnapshot, sendAwardXp, awardXp, clearLevelUp, clearDiceRoll,
   }
 })
