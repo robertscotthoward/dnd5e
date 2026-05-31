@@ -114,3 +114,53 @@ class TestTurnCoreLogic:
         assert result.success
         assert isinstance(result.data, dict)
         assert "objects" in result.data
+
+    def test_pc_agent_with_mocked_ai(self, tmp_path):
+        """PC agent returns a first-person action string (mocked, no Ollama required)."""
+        campaign, _ = _make_campaign(tmp_path)
+        pcs = campaign.world.get_pcs()
+        pc = pcs[0]
+
+        mock_action = f"I draw my sword and advance toward the goblin!"
+        mock_ai = MagicMock()
+        mock_ai.generate_player_action.return_value = mock_action
+
+        with patch("src.backend.core.ai_client.ai_client", mock_ai):
+            from src.backend.core.ai_client import ai_client as patched_ai
+            from src.backend.core.tools import WorldTools as WT
+
+            wt = WT(campaign.world)
+            situation = "A goblin leaps from the shadows!"
+            action = patched_ai.generate_player_action(campaign, pc.id, situation, wt)
+
+        assert action == mock_action
+
+    def test_pc_agent_tools_are_read_and_movement_only(self, tmp_path):
+        """PC tool set must include get_object and move_object but not delete_object."""
+        from src.backend.core.ai_client import AIClient
+        from src.backend.core.tools import WorldTools as WT
+
+        campaign, _ = _make_campaign(tmp_path)
+        client = AIClient()
+        wt = WT(campaign.world)
+        tools = client.create_pc_tools(wt)
+        tool_names = {t.metadata.name for t in tools}
+
+        assert "get_object" in tool_names
+        assert "get_sub_world" in tool_names
+        assert "move_object" in tool_names
+        assert "set_object_property" in tool_names
+        assert "delete_object" not in tool_names
+        assert "create_object" not in tool_names
+        assert "add_hp" not in tool_names
+
+    def test_pc_agent_missing_player_returns_not_found(self, tmp_path):
+        """generate_player_action returns a safe string when the player ID is invalid."""
+        from src.backend.core.ai_client import AIClient
+        from src.backend.core.tools import WorldTools as WT
+
+        campaign, _ = _make_campaign(tmp_path)
+        client = AIClient()
+        wt = WT(campaign.world)
+        result = client.generate_player_action(campaign, player_id=99999, situation="test", world_tools=wt)
+        assert result == "Player not found"

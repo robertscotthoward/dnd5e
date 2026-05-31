@@ -22,6 +22,18 @@ _DM_SYSTEM_PROMPT = (
     "use get_object or get_sub_world to discover them first."
 )
 
+_PC_SYSTEM_PROMPT_TEMPLATE = (
+    "You are playing {name}, a {race} {class_str} in a D&D 5e campaign.\n\n"
+    "PERSONALITY: {personality}\n"
+    "GOALS: {goals}\n\n"
+    "Act in character at all times. Use your personality and goals to guide every decision. "
+    "You may call tools to inspect the world (get_object, get_sub_world) and to move yourself "
+    "or pick up items (move_object). You cannot deal damage directly — only the DM resolves "
+    "combat outcomes. Think step by step: assess the situation, check relevant world details "
+    "with tools if needed, then declare your action in first person as {name}. "
+    "Never invent object IDs — use get_object or get_sub_world to discover them first."
+)
+
 
 class AIClient:
     """AI client for interacting with Ollama LLM."""
@@ -90,6 +102,31 @@ class AIClient:
             ),
         ]
 
+    def create_pc_tools(self, world_tools: WorldTools) -> list[FunctionTool]:
+        """Create a restricted tool set for PC agents (read + movement, no destructive ops)."""
+        return [
+            FunctionTool.from_defaults(
+                fn=world_tools.get_object,
+                name="get_object",
+                description="Get an object by ID to inspect its properties",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.get_sub_world,
+                name="get_sub_world",
+                description="Get the visible world from an observer's perspective",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.move_object,
+                name="move_object",
+                description="Move yourself or a held item to a new location",
+            ),
+            FunctionTool.from_defaults(
+                fn=world_tools.set_object_property,
+                name="set_object_property",
+                description="Update a property on yourself (e.g. equipped item, stance)",
+            ),
+        ]
+
     def query_rules(self, query: str, n_results: int = 3) -> str:
         """Query the D&D rules corpus and return relevant context."""
         results = vector_store.search(query, n_results=n_results)
@@ -119,6 +156,23 @@ class AIClient:
         handler = agent.run(user_msg=user_message)
         result = await handler
         # result is AgentOutput; result.response is a ChatMessage
+        return result.response.content or ""
+
+    async def _run_pc_agent(
+        self, user_message: str, system_prompt: str, tools: list[FunctionTool]
+    ) -> str:
+        """Run a PC ReAct agent asynchronously and return the action text."""
+        agent = ReActAgent(
+            tools=tools,
+            llm=self.llm,
+            system_prompt=system_prompt,
+            verbose=True,
+            streaming=False,
+            max_iterations=6,
+            early_stopping_method="generate",
+        )
+        handler = agent.run(user_msg=user_message)
+        result = await handler
         return result.response.content or ""
 
     def generate_dm_response(
@@ -177,23 +231,27 @@ class AIClient:
         campaign: Campaign,
         player_id: int,
         situation: str,
+        world_tools: Optional[WorldTools] = None,
     ) -> str:
         """
-        Generate a player character's action based on their personality.
+        Run a ReAct agent as the PC to decide and declare an action.
+
+        The agent receives the character's personality and visible world, may call
+        read/movement tools, and produces a first-person action declaration.
 
         Args:
             campaign: The current campaign
             player_id: Object ID of the player
             situation: Current situation description
+            world_tools: WorldTools instance; created from campaign.world if omitted
         """
         pc = campaign.world.get_object(player_id)
         if not pc:
             return "Player not found"
 
-        # Get visible world
-        visible_world = campaign.world.get_visible_world(player_id)
+        if world_tools is None:
+            world_tools = WorldTools(campaign.world)
 
-        # Extract PC properties
         hp = pc.properties.get("hp", {})
         abilities = pc.properties.get("abilities", {})
         classes = pc.properties.get("classes", [])
@@ -201,29 +259,37 @@ class AIClient:
         race = pc.properties.get("race", "Unknown")
         personality = pc.properties.get("personality", "Not defined")
         goals = pc.properties.get("goals", [])
+        goals_str = ", ".join(goals) if goals else "None specified"
 
-        prompt = f"""You are playing {pc.name}, a {race} {class_str}.
+        system_prompt = _PC_SYSTEM_PROMPT_TEMPLATE.format(
+            name=pc.name or "the character",
+            race=race,
+            class_str=class_str,
+            personality=personality,
+            goals=goals_str,
+        )
 
-CHARACTER DETAILS:
-- HP: {hp.get('current', '?')}/{hp.get('max', '?')}
-- Abilities: STR {abilities.get('str', 10)}, INT {abilities.get('int', 10)}, WIS {abilities.get('wis', 10)}, DEX {abilities.get('dex', 10)}, CON {abilities.get('con', 10)}, CHR {abilities.get('chr', 10)}
-- Personality: {personality}
-- Goals: {', '.join(goals) if goals else 'None specified'}
+        visible_world = campaign.world.get_visible_world(player_id)
 
-CURRENT SITUATION:
-{situation}
+        user_message = (
+            f"Campaign: \"{campaign.name}\"\n\n"
+            f"CHARACTER DETAILS:\n"
+            f"- HP: {hp.get('current', '?')}/{hp.get('max', '?')}\n"
+            f"- Abilities: STR {abilities.get('str', 10)}, DEX {abilities.get('dex', 10)}, "
+            f"CON {abilities.get('con', 10)}, INT {abilities.get('int', 10)}, "
+            f"WIS {abilities.get('wis', 10)}, CHR {abilities.get('chr', 10)}\n\n"
+            f"CURRENT SITUATION:\n{situation}\n\n"
+            f"WHAT YOU CAN SEE:\n{visible_world.model_dump_yaml()}\n\n"
+            f"What does {pc.name or 'you'} do? Respond in first person as the character."
+        )
 
-WHAT YOU CAN SEE:
-{visible_world.model_dump_yaml()}
-
-What does {pc.name} do? Respond in first person as the character, describing your action."""
+        tools = self.create_pc_tools(world_tools)
 
         try:
-            response = self.llm.complete(prompt)
-            return response.text
+            return asyncio.run(self._run_pc_agent(user_message, system_prompt, tools))
         except Exception as e:
-            console.print(f"[red]Error generating player action: {e}[/red]")
-            return f"[{pc.name} hesitates...] (Error: {e})"
+            console.print(f"[red]Error in PC ReAct agent: {e}[/red]")
+            return f"[{pc.name or 'character'} hesitates...] (Error: {e})"
 
     def generate_world_update(
         self,
