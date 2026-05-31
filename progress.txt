@@ -1,7 +1,7 @@
 # Project Progress: D&D 5e Agentic Campaign Engine
 
 Total Tasks: 47
-Completed Tasks: 10
+Completed Tasks: 11
 
 ---
 
@@ -27,7 +27,7 @@ Completed Tasks: 10
 - AdminWorldView.vue — expandable world tree with right-click create/delete and detail panel
 
 ## In Progress / Remaining
-- Typer CLI commands (index-corpus, new-campaign, turn) wired in main.py
+- Typer CLI `new-campaign` command in main.py (randomized race/class/stats, seeded world YAML, seeds.log)
 - Full ReAct agent loop for DM and PC agents
 - Combat turn enforcement in WebSocket handler
 - AI-generated character background endpoint

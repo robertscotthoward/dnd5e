@@ -1,0 +1,192 @@
+name: TestRun
+seed: 42
+turn_number: 0
+created_at: '2026-05-30T21:09:52.943494'
+updated_at: '2026-05-30T21:09:52.948986'
+world:
+  name: TestRun
+  max_id: 12
+  delete_ids: []
+  objects:
+    1:
+      id: 1
+      type: system
+      name: Realmspace
+      description: The crystal sphere containing Toril and its celestial bodies
+      is_moveable: false
+    2:
+      id: 2
+      type: planet
+      parent: 1
+      name: Toril
+      description: The world of Abeir-Toril, home to the Forgotten Realms
+      is_moveable: false
+    3:
+      id: 3
+      type: continent
+      parent: 2
+      name: Faerûn
+      description: The western continent of Toril
+      is_moveable: false
+    4:
+      id: 4
+      type: region
+      parent: 3
+      name: The Sword Coast
+      description: A region on the western coast of Faerûn
+      is_moveable: false
+    5:
+      id: 5
+      type: town
+      parent: 4
+      name: Phandalin
+      description: A frontier town on the Triboar Trail
+      is_moveable: false
+      is_virtual: true
+    6:
+      id: 6
+      type: inn
+      parent: 5
+      name: Stonehill Inn
+      description: A modest inn run by Toblen Stonehill and his family
+      is_moveable: false
+      is_virtual: true
+    7:
+      id: 7
+      type: room
+      parent: 6
+      name: Common Room
+      description: The main gathering area of the inn with tables and a fireplace
+      size:
+      - 30.0
+      - 20.0
+      - 10.0
+      is_moveable: false
+      is_virtual: true
+    8:
+      id: 8
+      type: party
+      parent: 7
+      name: The Adventurers
+      description: A band of adventurers seeking fortune and glory
+      is_virtual: true
+    9:
+      id: 9
+      type: PC
+      parent: 8
+      name: Vex
+      description: Elf Ranger
+      properties:
+        race: Elf
+        classes:
+        - type: Ranger
+          level: 1
+        abilities:
+          str: 13
+          int: 8
+          wis: 18
+          dex: 16
+          con: 4
+          chr: 12
+        hp:
+          max: 7
+          current: 7
+        personality: Sarcastic loner who hides genuine care behind sharp remarks
+        backstory: A scholar investigating ancient mysteries
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0
+    10:
+      id: 10
+      type: PC
+      parent: 8
+      name: Soren
+      description: Human Wizard
+      location:
+      - 5.0
+      - 0.0
+      - 0.0
+      properties:
+        race: Human
+        classes:
+        - type: Wizard
+          level: 1
+        abilities:
+          str: 8
+          int: 12
+          wis: 12
+          dex: 12
+          con: 16
+          chr: 8
+        hp:
+          max: 9
+          current: 9
+        personality: Brooding and intense, haunted by a mysterious past
+        backstory: A former soldier seeking redemption for past failures
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0
+    11:
+      id: 11
+      type: PC
+      parent: 8
+      name: Aldric
+      description: Half-Orc Paladin
+      location:
+      - 0.0
+      - 5.0
+      - 0.0
+      properties:
+        race: Half-Orc
+        classes:
+        - type: Paladin
+          level: 1
+        abilities:
+          str: 15
+          int: 11
+          wis: 16
+          dex: 10
+          con: 18
+          chr: 14
+        hp:
+          max: 14
+          current: 14
+        personality: Cautious and calculating, always plans three steps ahead
+        backstory: A priest spreading light in dark places
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0
+    12:
+      id: 12
+      type: PC
+      parent: 8
+      name: Hana
+      description: Dwarf Fighter
+      location:
+      - 5.0
+      - 5.0
+      - 0.0
+      properties:
+        race: Dwarf
+        classes:
+        - type: Fighter
+          level: 1
+        abilities:
+          str: 14
+          int: 15
+          wis: 18
+          dex: 13
+          con: 16
+          chr: 13
+        hp:
+          max: 13
+          current: 13
+        personality: Sarcastic loner who hides genuine care behind sharp remarks
+        backstory: An orphan raised by monks, now seeking their heritage
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0

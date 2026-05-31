@@ -1,0 +1,192 @@
+name: AutoSeedTest
+seed: 846588
+turn_number: 0
+created_at: '2026-05-30T21:10:43.996137'
+updated_at: '2026-05-30T21:10:44.002894'
+world:
+  name: AutoSeedTest
+  max_id: 12
+  delete_ids: []
+  objects:
+    1:
+      id: 1
+      type: system
+      name: Realmspace
+      description: The crystal sphere containing Toril and its celestial bodies
+      is_moveable: false
+    2:
+      id: 2
+      type: planet
+      parent: 1
+      name: Toril
+      description: The world of Abeir-Toril, home to the Forgotten Realms
+      is_moveable: false
+    3:
+      id: 3
+      type: continent
+      parent: 2
+      name: Faerûn
+      description: The western continent of Toril
+      is_moveable: false
+    4:
+      id: 4
+      type: region
+      parent: 3
+      name: The Sword Coast
+      description: A region on the western coast of Faerûn
+      is_moveable: false
+    5:
+      id: 5
+      type: town
+      parent: 4
+      name: Phandalin
+      description: A frontier town on the Triboar Trail
+      is_moveable: false
+      is_virtual: true
+    6:
+      id: 6
+      type: inn
+      parent: 5
+      name: Stonehill Inn
+      description: A modest inn run by Toblen Stonehill and his family
+      is_moveable: false
+      is_virtual: true
+    7:
+      id: 7
+      type: room
+      parent: 6
+      name: Common Room
+      description: The main gathering area of the inn with tables and a fireplace
+      size:
+      - 30.0
+      - 20.0
+      - 10.0
+      is_moveable: false
+      is_virtual: true
+    8:
+      id: 8
+      type: party
+      parent: 7
+      name: The Adventurers
+      description: A band of adventurers seeking fortune and glory
+      is_virtual: true
+    9:
+      id: 9
+      type: PC
+      parent: 8
+      name: Talis
+      description: Halfling Rogue
+      properties:
+        race: Halfling
+        classes:
+        - type: Rogue
+          level: 1
+        abilities:
+          str: 13
+          int: 17
+          wis: 13
+          dex: 18
+          con: 9
+          chr: 12
+        hp:
+          max: 7
+          current: 7
+        personality: Sarcastic loner who hides genuine care behind sharp remarks
+        backstory: A reformed criminal using skills for good
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0
+    10:
+      id: 10
+      type: PC
+      parent: 8
+      name: Zara
+      description: Human Monk
+      location:
+      - 5.0
+      - 0.0
+      - 0.0
+      properties:
+        race: Human
+        classes:
+        - type: Monk
+          level: 1
+        abilities:
+          str: 16
+          int: 7
+          wis: 14
+          dex: 12
+          con: 18
+          chr: 14
+        hp:
+          max: 12
+          current: 12
+        personality: Sarcastic loner who hides genuine care behind sharp remarks
+        backstory: A hunter tracking a beast that destroyed their village
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0
+    11:
+      id: 11
+      type: PC
+      parent: 8
+      name: Gareth
+      description: Half-Orc Sorcerer
+      location:
+      - 0.0
+      - 5.0
+      - 0.0
+      properties:
+        race: Half-Orc
+        classes:
+        - type: Sorcerer
+          level: 1
+        abilities:
+          str: 18
+          int: 10
+          wis: 14
+          dex: 7
+          con: 15
+          chr: 15
+        hp:
+          max: 8
+          current: 8
+        personality: Curious and bookish, always seeking knowledge
+        backstory: A priest spreading light in dark places
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0
+    12:
+      id: 12
+      type: PC
+      parent: 8
+      name: Caelum
+      description: Gnome Ranger
+      location:
+      - 5.0
+      - 5.0
+      - 0.0
+      properties:
+        race: Gnome
+        classes:
+        - type: Ranger
+          level: 1
+        abilities:
+          str: 10
+          int: 10
+          wis: 11
+          dex: 12
+          con: 13
+          chr: 12
+        hp:
+          max: 11
+          current: 11
+        personality: Sarcastic loner who hides genuine care behind sharp remarks
+        backstory: An orphan raised by monks, now seeking their heritage
+        goals:
+        - Complete the current quest
+        - Grow stronger through adventure
+        experience: 0

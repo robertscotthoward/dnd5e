@@ -9,7 +9,7 @@ import yaml
 
 from src.backend.models.world import World, Object, Location, Size
 from src.backend.models.game import Campaign
-from src.backend.models.player import CLASS_HIT_DICE, get_ability_modifier, apply_racial_modifiers
+from src.backend.models.player import CLASS_HIT_DICE, RACE_MODIFIERS, get_ability_modifier, apply_racial_modifiers
 
 
 def generate_ability_scores(seed: int) -> dict[str, int]:
@@ -151,50 +151,73 @@ def create_default_world(name: str) -> World:
     return world
 
 
-def create_default_pcs(world: World, party_id: int, seed: int) -> None:
-    """Create 4 default player characters as Objects in the world."""
-    # Character definitions
-    characters = [
-        {
-            "name": "Thorin",
-            "race": "Dwarf",
-            "class": "Fighter",
-            "personality": "Gruff but loyal, values honor above all else",
-            "backstory": "A former soldier seeking redemption for past failures",
-        },
-        {
-            "name": "Elara",
-            "race": "Elf",
-            "class": "Wizard",
-            "personality": "Curious and bookish, always seeking knowledge",
-            "backstory": "A scholar from Candlekeep investigating ancient mysteries",
-        },
-        {
-            "name": "Mira",
-            "race": "Halfling",
-            "class": "Rogue",
-            "personality": "Quick-witted and charming, can't resist a good heist",
-            "backstory": "A former street urchin turned adventurer",
-        },
-        {
-            "name": "Aldric",
-            "race": "Human",
-            "class": "Cleric",
-            "personality": "Compassionate healer with strong moral convictions",
-            "backstory": "A priest of Lathander spreading light in dark places",
-        },
-    ]
+_PC_NAMES = [
+    "Aldric", "Brynn", "Caelum", "Dara", "Edric", "Faye", "Gareth", "Hana",
+    "Idris", "Jora", "Kael", "Lira", "Mira", "Nori", "Oryn", "Petra",
+    "Quinn", "Reva", "Soren", "Talis", "Uris", "Vex", "Wren", "Xara",
+    "Yola", "Zara", "Thorin", "Elara", "Brom", "Cass",
+]
 
-    for i, char in enumerate(characters):
+_PERSONALITIES = [
+    "Bold and brash, charges into danger without hesitation",
+    "Cautious and calculating, always plans three steps ahead",
+    "Gruff but loyal, values honor above all else",
+    "Curious and bookish, always seeking knowledge",
+    "Quick-witted and charming, can't resist a clever scheme",
+    "Compassionate and steadfast, puts others before self",
+    "Brooding and intense, haunted by a mysterious past",
+    "Cheerful optimist who sees the best in everyone",
+    "Sarcastic loner who hides genuine care behind sharp remarks",
+    "Zealous believer, driven by faith or ideology",
+]
+
+_BACKSTORIES = [
+    "A former soldier seeking redemption for past failures",
+    "A scholar investigating ancient mysteries",
+    "A street urchin turned adventurer by circumstance",
+    "A priest spreading light in dark places",
+    "An exile from a distant homeland, searching for purpose",
+    "A wanderer who stumbled into adventure and never looked back",
+    "A disgraced noble trying to restore family honor",
+    "A reformed criminal using skills for good",
+    "A hunter tracking a beast that destroyed their village",
+    "An orphan raised by monks, now seeking their heritage",
+]
+
+
+def create_default_pcs(world: World, party_id: int, seed: int) -> None:
+    """Create 4 randomized player characters as Objects in the world."""
+    rng = random.Random(seed)
+    races = list(RACE_MODIFIERS.keys())
+    classes = list(CLASS_HIT_DICE.keys())
+
+    used_names: set[str] = set()
+    chosen_races = rng.sample(races, min(4, len(races)))
+    chosen_classes = rng.sample(classes, min(4, len(classes)))
+
+    for i in range(4):
         char_seed = seed + i * 1000
+
+        # Pick a unique name
+        candidate = rng.choice(_PC_NAMES)
+        attempts = 0
+        while candidate in used_names and attempts < 30:
+            candidate = rng.choice(_PC_NAMES)
+            attempts += 1
+        used_names.add(candidate)
+
+        race = chosen_races[i]
+        char_class = chosen_classes[i]
+        personality = _PERSONALITIES[rng.randrange(len(_PERSONALITIES))]
+        backstory = _BACKSTORIES[rng.randrange(len(_BACKSTORIES))]
 
         # Generate abilities with racial modifiers
         abilities = generate_ability_scores(char_seed)
-        abilities = apply_racial_modifiers(abilities, char["race"])
+        abilities = apply_racial_modifiers(abilities, race)
 
         # Calculate HP
         con_mod = get_ability_modifier(abilities["con"])
-        hit_die = CLASS_HIT_DICE.get(char["class"], 8)
+        hit_die = CLASS_HIT_DICE.get(char_class, 8)
         max_hp = max(1, hit_die + con_mod)
 
         # Create PC as an Object with all properties
@@ -202,16 +225,16 @@ def create_default_pcs(world: World, party_id: int, seed: int) -> None:
             id=world.next_id(),
             parent=party_id,
             type="PC",
-            name=char["name"],
-            description=f"{char['race']} {char['class']}",
+            name=candidate,
+            description=f"{race} {char_class}",
             location=Location(x=5 * (i % 2), y=5 * (i // 2), z=0),
             properties={
-                "race": char["race"],
-                "classes": [{"type": char["class"], "level": 1}],
+                "race": race,
+                "classes": [{"type": char_class, "level": 1}],
                 "abilities": abilities,
                 "hp": {"max": max_hp, "current": max_hp},
-                "personality": char["personality"],
-                "backstory": char["backstory"],
+                "personality": personality,
+                "backstory": backstory,
                 "goals": ["Complete the current quest", "Grow stronger through adventure"],
                 "experience": 0,
             },
