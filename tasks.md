@@ -3,7 +3,7 @@
 ## Phase 1: CLI Entry Point
 
 * [x] **main.py as Typer CLI** — `src/backend/main.py` is a FastAPI app entry; it needs a Typer CLI with `index-corpus`, `new-campaign`, and `turn` commands.
-* [ ] **`index-corpus` command** — Ingest all markdown files under `data/corpus/` into ChromaDB via LlamaIndex. Report file count and chunk count on completion.
+* [x] **`index-corpus` command** — Ingest all markdown files under `data/corpus/` into ChromaDB via LlamaIndex. Report file count and chunk count on completion.
 * [ ] **`new-campaign <name>` command** — Generate four D&D 5e PCs (randomized race/class/stats), a party, and a seeded world YAML at `data/campaigns/<name>/world.yaml`. Seed is fixed and logged.
 * [ ] **`turn --campaign <name>` command** — Run one DM agent turn: query rules, update visible world, produce narrative output, persist updated world YAML.
 

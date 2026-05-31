@@ -1,197 +1,174 @@
-"""ChromaDB vector store for D&D rules corpus."""
+"""ChromaDB vector store for D&D rules corpus, powered by LlamaIndex."""
 
 from pathlib import Path
 from typing import Optional
 import chromadb
 from chromadb.config import Settings as ChromaSettings
-from markdown_it import MarkdownIt
 from rich.console import Console
+
+from llama_index.core import (
+    SimpleDirectoryReader,
+    StorageContext,
+    VectorStoreIndex,
+    Settings as LlamaSettings,
+)
+from llama_index.core.embeddings import resolve_embed_model
+from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from .config import settings
 
 console = Console()
 
 
+def _configure_llamaindex() -> None:
+    """Configure LlamaIndex to use local embeddings (no OpenAI key needed)."""
+    LlamaSettings.embed_model = resolve_embed_model("local:BAAI/bge-small-en-v1.5")
+    LlamaSettings.llm = None  # Disable LLM; we only need embeddings here
+
+
 class VectorStore:
     """
     ChromaDB vector store for semantic search over D&D rules.
 
-    Indexes markdown files from the corpus and provides semantic search.
+    Uses LlamaIndex SimpleDirectoryReader + VectorStoreIndex for ingestion
+    and ChromaDB for persistence.
     """
 
     def __init__(self):
         persist_path = settings.project_root / settings.chromadb.persist_directory
         persist_path.mkdir(parents=True, exist_ok=True)
 
-        self.client = chromadb.PersistentClient(
-            path=str(persist_path),
-            settings=ChromaSettings(anonymized_telemetry=False),
-        )
+        self._persist_path = persist_path
         self.collection_name = settings.chromadb.collection_name
-        self._collection: Optional[chromadb.Collection] = None
-        self._md_parser = MarkdownIt()
+        self._chroma_client: Optional[chromadb.PersistentClient] = None
+        self._index: Optional[VectorStoreIndex] = None
 
     @property
-    def collection(self) -> chromadb.Collection:
-        """Get or create the corpus collection."""
-        if self._collection is None:
-            self._collection = self.client.get_or_create_collection(
-                name=self.collection_name,
-                metadata={"description": "D&D 5e rules corpus"},
+    def chroma_client(self) -> chromadb.PersistentClient:
+        if self._chroma_client is None:
+            self._chroma_client = chromadb.PersistentClient(
+                path=str(self._persist_path),
+                settings=ChromaSettings(anonymized_telemetry=False),
             )
-        return self._collection
+        return self._chroma_client
+
+    def _get_collection(self) -> chromadb.Collection:
+        return self.chroma_client.get_or_create_collection(
+            name=self.collection_name,
+            metadata={"description": "D&D 5e rules corpus"},
+        )
 
     def is_indexed(self) -> bool:
         """Check if the corpus has been indexed."""
-        return self.collection.count() > 0
+        try:
+            col = self.chroma_client.get_collection(self.collection_name)
+            return col.count() > 0
+        except Exception:
+            return False
 
     def index_corpus(self, force: bool = False) -> int:
         """
-        Index all markdown files from the corpus directory.
+        Ingest all markdown files from data/corpus/ into ChromaDB via LlamaIndex.
+
+        Reports file count and chunk count on completion.
 
         Args:
-            force: If True, reindex even if already indexed
+            force: Re-index even if already indexed.
 
         Returns:
-            Number of chunks indexed
+            Total number of chunks (nodes) indexed.
         """
         if self.is_indexed() and not force:
             console.print("[yellow]Corpus already indexed. Use --force to reindex.[/yellow]")
-            return self.collection.count()
+            count = self._get_collection().count()
+            console.print(f"[dim]Current chunk count: {count}[/dim]")
+            return count
 
         if force:
-            self.client.delete_collection(self.collection_name)
-            self._collection = None
+            try:
+                self.chroma_client.delete_collection(self.collection_name)
+            except Exception:
+                pass
+            self._index = None
 
         corpus_path = settings.corpus_path
         if not corpus_path.exists():
             console.print(f"[red]Corpus directory not found: {corpus_path}[/red]")
             return 0
 
-        md_files = list(corpus_path.glob("*.md"))
+        md_files = list(corpus_path.glob("**/*.md"))
         if not md_files:
             console.print(f"[red]No markdown files found in {corpus_path}[/red]")
             return 0
 
-        total_chunks = 0
-        for md_file in md_files:
-            console.print(f"  Indexing {md_file.name}...", end="")
-            chunks = self._index_file(md_file)
-            total_chunks += chunks
-            console.print(f" {chunks} chunks")
+        console.print(f"Found {len(md_files)} markdown file(s) in {corpus_path}")
+        for f in md_files:
+            console.print(f"  - {f.name}")
 
-        console.print(f"[green]Indexed {total_chunks} chunks from {len(md_files)} files[/green]")
-        return total_chunks
+        console.print("[bold]Configuring LlamaIndex embeddings (local model)...[/bold]")
+        _configure_llamaindex()
 
-    def _index_file(self, file_path: Path) -> int:
-        """
-        Index a single markdown file.
+        console.print("[bold]Loading documents...[/bold]")
+        reader = SimpleDirectoryReader(
+            input_dir=str(corpus_path),
+            recursive=True,
+            required_exts=[".md"],
+        )
+        documents = reader.load_data()
+        console.print(f"Loaded {len(documents)} document segment(s)")
 
-        Splits the file into chunks by headers and paragraphs.
-        """
-        content = file_path.read_text(encoding="utf-8", errors="ignore")
+        console.print("[bold]Building vector index in ChromaDB...[/bold]")
+        chroma_collection = self._get_collection()
+        chroma_store = ChromaVectorStore(chroma_collection=chroma_collection)
+        storage_ctx = StorageContext.from_defaults(vector_store=chroma_store)
 
-        # Parse markdown and extract text chunks
-        chunks = self._split_into_chunks(content, file_path.stem)
-
-        if not chunks:
-            return 0
-
-        # Add to collection
-        self.collection.add(
-            ids=[chunk["id"] for chunk in chunks],
-            documents=[chunk["text"] for chunk in chunks],
-            metadatas=[chunk["metadata"] for chunk in chunks],
+        self._index = VectorStoreIndex.from_documents(
+            documents,
+            storage_context=storage_ctx,
+            show_progress=True,
         )
 
-        return len(chunks)
-
-    def _split_into_chunks(self, content: str, source: str, chunk_size: int = 1000) -> list[dict]:
-        """
-        Split markdown content into searchable chunks.
-
-        Tries to split on section headers, falling back to paragraphs.
-        """
-        chunks = []
-        current_section = ""
-        current_text = []
-        chunk_id = 0
-
-        lines = content.split("\n")
-        for line in lines:
-            # Check for header
-            if line.startswith("#"):
-                # Save current chunk if not empty
-                if current_text:
-                    text = "\n".join(current_text).strip()
-                    if text and len(text) > 50:  # Skip very short chunks
-                        chunks.append({
-                            "id": f"{source}_{chunk_id}",
-                            "text": text,
-                            "metadata": {"source": source, "section": current_section},
-                        })
-                        chunk_id += 1
-                    current_text = []
-
-                # Update section
-                current_section = line.lstrip("#").strip()
-                current_text.append(line)
-            else:
-                current_text.append(line)
-
-                # Check if chunk is getting too large
-                current_size = sum(len(t) for t in current_text)
-                if current_size > chunk_size and line.strip() == "":
-                    text = "\n".join(current_text).strip()
-                    if text and len(text) > 50:
-                        chunks.append({
-                            "id": f"{source}_{chunk_id}",
-                            "text": text,
-                            "metadata": {"source": source, "section": current_section},
-                        })
-                        chunk_id += 1
-                    current_text = []
-
-        # Don't forget the last chunk
-        if current_text:
-            text = "\n".join(current_text).strip()
-            if text and len(text) > 50:
-                chunks.append({
-                    "id": f"{source}_{chunk_id}",
-                    "text": text,
-                    "metadata": {"source": source, "section": current_section},
-                })
-
-        return chunks
+        chunk_count = chroma_collection.count()
+        console.print(
+            f"\n[green]Indexed {len(md_files)} file(s) -> {chunk_count} chunk(s) into ChromaDB.[/green]"
+        )
+        return chunk_count
 
     def search(self, query: str, n_results: int = 5) -> list[dict]:
         """
         Search the corpus for relevant content.
 
         Args:
-            query: Search query
-            n_results: Number of results to return
+            query: Search query text.
+            n_results: Number of results to return.
 
         Returns:
-            List of matching documents with metadata
+            List of matching documents with metadata.
         """
         if not self.is_indexed():
             console.print("[yellow]Corpus not indexed. Run 'index-corpus' first.[/yellow]")
             return []
 
-        results = self.collection.query(
-            query_texts=[query],
-            n_results=n_results,
+        _configure_llamaindex()
+
+        chroma_collection = self._get_collection()
+        chroma_store = ChromaVectorStore(chroma_collection=chroma_collection)
+        storage_ctx = StorageContext.from_defaults(vector_store=chroma_store)
+
+        index = VectorStoreIndex.from_vector_store(
+            chroma_store,
+            storage_context=storage_ctx,
         )
+        retriever = index.as_retriever(similarity_top_k=n_results)
+        nodes = retriever.retrieve(query)
 
         matches = []
-        if results["documents"] and results["documents"][0]:
-            for i, doc in enumerate(results["documents"][0]):
-                matches.append({
-                    "text": doc,
-                    "metadata": results["metadatas"][0][i] if results["metadatas"] else {},
-                    "distance": results["distances"][0][i] if results["distances"] else None,
-                })
+        for node in nodes:
+            matches.append({
+                "text": node.get_content(),
+                "metadata": node.metadata or {},
+                "distance": 1.0 - node.score if node.score is not None else None,
+            })
 
         return matches
 
