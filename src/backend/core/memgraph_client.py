@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from neo4j import GraphDatabase, Driver
 
 if TYPE_CHECKING:
-    from src.backend.models.world import World
+    from src.backend.models.world import Object, World
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +22,23 @@ _BOLT_URL = "bolt://localhost:7687"
 def _get_driver(url: str = _BOLT_URL) -> Driver:
     """Return a new Bolt driver connected to Memgraph."""
     return GraphDatabase.driver(url, auth=None)
+
+
+def _obj_to_props(obj: "Object") -> dict:
+    """Convert a world Object into the flat property dict stored on a graph node."""
+    return {
+        "obj_id": obj.id,
+        "type": obj.type,
+        "name": obj.name or "",
+        "description": obj.description or "",
+        "weight": obj.weight,
+        "cost": obj.cost,
+        "is_moveable": obj.is_moveable,
+        "is_virtual": obj.is_virtual,
+        "loc_x": obj.location.x,
+        "loc_y": obj.location.y,
+        "loc_z": obj.location.z,
+    }
 
 
 def seed_world(world: "World", url: str = _BOLT_URL) -> int:
@@ -39,22 +56,9 @@ def seed_world(world: "World", url: str = _BOLT_URL) -> int:
             session.run("MATCH (n) DETACH DELETE n")
             count = 0
             for obj in world.objects.values():
-                props = {
-                    "obj_id": obj.id,
-                    "type": obj.type,
-                    "name": obj.name or "",
-                    "description": obj.description or "",
-                    "weight": obj.weight,
-                    "cost": obj.cost,
-                    "is_moveable": obj.is_moveable,
-                    "is_virtual": obj.is_virtual,
-                    "loc_x": obj.location.x,
-                    "loc_y": obj.location.y,
-                    "loc_z": obj.location.z,
-                }
                 session.run(
                     "CREATE (n:WorldObject $props)",
-                    props=props,
+                    props=_obj_to_props(obj),
                 )
                 count += 1
 

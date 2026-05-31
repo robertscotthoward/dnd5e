@@ -53,7 +53,7 @@
 ## Phase 7: Backend — Memgraph Integration
 
 * [x] **Memgraph seed on new-campaign** — After creating world.yaml, mirror the object graph into Memgraph (nodes = objects, edges = parent relationships).
-* [ ] **Memgraph sync on tool calls** — Each world-mutating tool call (`create_object`, `move_object`, `delete_object`) must also update the Memgraph graph.
+* [x] **Memgraph sync on tool calls** — Each world-mutating tool call (`create_object`, `move_object`, `delete_object`) must also update the Memgraph graph.
 * [ ] **Graph query helpers** — Implement `get_path_between(id1, id2)` and `get_nearby_objects(id, radius)` using Memgraph Cypher for LOS and social graph queries.
 
 ## Phase 9: Progression & Character Depth

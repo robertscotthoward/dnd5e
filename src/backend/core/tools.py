@@ -1,11 +1,14 @@
 """World manipulation tools for the AI agents."""
 
+import logging
 from typing import Any, Optional
 from pydantic import BaseModel
 
 from ..models.world import World, Object, Location, Size
 from ..models.user import CampaignMeta
 from .combat import CombatEngine
+
+logger = logging.getLogger(__name__)
 
 
 class ToolResult(BaseModel):
@@ -24,8 +27,29 @@ class WorldTools:
     Only tools are allowed to update the world.
     """
 
-    def __init__(self, world: World):
+    def __init__(self, world: World, memgraph_url: Optional[str] = None):
         self.world = world
+        self._memgraph_url = memgraph_url
+
+    def _sync_upsert(self, obj: Object) -> None:
+        """Push a single object upsert to Memgraph; log and swallow on failure."""
+        if self._memgraph_url is None:
+            return
+        try:
+            from .memgraph_client import upsert_object, _obj_to_props
+            upsert_object(obj.id, _obj_to_props(obj), obj.parent, url=self._memgraph_url)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Memgraph upsert failed for object %d: %s", obj.id, exc)
+
+    def _sync_delete(self, obj_id: int) -> None:
+        """Remove a node from Memgraph; log and swallow on failure."""
+        if self._memgraph_url is None:
+            return
+        try:
+            from .memgraph_client import delete_object as mg_delete
+            mg_delete(obj_id, url=self._memgraph_url)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Memgraph delete failed for object %d: %s", obj_id, exc)
 
     def create_object(
         self,
@@ -78,6 +102,7 @@ class WorldTools:
             properties=properties,
         )
         self.world.add_object(obj)
+        self._sync_upsert(obj)
         return ToolResult(
             success=True,
             message=f"Created {type} '{name or 'unnamed'}' with ID {obj_id}",
@@ -111,6 +136,7 @@ class WorldTools:
         else:
             obj.location = Location()
 
+        self._sync_upsert(obj)
         return ToolResult(
             success=True,
             message=f"Moved object {id} from parent {old_parent_id} to {parent_id}",
@@ -203,9 +229,16 @@ class WorldTools:
             return ToolResult(success=False, message="Cannot delete the root object")
 
         children = self.world.get_children(id)
+        # Collect descendants before the cascade removes them from the world.
+        deleted_ids = [id]
+        if cascade:
+            deleted_ids += [d.id for d in self.world.get_descendants(id)]
+
         success = self.world.delete_object(id, cascade=cascade)
 
         if success:
+            for did in deleted_ids:
+                self._sync_delete(did)
             if cascade:
                 message = f"Deleted object {id} and {len(children)} children"
             else:
