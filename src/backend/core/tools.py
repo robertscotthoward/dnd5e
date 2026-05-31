@@ -4,6 +4,8 @@ from typing import Any, Optional
 from pydantic import BaseModel
 
 from ..models.world import World, Object, Location, Size
+from ..models.user import CampaignMeta
+from .combat import CombatEngine
 
 
 class ToolResult(BaseModel):
@@ -242,6 +244,125 @@ class WorldTools:
             message=f"Retrieved visible world with {len(visible_world.objects)} objects",
             data=visible_world.model_dump_yaml(),
         )
+
+
+class CombatTools:
+    """
+    Combat tools callable by the DM agent.
+
+    Wraps CombatEngine to provide initiative rolling, turn management,
+    attack resolution, and saving throws as discrete tool calls.
+    """
+
+    def __init__(self, world: World, meta: CampaignMeta):
+        self.engine = CombatEngine(world, meta)
+
+    def start_combat(self, combatant_ids: list[int]) -> ToolResult:
+        """
+        Begin combat by rolling initiative for all listed combatants.
+
+        Args:
+            combatant_ids: List of world object IDs entering combat
+        """
+        result = self.engine.start_combat(combatant_ids)
+        if "error" in result:
+            return ToolResult(success=False, message=result["error"])
+        names = [e["name"] for e in result["initiative_order"]]
+        active = result["active_turn"]
+        return ToolResult(
+            success=True,
+            message=f"Combat started. Initiative order: {', '.join(names)}. First turn: {active}.",
+            data=result,
+        )
+
+    def next_turn(self) -> ToolResult:
+        """Advance combat to the next combatant's turn."""
+        result = self.engine.next_turn()
+        if "error" in result:
+            return ToolResult(success=False, message=result["error"])
+        return ToolResult(
+            success=True,
+            message=f"Turn advanced. Now active: {result['active_name']} (ID {result['active_turn']}).",
+            data=result,
+        )
+
+    def end_combat(self) -> ToolResult:
+        """End combat and return to Exploration mode."""
+        result = self.engine.end_combat()
+        return ToolResult(success=True, message=result["message"], data=result)
+
+    def roll_attack(
+        self,
+        attacker_id: int,
+        target_id: int,
+        attack_bonus: int = 0,
+    ) -> ToolResult:
+        """
+        Roll an attack roll (d20 + bonus) against target AC.
+
+        Args:
+            attacker_id: Object ID of the attacker
+            target_id: Object ID of the target
+            attack_bonus: Proficiency + ability modifier (default 0)
+        """
+        result = self.engine.roll_attack(attacker_id, target_id, attack_bonus)
+        if "error" in result:
+            return ToolResult(success=False, message=result["error"])
+        status = "HIT" if result["hit"] else "MISS"
+        crit = " (CRITICAL HIT!)" if result["critical_hit"] else (" (CRITICAL MISS)" if result["critical_miss"] else "")
+        msg = (
+            f"{result['attacker']} attacks {result['target']}: "
+            f"d20={result['d20_roll']}+{result['attack_bonus']}={result['total']} vs AC {result['target_ac']} — {status}{crit}"
+        )
+        return ToolResult(success=True, message=msg, data=result)
+
+    def roll_saving_throw(
+        self,
+        target_id: int,
+        ability: str,
+        dc: int,
+    ) -> ToolResult:
+        """
+        Roll a saving throw for a target against a difficulty class.
+
+        Args:
+            target_id: Object ID of the creature making the save
+            ability: Ability score to use: str, dex, con, int, wis, chr
+            dc: Difficulty Class to beat or meet
+        """
+        result = self.engine.roll_saving_throw(target_id, ability, dc)
+        if "error" in result:
+            return ToolResult(success=False, message=result["error"])
+        status = "SUCCESS" if result["success"] else "FAILURE"
+        msg = (
+            f"{result['target']} {ability.upper()} saving throw: "
+            f"d20={result['d20_roll']}+{result['modifier']}={result['total']} vs DC {result['dc']} — {status}"
+        )
+        return ToolResult(success=True, message=msg, data=result)
+
+    def roll_damage(self, attacker_id: int, damage_dice: str) -> ToolResult:
+        """
+        Roll damage dice for an attack.
+
+        Args:
+            attacker_id: Object ID of the attacker (used for context only)
+            damage_dice: Dice notation like '1d8+3', '2d6', 'd4+1'
+        """
+        from .combat import roll_dice
+
+        attacker = self.engine.world.get_object(attacker_id)
+        attacker_name = attacker.name if attacker else f"object_{attacker_id}"
+
+        try:
+            result = roll_dice(damage_dice, self.engine.rng)
+        except ValueError as e:
+            return ToolResult(success=False, message=str(e))
+
+        msg = (
+            f"{attacker_name} rolls {damage_dice}: {result['rolls']} "
+            f"(modifier {result['modifier']:+d}) = {result['total']} damage"
+        )
+        return ToolResult(success=True, message=msg, data=result)
 
 
 # Tool definitions for LlamaIndex/Ollama

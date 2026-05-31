@@ -113,7 +113,7 @@ async def _run_dm_response(
     try:
         narration = await asyncio.get_event_loop().run_in_executor(
             None,
-            lambda: ai_client.generate_dm_response(campaign, situation, tools),
+            lambda: ai_client.generate_dm_response(campaign, situation, tools, meta),
         )
     except Exception as e:
         narration = f"[DM is unavailable: {str(e)[:80]}]"
@@ -150,6 +150,17 @@ async def _run_dm_response(
             "players": [p.model_dump(mode="json") for p in players],
         },
     )
+
+    # Broadcast updated combat state if still in Combat mode
+    if meta.game_mode == "Combat":
+        await manager.broadcast(
+            campaign_id,
+            {
+                "type": "combat_state",
+                "active_turn": meta.active_player_turn,
+                "combat_queue": meta.combat_queue,
+            },
+        )
 
 
 @router.websocket("/ws/{campaign_id}")
@@ -254,6 +265,34 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
             elif msg_type == "action":
                 action = str(data.get("action", ""))
                 target_id = data.get("target_id")
+
+                # Reload meta to get latest game_mode and active_player_turn
+                meta = get_campaign_meta(campaign_id) or meta
+
+                # Combat turn enforcement: only the active combatant may act
+                if meta.game_mode == "Combat":
+                    active_id = meta.active_player_turn
+                    # Resolve the active combatant's character name from the world
+                    campaign_for_check = load_campaign_world(campaign_id)
+                    active_obj = (
+                        campaign_for_check.world.get_object(active_id)
+                        if (campaign_for_check and active_id is not None)
+                        else None
+                    )
+                    active_char_name = active_obj.name if active_obj else None
+
+                    if active_char_name and char_name != active_char_name:
+                        # Not this player's turn — reject and notify
+                        await manager.send_personal(
+                            websocket,
+                            {
+                                "type": "not_your_turn",
+                                "message": f"It is {active_char_name}'s turn. Please wait.",
+                                "active_character": active_char_name,
+                            },
+                        )
+                        continue
+
                 action_text = f"{char_name} performs: {action}" + (
                     f" targeting object #{target_id}" if target_id else ""
                 )

@@ -104,6 +104,7 @@ class CampaignMeta(BaseModel):
     parent_snapshot: Optional[str] = None
     snapshot_label: Optional[str] = None
     active_player_turn: Optional[int] = None  # object_id during combat
+    combat_queue: list[int] = Field(default_factory=list)  # ordered combatant IDs
     player_count: int = 0
 
 

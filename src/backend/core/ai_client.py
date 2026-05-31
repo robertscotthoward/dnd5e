@@ -8,9 +8,10 @@ from llama_index.llms.ollama import Ollama
 from rich.console import Console
 
 from .config import settings
-from .tools import WorldTools
+from .tools import WorldTools, CombatTools
 from .vector_store import vector_store
 from ..models.game import Campaign
+from ..models.user import CampaignMeta
 
 console = Console()
 
@@ -186,6 +187,44 @@ class AIClient:
             ),
         ]
 
+    def create_combat_tools(
+        self, world_tools: WorldTools, combat_tools: CombatTools
+    ) -> list[FunctionTool]:
+        """Create the full DM tool set including combat mechanics."""
+        base_tools = self.create_tools(world_tools)
+        return base_tools + [
+            FunctionTool.from_defaults(
+                fn=combat_tools.start_combat,
+                name="start_combat",
+                description="Begin combat by rolling d20+DEX initiative for all combatants",
+            ),
+            FunctionTool.from_defaults(
+                fn=combat_tools.next_turn,
+                name="next_turn",
+                description="Advance combat to the next combatant in initiative order",
+            ),
+            FunctionTool.from_defaults(
+                fn=combat_tools.end_combat,
+                name="end_combat",
+                description="End combat and return to Exploration mode",
+            ),
+            FunctionTool.from_defaults(
+                fn=combat_tools.roll_attack,
+                name="roll_attack",
+                description="Roll d20+bonus vs target AC; returns hit/miss and critical status",
+            ),
+            FunctionTool.from_defaults(
+                fn=combat_tools.roll_saving_throw,
+                name="roll_saving_throw",
+                description="Roll a saving throw (d20+ability modifier) vs a difficulty class",
+            ),
+            FunctionTool.from_defaults(
+                fn=combat_tools.roll_damage,
+                name="roll_damage",
+                description="Roll damage dice (e.g. '1d8+3') for a successful attack",
+            ),
+        ]
+
     def create_npc_tools(self, world_tools: WorldTools) -> list[FunctionTool]:
         """Create the NPC tool set: read, movement, state update, and combat damage."""
         return [
@@ -269,12 +308,13 @@ class AIClient:
         campaign: Campaign,
         situation: str,
         world_tools: WorldTools,
+        meta: Optional[CampaignMeta] = None,
     ) -> str:
         """
         Run a full ReAct tool-calling loop as the DM agent.
 
-        The agent receives the filtered world, may call world tools to mutate state,
-        and produces a final narrative string.
+        When meta is provided and game_mode is 'Combat', the full combat tool set
+        (initiative, attack, saving throws) is included in the agent's tool list.
         """
         rules_context = self.query_rules(situation)
 
@@ -296,18 +336,49 @@ class AIClient:
                 f"- {pc.name} ({race} {class_str}): HP {hp.get('current', '?')}/{hp.get('max', '?')}"
             )
 
+        in_combat = meta is not None and meta.game_mode == "Combat"
+
+        if in_combat and meta:
+            active_obj = campaign.world.get_object(meta.active_player_turn) if meta.active_player_turn else None
+            active_name = active_obj.name if active_obj else "unknown"
+            queue_names = []
+            for oid in meta.combat_queue:
+                o = campaign.world.get_object(oid)
+                queue_names.append(o.name if o else str(oid))
+            combat_context = (
+                f"\nCOMBAT STATUS:\n"
+                f"- Mode: Combat\n"
+                f"- Active turn: {active_name} (ID {meta.active_player_turn})\n"
+                f"- Initiative queue: {', '.join(queue_names)}\n"
+            )
+            combat_instruction = (
+                "You are running a combat encounter. Use roll_attack, roll_damage, "
+                "roll_saving_throw, and add_hp to resolve combat actions. Call next_turn "
+                "after each combatant's action is resolved. Call end_combat when all enemies "
+                "are defeated or the encounter otherwise ends.\n"
+            )
+        else:
+            combat_context = ""
+            combat_instruction = ""
+
         user_message = (
             f'Campaign: "{campaign.name}"\n\n'
             f"CURRENT SITUATION:\n{situation}\n\n"
             f"VISIBLE WORLD STATE:\n{world_context}\n\n"
             f"RELEVANT D&D RULES:\n{rules_context}\n\n"
-            f"PLAYERS:\n{chr(10).join(pc_summaries) if pc_summaries else 'No players'}\n\n"
+            f"PLAYERS:\n{chr(10).join(pc_summaries) if pc_summaries else 'No players'}\n"
+            f"{combat_context}\n"
+            f"{combat_instruction}"
             "As the DM, narrate what happens next. Call world tools as needed to update "
             "game state (e.g. apply damage with add_hp, move objects with move_object). "
             "End with your narration."
         )
 
-        tools = self.create_tools(world_tools)
+        if in_combat and meta:
+            combat_tools = CombatTools(campaign.world, meta)
+            tools = self.create_combat_tools(world_tools, combat_tools)
+        else:
+            tools = self.create_tools(world_tools)
 
         try:
             return asyncio.run(self._run_dm_agent(user_message, tools))

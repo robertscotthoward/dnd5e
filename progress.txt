@@ -1,7 +1,7 @@
 # Project Progress: D&D 5e Agentic Campaign Engine
 
 Total Tasks: 47
-Completed Tasks: 11
+Completed Tasks: 12
 
 ---
 
@@ -26,10 +26,17 @@ Completed Tasks: 11
 - AdminView.vue — campaign list, delete, player management
 - AdminWorldView.vue — expandable world tree with right-click create/delete and detail panel
 
+## Completed (added this session)
+- Combat mode: CombatEngine (src/backend/core/combat.py) — initiative rolling, turn queue, attack rolls, saving throws, damage rolls
+- CombatTools (src/backend/core/tools.py) — LlamaIndex-callable wrappers for all combat operations
+- DM agent combat tool set (ai_client.py create_combat_tools) — includes base world tools + 6 combat tools
+- WS turn enforcement (ws_routes.py) — in Combat mode, only active combatant's action is forwarded to DM
+- CampaignMeta.combat_queue field added (user.py)
+- 35 new tests in tests/test_combat.py — all pass
+
 ## In Progress / Remaining
 - Typer CLI `new-campaign` command in main.py (randomized race/class/stats, seeded world YAML, seeds.log)
 - Full ReAct agent loop for DM and PC agents
-- Combat turn enforcement in WebSocket handler
 - AI-generated character background endpoint
 - Returning player DM recap on re-join
 - Memgraph sync on new-campaign and tool calls
