@@ -444,6 +444,73 @@ def apply_level_up(
     }
 
 
+@router.get("/campaigns/{campaign_id}/characters/{character_id}")
+def get_character(campaign_id: str, character_id: int, request: Request):
+    """
+    Return full character sheet data for a PC from their world object properties.
+
+    Includes ability scores, modifiers, classes, proficiencies, features,
+    equipped/carried items, and current HP.
+    """
+    get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load world")
+
+    char_obj = campaign.world.get_object(character_id)
+    if not char_obj or char_obj.type != "PC":
+        raise HTTPException(status_code=404, detail="Character not found")
+
+    props = char_obj.properties
+    abilities = props.get("abilities", {})
+
+    def mod(score: int) -> int:
+        return (score - 10) // 2
+
+    ability_block = {
+        key: {"score": score, "modifier": mod(score)}
+        for key, score in abilities.items()
+    }
+
+    # Gather carried items from world children
+    children = campaign.world.get_children(character_id)
+    items = [
+        {
+            "id": c.id,
+            "name": c.name or c.type,
+            "type": c.type,
+            "weight": c.weight,
+            "cost": c.cost,
+            "equipped": c.properties.get("equipped", False),
+            "description": c.description,
+        }
+        for c in children
+    ]
+
+    return {
+        "id": char_obj.id,
+        "name": char_obj.name,
+        "description": char_obj.description,
+        "race": props.get("race", "Unknown"),
+        "classes": props.get("classes", []),
+        "abilities": ability_block,
+        "hp": props.get("hp", {"current": 0, "max": 0}),
+        "experience": props.get("experience", 0),
+        "background": props.get("background", ""),
+        "region": props.get("region", ""),
+        "proficiencies": props.get("proficiencies", []),
+        "features": props.get("features", []),
+        "conditions": props.get("conditions", []),
+        "death_saves": props.get("death_saves", {"successes": 0, "failures": 0}),
+        "items": items,
+        "personality": props.get("personality", ""),
+        "goals": props.get("goals", []),
+    }
+
+
 @router.get("/campaigns/{campaign_id}/chat")
 def get_campaign_chat(campaign_id: str, limit: int = 100):
     """Return recent chat messages for a campaign."""

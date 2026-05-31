@@ -68,6 +68,15 @@
           <span class="ws-dot"></span>
           {{ campaignStore.wsStatus }}
         </div>
+        <button
+          v-if="myCharacterId"
+          class="sheet-toggle-btn"
+          :class="{ active: sheetOpen }"
+          @click="sheetOpen = !sheetOpen"
+          title="Character Sheet"
+        >
+          &#x1F4DC; Sheet
+        </button>
       </div>
 
       <!-- Chat window -->
@@ -202,6 +211,14 @@
     <!-- Level-Up Dialog -->
     <LevelUpDialog :campaignId="campaignId" @confirmed="onLevelUpConfirmed" />
 
+    <!-- Character Sheet Panel -->
+    <CharacterSheet
+      :open="sheetOpen"
+      :campaignId="campaignId"
+      :characterId="myCharacterId"
+      @close="sheetOpen = false"
+    />
+
     <!-- Restore Confirm Modal -->
     <Teleport to="body">
       <div v-if="restoreTarget" class="modal-overlay" @click.self="restoreTarget = null">
@@ -233,6 +250,7 @@ import ChatWindow from '../components/ChatWindow.vue'
 import ActionBar from '../components/ActionBar.vue'
 import SnapshotNode from '../components/SnapshotNode.vue'
 import LevelUpDialog from '../components/LevelUpDialog.vue'
+import CharacterSheet from '../components/CharacterSheet.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -246,6 +264,7 @@ const snapshotLabel = ref('')
 const snapInputEl = ref(null)
 const restoreTarget = ref(null)
 const restoringSnapshotId = ref(null)
+const sheetOpen = ref(false)
 
 // Computed
 const myCharacterId = computed(() => {
@@ -529,6 +548,30 @@ onUnmounted(() => {
   font-size: 0.85rem;
   color: #8a7355;
   font-style: italic;
+}
+
+.sheet-toggle-btn {
+  background: transparent;
+  border: 1px solid #3d2e10;
+  color: #8a7355;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 3px;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  margin-left: 0.35rem;
+}
+.sheet-toggle-btn:hover {
+  color: #c9a227;
+  border-color: #c9a227;
+}
+.sheet-toggle-btn.active {
+  color: #c9a227;
+  border-color: #7a6115;
+  background: rgba(201, 162, 39, 0.1);
 }
 
 .ws-indicator {
