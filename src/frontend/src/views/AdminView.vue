@@ -6,6 +6,18 @@
       <RouterLink to="/admin" class="sidebar-link" :class="{ active: route.name === 'admin' }">
         ⚙ Console
       </RouterLink>
+      <template v-if="campaigns.length">
+        <div class="sidebar-section-label">World</div>
+        <RouterLink
+          v-for="entry in campaigns"
+          :key="entry.meta.id"
+          :to="`/admin/world/${entry.meta.id}`"
+          class="sidebar-link sidebar-link-sub"
+          :class="{ active: route.name === 'admin-world' && route.params.id === entry.meta.id }"
+        >
+          {{ entry.meta.name }}
+        </RouterLink>
+      </template>
     </aside>
 
     <!-- Main content -->
@@ -290,6 +302,21 @@ function formatDate(iso) {
   color: #4a3820;
   text-transform: uppercase;
   padding: 0 1rem 0.5rem;
+}
+
+.sidebar-section-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #4a3820;
+  text-transform: uppercase;
+  padding: 1rem 1rem 0.5rem;
+}
+
+.sidebar-link-sub {
+  padding-left: 1.5rem;
+  font-size: 0.73rem;
 }
 
 .sidebar-link {

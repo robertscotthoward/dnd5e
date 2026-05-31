@@ -3,7 +3,21 @@
     <!-- Left sidebar -->
     <aside class="admin-sidebar">
       <div class="sidebar-label">Admin</div>
-      <RouterLink to="/admin" class="sidebar-link">⚙ Console</RouterLink>
+      <RouterLink to="/admin" class="sidebar-link" :class="{ active: route.name === 'admin' }">
+        ⚙ Console
+      </RouterLink>
+      <template v-if="navCampaigns.length">
+        <div class="sidebar-section-label">World</div>
+        <RouterLink
+          v-for="c in navCampaigns"
+          :key="c.id"
+          :to="`/admin/world/${c.id}`"
+          class="sidebar-link sidebar-link-sub"
+          :class="{ active: c.id === campaignId }"
+        >
+          {{ c.name }}
+        </RouterLink>
+      </template>
     </aside>
 
     <!-- Main content -->
@@ -238,6 +252,9 @@ import { RouterLink, useRoute } from 'vue-router'
 const route = useRoute()
 const campaignId = route.params.id
 
+// ─── Nav sidebar campaigns ─────────────────────────────────────────────────────
+const navCampaigns = ref([])
+
 // ─── Type hierarchy ────────────────────────────────────────────────────────────
 const CHILD_TYPES = {
   system:     ['planet', 'moon', 'star'],
@@ -433,7 +450,7 @@ const ctxChildTypes = computed(() => CHILD_TYPES[ctxMenu.value.node?.type] || []
 
 // ─── Lifecycle ─────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  await fetchWorld()
+  await Promise.all([fetchWorld(), fetchNavCampaigns()])
   document.addEventListener('click', onGlobalClick)
   document.addEventListener('keydown', onGlobalKeydown)
 })
@@ -450,6 +467,17 @@ watch(() => createDialog.value.visible, async (visible) => {
     nameInputRef.value?.focus()
   }
 })
+
+// ─── Nav campaigns fetch ───────────────────────────────────────────────────────
+async function fetchNavCampaigns() {
+  try {
+    const res = await fetch('/api/admin/campaigns', { credentials: 'include' })
+    if (res.ok) {
+      const data = await res.json()
+      navCampaigns.value = data.map(e => ({ id: e.meta.id, name: e.meta.name }))
+    }
+  } catch { /* nav is non-critical */ }
+}
 
 // ─── World fetch ───────────────────────────────────────────────────────────────
 async function fetchWorld() {
@@ -676,6 +704,21 @@ function propLines(props, depth = 0) {
 }
 .sidebar-link:hover { background: rgba(201,162,39,0.06); color: #c9a227; }
 .sidebar-link.active { background: rgba(201,162,39,0.1); color: #c9a227; border-right: 2px solid #c9a227; }
+
+.sidebar-section-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #4a3820;
+  text-transform: uppercase;
+  padding: 1rem 1rem 0.5rem;
+}
+
+.sidebar-link-sub {
+  padding-left: 1.5rem;
+  font-size: 0.73rem;
+}
 
 /* ── Main ── */
 .admin-main { flex: 1; min-width: 0; padding-bottom: 3rem; overflow: hidden; }
