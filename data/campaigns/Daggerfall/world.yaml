@@ -2,10 +2,10 @@ name: Daggerfall
 seed: 432
 turn_number: 0
 created_at: '2026-05-04T15:08:38.492042'
-updated_at: '2026-05-04T15:10:33.090152'
+updated_at: '2026-05-08T20:57:09.234077'
 world:
   name: Daggerfall
-  max_id: 13
+  max_id: 14
   delete_ids: []
   objects:
     1:
@@ -225,3 +225,11 @@ world:
         experience: 0
         player_controlled: true
         user_id: ac80a32a859e5452
+    14:
+      id: 14
+      type: PC
+      parent: 8
+      name: Lyria
+      properties:
+        race: Half-Elf
+        class_type: Cleric

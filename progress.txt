@@ -1,0 +1,38 @@
+# Project Progress: D&D 5e Agentic Campaign Engine
+
+Total Tasks: 47
+Completed Tasks: 10
+
+---
+
+## Completed
+- World model (src/backend/models/world.py) — Object, World, hierarchy, visibility
+- Game model (src/backend/models/game.py) — Campaign, turn tracking
+- Player model (src/backend/models/player.py)
+- World tools (src/backend/core/tools.py) — create/move/set/delete/get object, add_hp
+- AI client (src/backend/core/ai_client.py) — Ollama LLM, DM/PC/World prompt generators, rules query
+- Vector store (src/backend/core/vector_store.py) — ChromaDB integration
+- Campaign I/O (src/backend/core/campaign_io.py) — YAML load/save
+- Campaign manager (src/backend/core/campaign_manager.py) — full CRUD, snapshots, chat
+- Auth routes (src/backend/api/auth_routes.py)
+- Campaign routes (src/backend/api/campaign_routes.py)
+- Admin routes (src/backend/api/admin_routes.py) — world tree, create/delete object
+- WebSocket routes (src/backend/api/ws_routes.py) — real-time chat broadcast
+- CharacterCreator.vue — multi-step wizard (name, region, race, class, dice rolls, background)
+- GameView.vue — party sidebar, chat area, action bar layout
+- ChatWindow.vue — real-time chat display
+- ActionBar.vue — context-sensitive action buttons
+- PlayerCard.vue — hp/encumbrance/health gradient bars
+- AdminView.vue — campaign list, delete, player management
+- AdminWorldView.vue — expandable world tree with right-click create/delete and detail panel
+
+## In Progress / Remaining
+- Typer CLI commands (index-corpus, new-campaign, turn) wired in main.py
+- Full ReAct agent loop for DM and PC agents
+- Combat turn enforcement in WebSocket handler
+- AI-generated character background endpoint
+- Returning player DM recap on re-join
+- Memgraph sync on new-campaign and tool calls
+- Snapshot restore endpoint and UI
+- Snapshot branching tree UI
+- Integration smoke test

@@ -296,3 +296,13 @@ For example:
       is_moveable: false
 ```
 will be shown as "Realmspace (system) - The crystal sphere containing Toril and its celestial bodies
+
+When showing the /admin/world/WORLDNAME and the tree, if you click on any treeitem, then the details of that item show in a panel to the right.
+For example, if you click a character, it will show the person's attributes.
+
+If one right-clicks a treeitem, show a dropdown menu that contains "Create", which has a submenu that shows all types that can be created as children under that parent if allowed.
+For example, if I click a region, then I can create a town, or city, or keep, etc.
+Under a PC, one can create an artifact, like a sword.
+WHen the item to create is selected, a dialog appears that has the type, name (filled with a random name) but the user can change it, and any other properties with random settings. A Save (ENTER key) and Cancel (ESC key) button at the bottom. When saved, the new item appears in the tree.
+Add a menu item to delete the item.
+When a character is created, be sure to roll for the attributes.

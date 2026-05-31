@@ -1,3 +1,15 @@
+# Overview
+
+This is a D&D 5e agentic simulation system built with FastAPI and a CLI-first design. The app uses a local Ollama LLM (qwen2.5:14b) to drive an agentic Dungeon Master and player characters through a persistent world modeled as a YAML object hierarchy. The world spans a full D&D geography — from Realmspace down to individual dungeon rooms — and is managed via three CLI commands: index-corpus (to ingest D&D 5e rules into a ChromaDB vector store), new-campaign (to generate four player characters and a world file), and turn (to advance the narrative through one game round). Agents for the DM, each PC/NPC, and the world itself operate according to D&D 5e rules pulled from a local markdown corpus, with LlamaIndex orchestrating retrieval and tool calls, Memgraph tracking relationships between world objects, and the game progressing through four modes: Exploration, Social Interaction, Travel, and Combat.
+
+
+
+# Usage
+
+```
+```
+
+
 # UV Template
 
 Use this process to create new Python projects in a convenient manner, such that:
