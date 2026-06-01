@@ -82,6 +82,14 @@
         >
           &#x1F4DC; Sheet
         </button>
+        <button
+          class="sheet-toggle-btn"
+          :class="{ active: mapOpen }"
+          @click="mapOpen = !mapOpen"
+          title="World Map (F4)"
+        >
+          &#x1F5FA; Map
+        </button>
         <AmbientAudio
           :locationName="currentLocation?.name || ''"
           :locationDescription="currentLocation?.description || ''"
@@ -281,6 +289,13 @@
       @close="sheetOpen = false"
     />
 
+    <!-- World Map -->
+    <WorldMap
+      :visible="mapOpen"
+      :campaignId="campaignId"
+      @close="mapOpen = false"
+    />
+
     <!-- Restore Confirm Modal -->
     <Teleport to="body">
       <div v-if="restoreTarget" class="modal-overlay" @click.self="restoreTarget = null">
@@ -319,6 +334,7 @@ import JournalTab from '../components/JournalTab.vue'
 import QuestTracker from '../components/QuestTracker.vue'
 import NpcPanel from '../components/NpcPanel.vue'
 import AmbientAudio from '../components/AmbientAudio.vue'
+import WorldMap from '../components/WorldMap.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -334,6 +350,7 @@ const snapInputEl = ref(null)
 const restoreTarget = ref(null)
 const restoringSnapshotId = ref(null)
 const sheetOpen = ref(false)
+const mapOpen = ref(false)
 
 // Computed
 const myCharacterId = computed(() => {
@@ -448,6 +465,13 @@ function onLevelUpConfirmed({ hpGain, asiChoices }) {
   campaignStore.sendChat(`${name} leveled up! +${hpGain} HP gained.`)
 }
 
+function onKeydown(e) {
+  if (e.key === 'F4') {
+    e.preventDefault()
+    mapOpen.value = !mapOpen.value
+  }
+}
+
 onMounted(async () => {
   await campaignStore.loadState(campaignId)
   campaignStore.connectWs(campaignId)
@@ -455,10 +479,12 @@ onMounted(async () => {
   await campaignStore.fetchJournal(campaignId)
   await campaignStore.fetchQuests(campaignId)
   await campaignStore.fetchNpcs(campaignId)
+  window.addEventListener('keydown', onKeydown)
 })
 
 onUnmounted(() => {
   campaignStore.disconnectWs()
+  window.removeEventListener('keydown', onKeydown)
 })
 </script>
 

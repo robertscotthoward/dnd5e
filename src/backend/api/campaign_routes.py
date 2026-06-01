@@ -821,6 +821,65 @@ def get_npcs(campaign_id: str, request: Request):
     return {"npcs": result.data["npcs"]}
 
 
+@router.get("/campaigns/{campaign_id}/map")
+def get_map(campaign_id: str, request: Request):
+    """
+    Return all world objects with their computed absolute [x, y, z] positions.
+
+    Absolute position = recursive sum of location offsets up the parent chain.
+    Objects with no location (or location [0,0,0]) are placed at their parent's
+    absolute position.  The player character for the authenticated user is flagged
+    with is_player=True so the frontend can highlight and auto-center on them.
+    """
+    session = get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load world")
+
+    # Compute absolute positions via memoised DFS
+    abs_pos: dict[int, tuple[float, float, float]] = {}
+
+    def get_abs(obj_id: int) -> tuple[float, float, float]:
+        if obj_id in abs_pos:
+            return abs_pos[obj_id]
+        obj = campaign.world.get_object(obj_id)
+        if obj is None:
+            abs_pos[obj_id] = (0.0, 0.0, 0.0)
+            return abs_pos[obj_id]
+        lx, ly, lz = obj.location.x, obj.location.y, obj.location.z
+        if obj.parent is None:
+            abs_pos[obj_id] = (lx, ly, lz)
+        else:
+            px, py, pz = get_abs(obj.parent)
+            abs_pos[obj_id] = (px + lx, py + ly, pz + lz)
+        return abs_pos[obj_id]
+
+    player = find_player(campaign_id, session.user_id)
+    player_char_id = player.get("character_object_id") if player else None
+
+    nodes = []
+    for obj in campaign.world.objects.values():
+        ax, ay, az = get_abs(obj.id)
+        nodes.append({
+            "id": obj.id,
+            "parent": obj.parent,
+            "type": obj.type,
+            "name": obj.name or obj.type,
+            "description": obj.description or "",
+            "x": ax,
+            "y": ay,
+            "z": az,
+            "is_moveable": obj.is_moveable,
+            "is_virtual": obj.is_virtual,
+            "is_player": obj.id == player_char_id,
+        })
+
+    return {"nodes": nodes}
+
+
 @router.post("/campaigns/{campaign_id}/snapshots/{snapshot_id}/restore")
 def post_snapshot_restore(campaign_id: str, snapshot_id: str, request: Request):
     """

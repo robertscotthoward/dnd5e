@@ -1,0 +1,441 @@
+<template>
+  <Teleport to="body">
+    <div v-if="visible" class="map-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')">
+      <div class="map-dialog" @contextmenu.prevent>
+        <!-- Header -->
+        <div class="map-header">
+          <span class="map-title">World Map</span>
+          <span class="map-legend">
+            <span class="legend-dot dot-location"></span>Location
+            <span class="legend-dot dot-pc"></span>PC
+            <span class="legend-dot dot-npc"></span>NPC
+            <span class="legend-dot dot-item"></span>Item
+          </span>
+          <button class="map-close-btn" @click="$emit('close')" title="Close (Esc)">✕</button>
+        </div>
+
+        <!-- Canvas -->
+        <canvas
+          ref="canvasEl"
+          class="map-canvas"
+          @mousedown="onMouseDown"
+          @mousemove="onMouseMove"
+          @mouseup="onMouseUp"
+          @mouseleave="onMouseUp"
+          @wheel.prevent="onWheel"
+          @contextmenu.prevent="onRightClick"
+        ></canvas>
+
+        <!-- Right-click context menu -->
+        <div
+          v-if="ctxMenu.visible"
+          class="ctx-menu"
+          :style="{ left: ctxMenu.x + 'px', top: ctxMenu.y + 'px' }"
+          @mouseleave="ctxMenu.visible = false"
+        >
+          <button class="ctx-item" @click="centerOnPlayer">Center on Player</button>
+          <button class="ctx-item" @click="resetView">Reset View</button>
+          <button class="ctx-item" @click="zoomIn">Zoom In</button>
+          <button class="ctx-item" @click="zoomOut">Zoom Out</button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+<script setup>
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+
+const props = defineProps({
+  visible: { type: Boolean, default: false },
+  campaignId: { type: String, required: true },
+})
+defineEmits(['close'])
+
+const canvasEl = ref(null)
+
+// Pan / zoom state
+const pan = ref({ x: 0, y: 0 })
+const zoom = ref(1)
+const dragging = ref(false)
+const dragStart = ref({ x: 0, y: 0, panX: 0, panY: 0 })
+
+// Map data
+const nodes = ref([])
+const playerNode = ref(null)
+
+// Context menu
+const ctxMenu = ref({ visible: false, x: 0, y: 0 })
+
+// Type → render config
+const TYPE_CONFIG = {
+  system:    { color: '#444', radius: 3, show: false },
+  planet:    { color: '#5a4530', radius: 4, show: false },
+  continent: { color: '#5a4530', radius: 4, show: false },
+  region:    { color: '#7a6115', radius: 5, show: true },
+  town:      { color: '#c9a227', radius: 6, show: true },
+  city:      { color: '#c9a227', radius: 7, show: true },
+  inn:       { color: '#e8d5b7', radius: 5, show: true },
+  room:      { color: '#8a7355', radius: 4, show: true },
+  dungeon:   { color: '#8a4530', radius: 6, show: true },
+  party:     { color: '#4ade80', radius: 4, show: false },
+  PC:        { color: '#4ade80', radius: 6, show: true },
+  NPC:       { color: '#93c5fd', radius: 5, show: true },
+  monster:   { color: '#f87171', radius: 5, show: true },
+  item:      { color: '#fde68a', radius: 3, show: true },
+  _default:  { color: '#8a7355', radius: 3, show: true },
+}
+
+function typeConfig(type) {
+  return TYPE_CONFIG[type] || TYPE_CONFIG._default
+}
+
+async function loadMap() {
+  try {
+    const res = await fetch(`/api/campaigns/${props.campaignId}/map`, { credentials: 'include' })
+    if (!res.ok) return
+    const data = await res.json()
+    nodes.value = data.nodes || []
+    playerNode.value = nodes.value.find(n => n.is_player) || null
+    nextTick(() => {
+      initCanvas()
+      centerOnPlayer()
+    })
+  } catch (e) {
+    // ignore
+  }
+}
+
+function worldToCanvas(wx, wy) {
+  const canvas = canvasEl.value
+  if (!canvas) return { cx: 0, cy: 0 }
+  const cx = canvas.width / 2 + pan.value.x + wx * zoom.value
+  const cy = canvas.height / 2 + pan.value.y - wy * zoom.value  // y flipped: up = +y
+  return { cx, cy }
+}
+
+function draw() {
+  const canvas = canvasEl.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+  // Background
+  ctx.fillStyle = '#0a0806'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  // Grid (50ft = one square)
+  drawGrid(ctx, canvas)
+
+  const visibleNodes = nodes.value.filter(n => typeConfig(n.type).show)
+
+  // Draw edges (parent → child) for location types
+  ctx.strokeStyle = 'rgba(61,46,16,0.5)'
+  ctx.lineWidth = 1
+  for (const n of visibleNodes) {
+    if (n.parent == null) continue
+    const parent = visibleNodes.find(p => p.id === n.parent)
+    if (!parent) continue
+    const from = worldToCanvas(parent.x, parent.y)
+    const to = worldToCanvas(n.x, n.y)
+    const dx = to.cx - from.cx
+    const dy = to.cy - from.cy
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue
+    ctx.beginPath()
+    ctx.moveTo(from.cx, from.cy)
+    ctx.lineTo(to.cx, to.cy)
+    ctx.stroke()
+  }
+
+  // Draw nodes
+  for (const n of visibleNodes) {
+    const cfg = typeConfig(n.type)
+    const { cx, cy } = worldToCanvas(n.x, n.y)
+    const r = Math.max(2, cfg.radius * Math.sqrt(zoom.value))
+
+    if (n.is_player) {
+      // Glow ring for the player
+      ctx.beginPath()
+      ctx.arc(cx, cy, r + 4, 0, Math.PI * 2)
+      ctx.strokeStyle = 'rgba(201,162,39,0.5)'
+      ctx.lineWidth = 2
+      ctx.stroke()
+    }
+
+    ctx.beginPath()
+    ctx.arc(cx, cy, r, 0, Math.PI * 2)
+    ctx.fillStyle = n.is_player ? '#c9a227' : cfg.color
+    ctx.fill()
+
+    // Label at higher zoom
+    if (zoom.value > 0.4) {
+      ctx.fillStyle = n.is_player ? '#c9a227' : '#e8d5b7'
+      ctx.font = `${Math.max(9, 11 * zoom.value)}px 'Crimson Text', serif`
+      ctx.textAlign = 'center'
+      ctx.fillText(n.name, cx, cy - r - 3)
+    }
+  }
+}
+
+function drawGrid(ctx, canvas) {
+  const gridFeet = 50  // 1 square = 50 feet
+  const step = gridFeet * zoom.value
+  if (step < 8) return  // skip grid when too zoomed out
+
+  ctx.strokeStyle = 'rgba(61,46,16,0.25)'
+  ctx.lineWidth = 0.5
+
+  const originX = canvas.width / 2 + pan.value.x
+  const originY = canvas.height / 2 + pan.value.y
+
+  // Vertical lines
+  const startX = ((originX % step) + step) % step
+  for (let x = startX; x < canvas.width; x += step) {
+    ctx.beginPath()
+    ctx.moveTo(x, 0)
+    ctx.lineTo(x, canvas.height)
+    ctx.stroke()
+  }
+
+  // Horizontal lines
+  const startY = ((originY % step) + step) % step
+  for (let y = startY; y < canvas.height; y += step) {
+    ctx.beginPath()
+    ctx.moveTo(0, y)
+    ctx.lineTo(canvas.width, y)
+    ctx.stroke()
+  }
+}
+
+function initCanvas() {
+  const canvas = canvasEl.value
+  if (!canvas) return
+  const parent = canvas.parentElement
+  canvas.width = parent.clientWidth
+  canvas.height = parent.clientHeight
+  draw()
+}
+
+// --- Interaction ---
+
+function onMouseDown(e) {
+  if (e.button !== 0) return
+  ctxMenu.value.visible = false
+  dragging.value = true
+  dragStart.value = { x: e.clientX, y: e.clientY, panX: pan.value.x, panY: pan.value.y }
+}
+
+function onMouseMove(e) {
+  if (!dragging.value) return
+  pan.value.x = dragStart.value.panX + (e.clientX - dragStart.value.x)
+  pan.value.y = dragStart.value.panY + (e.clientY - dragStart.value.y)
+  draw()
+}
+
+function onMouseUp() {
+  dragging.value = false
+}
+
+function onWheel(e) {
+  const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12
+  const canvas = canvasEl.value
+  if (!canvas) return
+
+  // Zoom toward mouse cursor
+  const rect = canvas.getBoundingClientRect()
+  const mx = e.clientX - rect.left - canvas.width / 2
+  const my = e.clientY - rect.top - canvas.height / 2
+
+  pan.value.x = mx + (pan.value.x - mx) * factor
+  pan.value.y = my + (pan.value.y - my) * factor
+  zoom.value = Math.min(20, Math.max(0.05, zoom.value * factor))
+  draw()
+}
+
+function onRightClick(e) {
+  const rect = canvasEl.value?.getBoundingClientRect()
+  if (!rect) return
+  ctxMenu.value = {
+    visible: true,
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top,
+  }
+}
+
+// --- Controls ---
+
+function centerOnPlayer() {
+  ctxMenu.value.visible = false
+  const p = playerNode.value
+  if (!p) return
+  pan.value.x = -p.x * zoom.value
+  pan.value.y = p.y * zoom.value
+  draw()
+}
+
+function resetView() {
+  ctxMenu.value.visible = false
+  pan.value = { x: 0, y: 0 }
+  zoom.value = 1
+  draw()
+}
+
+function zoomIn() {
+  ctxMenu.value.visible = false
+  zoom.value = Math.min(20, zoom.value * 1.5)
+  draw()
+}
+
+function zoomOut() {
+  ctxMenu.value.visible = false
+  zoom.value = Math.max(0.05, zoom.value / 1.5)
+  draw()
+}
+
+// Resize handler
+function onResize() {
+  initCanvas()
+}
+
+watch(() => props.visible, (val) => {
+  if (val) {
+    nextTick(() => {
+      loadMap()
+    })
+  }
+})
+
+onMounted(() => {
+  window.addEventListener('resize', onResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', onResize)
+})
+</script>
+
+<style scoped>
+.map-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+
+.map-dialog {
+  position: relative;
+  width: min(90vw, 1100px);
+  height: min(85vh, 700px);
+  display: flex;
+  flex-direction: column;
+  background: #0a0806;
+  border: 1px solid #3d2e10;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
+}
+
+.map-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: #110d05;
+  border-bottom: 1px solid #3d2e10;
+  flex-shrink: 0;
+}
+
+.map-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #c9a227;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Crimson Text', serif;
+  font-size: 0.78rem;
+  color: #8a7355;
+  margin-left: 0.5rem;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 0.5rem;
+}
+.dot-location { background: #c9a227; }
+.dot-pc       { background: #4ade80; }
+.dot-npc      { background: #93c5fd; }
+.dot-item     { background: #fde68a; }
+
+.map-close-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid #3d2e10;
+  color: #8a7355;
+  cursor: pointer;
+  font-size: 0.75rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s;
+}
+.map-close-btn:hover {
+  color: #c9a227;
+  border-color: #c9a227;
+}
+
+.map-canvas {
+  flex: 1;
+  display: block;
+  cursor: grab;
+  min-height: 0;
+}
+.map-canvas:active {
+  cursor: grabbing;
+}
+
+/* Right-click context menu */
+.ctx-menu {
+  position: absolute;
+  background: #110d05;
+  border: 1px solid #3d2e10;
+  border-radius: 4px;
+  padding: 0.25rem 0;
+  min-width: 160px;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+.ctx-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0.9rem;
+  font-family: 'Crimson Text', serif;
+  font-size: 0.9rem;
+  color: #e8d5b7;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.ctx-item:hover {
+  background: rgba(201, 162, 39, 0.12);
+  color: #c9a227;
+}
+</style>
