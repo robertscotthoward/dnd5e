@@ -432,6 +432,10 @@ export const useCampaignStore = defineStore('campaign', () => {
     }
   }
 
+  function clearChat() {
+    chat.value = []
+  }
+
   function clearLevelUp() {
     pendingLevelUp.value = null
   }
@@ -550,7 +554,7 @@ export const useCampaignStore = defineStore('campaign', () => {
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
     fetchSnapshots, fetchJournal, fetchQuests, fetchNpcs, restoreSnapshot, sendAwardXp, awardXp,
-    clearLevelUp, clearDiceRoll, sendTakeLoot, clearLoot, sendCompleteMilestone,
+    clearChat, clearLevelUp, clearDiceRoll, sendTakeLoot, clearLoot, sendCompleteMilestone,
     sendShortRest, sendLongRest,
   }
 })

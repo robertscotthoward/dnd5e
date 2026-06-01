@@ -15,6 +15,22 @@
       "text": "[DM is unavailable: `llama-index-embeddings-huggingface` package not found, please run `pip install ]",
       "turn_number": 0,
       "timestamp": "2026-05-31T10:48:29.650863"
+    },
+    {
+      "id": "48224b66cce7",
+      "sender": "robeblade",
+      "sender_type": "PC",
+      "text": "look aroujnd",
+      "turn_number": 0,
+      "timestamp": "2026-05-31T15:22:57.376334"
+    },
+    {
+      "id": "eda56b61c7f0",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you look around the common room of Stonehill Inn, you see your companions Thorin (Dwarf Fighter), Elara (Elf Wizard), Mira (Halfling Rogue), Aldric (Human Cleric), and Lyria (Half-Elf Cleric). The room is modestly furnished with tables and a fireplace. You notice that the inn is quiet as it's early in the morning, but you can hear faint sounds of people preparing for the day outside.\n\nYour surroundings are as follows:\n1. Thorin: Dwarven Fighter standing near the entrance.\n2. Elara: Elf Wizard seated at a table with her books and scrolls spread out.\n3. Mira: Halfling Rogue leaning against a wall, looking around curiously.\n4. Aldric: Human Cleric praying by the fireplace.\n5. Lyria: Half-Elf Cleric is not present in the common room.\n\nThe party seems to be ready for their next adventure, and it's up to you how you proceed. Do you have any specific actions or questions in mind?",
+      "turn_number": 0,
+      "timestamp": "2026-05-31T15:23:45.798086"
     }
   ]
 }

@@ -50,13 +50,30 @@
       </div>
     </div>
 
+    <!-- Slash-command dropdown -->
+    <div v-if="slashMenuOpen" class="slash-menu" ref="slashMenuEl">
+      <div
+        v-for="(cmd, idx) in filteredCommands"
+        :key="cmd.name"
+        class="slash-item"
+        :class="{ 'slash-item-active': idx === slashIndex }"
+        @mousedown.prevent="selectCommand(cmd)"
+      >
+        <span class="slash-name">{{ cmd.name }}</span>
+        <span class="slash-desc">{{ cmd.description }}</span>
+      </div>
+      <div v-if="filteredCommands.length === 0" class="slash-empty">No matching commands</div>
+    </div>
+
     <!-- Input Row -->
     <div class="chat-input-row">
       <input
+        ref="inputEl"
         v-model="inputText"
         class="dnd-input chat-input"
         :placeholder="placeholder"
-        @keydown.enter.prevent="sendMessage"
+        @keydown="onKeydown"
+        @input="onInput"
         :disabled="!campaignStore.ws || campaignStore.wsStatus !== 'connected'"
       />
       <button
@@ -80,15 +97,103 @@
 </template>
 
 <script setup>
-import { ref, watchEffect, nextTick, computed } from 'vue'
+import { ref, computed, watchEffect, nextTick } from 'vue'
 import { useCampaignStore } from '../stores/campaign'
 import DiceRollAnimation from './DiceRollAnimation.vue'
 
 const campaignStore = useCampaignStore()
 const messagesEl = ref(null)
+const inputEl = ref(null)
+const slashMenuEl = ref(null)
 const inputText = ref('')
+const slashIndex = ref(0)
+
+// --- Slash commands registry ---
+// Add new commands here; the dropdown and dispatch both read from this list.
+const SLASH_COMMANDS = [
+  {
+    name: '/clear',
+    description: 'Clear the local chat history',
+    action: () => { campaignStore.clearChat() },
+  },
+]
+
+const slashMenuOpen = computed(() =>
+  inputText.value.startsWith('/') && inputText.value === inputText.value.trimEnd()
+)
+
+const filteredCommands = computed(() => {
+  const q = inputText.value.toLowerCase()
+  return SLASH_COMMANDS.filter(c => c.name.startsWith(q))
+})
 
 const placeholder = "Speak your mind... (prefix with 'DM:' to command the Dungeon Master)"
+
+// Reset selection index whenever the filtered list changes
+watchEffect(() => {
+  if (filteredCommands.value.length > 0) slashIndex.value = 0
+})
+
+function onInput() {
+  // Keep selection in bounds as the user types
+  slashIndex.value = 0
+}
+
+function onKeydown(e) {
+  if (slashMenuOpen.value && filteredCommands.value.length > 0) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      slashIndex.value = (slashIndex.value + 1) % filteredCommands.value.length
+      return
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      slashIndex.value = (slashIndex.value - 1 + filteredCommands.value.length) % filteredCommands.value.length
+      return
+    }
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      selectCommand(filteredCommands.value[slashIndex.value])
+      return
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      // If the typed text is an exact command, run it; otherwise autocomplete
+      const exact = SLASH_COMMANDS.find(c => c.name === inputText.value.trim())
+      if (exact) {
+        selectCommand(exact)
+      } else {
+        selectCommand(filteredCommands.value[slashIndex.value])
+      }
+      return
+    }
+    if (e.key === 'Escape') {
+      inputText.value = ''
+      return
+    }
+  }
+  // Normal Enter for chat
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    sendMessage()
+  }
+}
+
+function selectCommand(cmd) {
+  if (!cmd) return
+  cmd.action()
+  inputText.value = ''
+  nextTick(() => inputEl.value?.focus())
+}
+
+function sendMessage() {
+  const text = inputText.value.trim()
+  if (!text) return
+  // Ignore bare slash with no match
+  if (text.startsWith('/')) return
+  campaignStore.sendChat(text)
+  inputText.value = ''
+}
 
 function messageClass(msg) {
   const type = (msg.sender_type || '').toUpperCase()
@@ -106,29 +211,16 @@ function messageWrapperClass(msg) {
 function formatTime(ts) {
   if (!ts) return ''
   try {
-    const d = new Date(ts)
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  } catch {
-    return ''
-  }
+    return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  } catch { return '' }
 }
 
-function sendMessage() {
-  const text = inputText.value.trim()
-  if (!text) return
-  campaignStore.sendChat(text)
-  inputText.value = ''
-}
-
-const statusClass = computed(() => {
-  switch (campaignStore.wsStatus) {
-    case 'connected':    return 'status-connected'
-    case 'connecting':   return 'status-connecting'
-    case 'disconnected': return 'status-disconnected'
-    case 'error':        return 'status-error'
-    default:             return 'status-disconnected'
-  }
-})
+const statusClass = computed(() => ({
+  'status-connected':    campaignStore.wsStatus === 'connected',
+  'status-connecting':   campaignStore.wsStatus === 'connecting',
+  'status-disconnected': campaignStore.wsStatus === 'disconnected',
+  'status-error':        campaignStore.wsStatus === 'error',
+}))
 
 const statusText = computed(() => {
   switch (campaignStore.wsStatus) {
@@ -142,13 +234,10 @@ const statusText = computed(() => {
 
 // Auto-scroll to bottom when new messages arrive
 watchEffect(async () => {
-  // Depend on chat length and dmThinking
   const _len = campaignStore.chat.length
   const _thinking = campaignStore.dmThinking
   await nextTick()
-  if (messagesEl.value) {
-    messagesEl.value.scrollTop = messagesEl.value.scrollHeight
-  }
+  if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
 })
 </script>
 
@@ -246,6 +335,52 @@ watchEffect(async () => {
   font-size: 0.8rem;
   color: #c9a227;
   margin-top: 0.25rem;
+}
+
+/* Slash-command dropdown */
+.slash-menu {
+  position: relative;
+  border-top: 1px solid #3d2e10;
+  background: #110d05;
+  padding: 0.25rem 0;
+  z-index: 10;
+}
+
+.slash-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.slash-item:hover,
+.slash-item-active {
+  background: rgba(201, 162, 39, 0.1);
+}
+
+.slash-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #c9a227;
+  white-space: nowrap;
+}
+
+.slash-desc {
+  font-family: 'Crimson Text', serif;
+  font-size: 0.88rem;
+  color: #8a7355;
+  font-style: italic;
+}
+
+.slash-empty {
+  padding: 0.4rem 1rem;
+  font-family: 'Crimson Text', serif;
+  font-size: 0.85rem;
+  color: #5a4530;
+  font-style: italic;
 }
 
 .chat-input-row {
