@@ -1,0 +1,12 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - link "D&D 5e AI Game Engine" [ref=e6] [cursor=pointer]:
+      - /url: /
+      - img [ref=e7]:
+        - generic [ref=e13]: "20"
+      - generic [ref=e14]:
+        - generic [ref=e15]: D&D 5e
+        - generic [ref=e16]: AI Game Engine
+    - link "Enter Realm" [ref=e18] [cursor=pointer]:
+      - /url: /login
+  - main [ref=e19]

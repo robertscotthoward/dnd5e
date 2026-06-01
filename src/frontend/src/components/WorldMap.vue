@@ -21,10 +21,21 @@
           @mousedown="onMouseDown"
           @mousemove="onMouseMove"
           @mouseup="onMouseUp"
-          @mouseleave="onMouseUp"
+          @mouseleave="onMouseLeave"
           @wheel.prevent="onWheel"
           @contextmenu.prevent="onRightClick"
         ></canvas>
+
+        <!-- Hover tooltip -->
+        <div
+          v-if="tooltip.node"
+          class="map-tooltip"
+          :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
+        >
+          <span class="tt-name">{{ tooltip.node.name }}</span>
+          <span class="tt-type">{{ tooltip.node.type }}</span>
+          <span v-if="tooltip.node.description" class="tt-desc">{{ tooltip.node.description }}</span>
+        </div>
 
         <!-- Right-click context menu -->
         <div
@@ -67,6 +78,9 @@ const playerNode = ref(null)
 // Context menu
 const ctxMenu = ref({ visible: false, x: 0, y: 0 })
 
+// Hover tooltip
+const tooltip = ref({ node: null, x: 0, y: 0 })
+
 // Type → render config
 const TYPE_CONFIG = {
   system:    { color: '#444', radius: 3, show: false },
@@ -99,7 +113,7 @@ async function loadMap() {
     playerNode.value = nodes.value.find(n => n.is_player) || null
     nextTick(() => {
       initCanvas()
-      centerOnPlayer()
+      autoFit()
     })
   } catch (e) {
     // ignore
@@ -166,14 +180,6 @@ function draw() {
     ctx.arc(cx, cy, r, 0, Math.PI * 2)
     ctx.fillStyle = n.is_player ? '#c9a227' : cfg.color
     ctx.fill()
-
-    // Label at higher zoom
-    if (zoom.value > 0.4) {
-      ctx.fillStyle = n.is_player ? '#c9a227' : '#e8d5b7'
-      ctx.font = `${Math.max(9, 11 * zoom.value)}px 'Crimson Text', serif`
-      ctx.textAlign = 'center'
-      ctx.fillText(n.name, cx, cy - r - 3)
-    }
   }
 }
 
@@ -210,9 +216,45 @@ function drawGrid(ctx, canvas) {
 function initCanvas() {
   const canvas = canvasEl.value
   if (!canvas) return
-  const parent = canvas.parentElement
-  canvas.width = parent.clientWidth
-  canvas.height = parent.clientHeight
+  // Use the canvas's own CSS layout size (it fills flex parent)
+  const rect = canvas.getBoundingClientRect()
+  canvas.width = rect.width || canvas.offsetWidth || 800
+  canvas.height = rect.height || canvas.offsetHeight || 500
+  draw()
+}
+
+function autoFit() {
+  const canvas = canvasEl.value
+  if (!canvas) return
+  const visible = nodes.value.filter(n => typeConfig(n.type).show)
+  if (visible.length === 0) {
+    pan.value = { x: 0, y: 0 }
+    zoom.value = 10
+    draw()
+    return
+  }
+  // Compute world bounding box of visible nodes
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+  for (const n of visible) {
+    if (n.x < minX) minX = n.x
+    if (n.x > maxX) maxX = n.x
+    if (n.y < minY) minY = n.y
+    if (n.y > maxY) maxY = n.y
+  }
+  const worldW = maxX - minX || 1
+  const worldH = maxY - minY || 1
+  const padding = 80 // pixels
+  const fitZoom = Math.min(
+    (canvas.width - padding * 2) / worldW,
+    (canvas.height - padding * 2) / worldH,
+    80   // cap zoom so small worlds don't become 1 giant blob
+  )
+  zoom.value = Math.max(0.05, fitZoom)
+  // Center the bounding box
+  const cx = (minX + maxX) / 2
+  const cy = (minY + maxY) / 2
+  pan.value.x = -cx * zoom.value
+  pan.value.y = cy * zoom.value
   draw()
 }
 
@@ -226,14 +268,50 @@ function onMouseDown(e) {
 }
 
 function onMouseMove(e) {
-  if (!dragging.value) return
-  pan.value.x = dragStart.value.panX + (e.clientX - dragStart.value.x)
-  pan.value.y = dragStart.value.panY + (e.clientY - dragStart.value.y)
-  draw()
+  if (dragging.value) {
+    pan.value.x = dragStart.value.panX + (e.clientX - dragStart.value.x)
+    pan.value.y = dragStart.value.panY + (e.clientY - dragStart.value.y)
+    tooltip.value.node = null
+    draw()
+    return
+  }
+
+  // Hover: find nearest visible node within hit radius
+  const canvas = canvasEl.value
+  if (!canvas) return
+  const rect = canvas.getBoundingClientRect()
+  const mx = e.clientX - rect.left
+  const my = e.clientY - rect.top
+
+  const HIT_RADIUS = 14  // px
+  let closest = null
+  let closestDist = Infinity
+
+  for (const n of nodes.value) {
+    if (!typeConfig(n.type).show) continue
+    const { cx, cy } = worldToCanvas(n.x, n.y)
+    const d = Math.hypot(cx - mx, cy - my)
+    if (d < HIT_RADIUS && d < closestDist) {
+      closestDist = d
+      closest = n
+    }
+  }
+
+  if (closest) {
+    // Offset tooltip so it doesn't sit under the cursor
+    tooltip.value = { node: closest, x: mx + 14, y: my - 10 }
+  } else {
+    tooltip.value.node = null
+  }
 }
 
 function onMouseUp() {
   dragging.value = false
+}
+
+function onMouseLeave() {
+  dragging.value = false
+  tooltip.value.node = null
 }
 
 function onWheel(e) {
@@ -268,6 +346,7 @@ function centerOnPlayer() {
   ctxMenu.value.visible = false
   const p = playerNode.value
   if (!p) return
+  // Keep current zoom but re-center on player world coords
   pan.value.x = -p.x * zoom.value
   pan.value.y = p.y * zoom.value
   draw()
@@ -275,9 +354,7 @@ function centerOnPlayer() {
 
 function resetView() {
   ctxMenu.value.visible = false
-  pan.value = { x: 0, y: 0 }
-  zoom.value = 1
-  draw()
+  autoFit()
 }
 
 function zoomIn() {
@@ -292,9 +369,13 @@ function zoomOut() {
   draw()
 }
 
-// Resize handler
 function onResize() {
-  initCanvas()
+  const canvas = canvasEl.value
+  if (!canvas) return
+  const rect = canvas.getBoundingClientRect()
+  canvas.width = rect.width || canvas.offsetWidth || 800
+  canvas.height = rect.height || canvas.offsetHeight || 500
+  draw()
 }
 
 watch(() => props.visible, (val) => {
@@ -437,5 +518,45 @@ onUnmounted(() => {
 .ctx-item:hover {
   background: rgba(201, 162, 39, 0.12);
   color: #c9a227;
+}
+
+/* Hover tooltip */
+.map-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: #110d05;
+  border: 1px solid #3d2e10;
+  border-radius: 4px;
+  padding: 0.35rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  max-width: 220px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  z-index: 20;
+}
+
+.tt-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #c9a227;
+  white-space: nowrap;
+}
+
+.tt-type {
+  font-family: 'Crimson Text', serif;
+  font-size: 0.72rem;
+  color: #8a7355;
+  text-transform: capitalize;
+  font-style: italic;
+}
+
+.tt-desc {
+  font-family: 'Crimson Text', serif;
+  font-size: 0.8rem;
+  color: #e8d5b7;
+  line-height: 1.35;
+  white-space: normal;
 }
 </style>
