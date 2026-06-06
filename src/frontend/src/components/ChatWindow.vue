@@ -28,7 +28,7 @@
             ⚔ Dungeon Master
           </span>
           <span v-else-if="msg.sender_type === 'PC'" class="chat-sender">
-            {{ msg.sender_name || 'Adventurer' }}
+            {{ msg.sender || msg.sender_name || 'Adventurer' }}
           </span>
           <span class="msg-text">{{ msg.text || msg.message || msg.content }}</span>
           <span v-if="msg.timestamp" class="chat-msg-timestamp">

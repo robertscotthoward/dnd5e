@@ -144,6 +144,17 @@
   - [x] Add error handling and tests: re-entry of occupied tiles produces no duplicates, door-crossing generates exactly one set of children, mobile objects regenerate correctly, `explored` set survives session reconnect
   - [x] Verify end-to-end: player moves into open terrain → ground tiles appear, player approaches village → village shell exists with `generated: false` children, player enters door → interior populates, revisit produces no new objects
 
+## Phase 18: Build Info Tooltip on Nav Title
+
+- [ ] Feature: Build info tooltip on nav title
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [ ] Backend: extend `GET /api/build-info` to also run `git log -5 --format="%h|%s"` and return `recent_commits: [{hash, subject}]`
+  - [ ] Frontend: fetch `/api/build-info` on `NavBar.vue` mount; store result
+  - [ ] Frontend: wrap `.navbar-brand` in a `<div>` with `@mouseenter`/`@mouseleave` to toggle tooltip visibility
+  - [ ] Frontend: render tooltip — HEAD line (hash · date · author), divider, then 5 recent commit rows each showing short hash + subject
+  - [ ] Frontend: style tooltip to match the dark navbar theme
+  - [ ] Verify functionality
+
 ## Phase 13: Quality & Deployment
 
 * [x] **`dev.bat` Typer CLI mode** — Update `dev.bat` to also support running `python -m src.backend.main` CLI commands alongside the Vite/FastAPI servers.

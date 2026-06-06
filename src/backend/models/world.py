@@ -4,6 +4,18 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field
 
 
+def _to_plain(obj: Any) -> Any:
+    """Recursively convert any mapping/sequence to plain dicts/lists so YAML never writes Python object tags."""
+    if isinstance(obj, dict):
+        return {k: _to_plain(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_to_plain(v) for v in obj]
+    # AttributedDict and similar Mapping subclasses that aren't plain dict
+    if hasattr(obj, "items") and not isinstance(obj, dict):
+        return {k: _to_plain(v) for k, v in obj.items()}
+    return obj
+
+
 class Location(BaseModel):
     """3D coordinates relative to parent. [0,0,0] means "with" or "in" the parent."""
 
@@ -115,7 +127,7 @@ class Object(BaseModel):
         if self.is_virtual:
             data["is_virtual"] = self.is_virtual
         if self.properties:
-            data["properties"] = self.properties
+            data["properties"] = _to_plain(self.properties)
         return data
 
 

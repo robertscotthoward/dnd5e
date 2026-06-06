@@ -2,28 +2,48 @@
   <nav class="navbar">
     <!-- Left: Logo + Title -->
     <div class="navbar-left">
-      <RouterLink to="/" class="navbar-brand">
-        <svg class="d20-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <polygon
-            points="20,3 37,14 37,26 20,37 3,26 3,14"
-            stroke="#c9a227"
-            stroke-width="1.5"
-            fill="none"
-          />
-          <line x1="20" y1="3"  x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
-          <line x1="37" y1="14" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
-          <line x1="37" y1="26" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
-          <line x1="20" y1="37" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
-          <line x1="3"  y1="26" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
-          <line x1="3"  y1="14" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
-          <text x="20" y="21" text-anchor="middle" dominant-baseline="middle"
-                fill="#c9a227" font-size="9" font-family="Cinzel, serif" font-weight="700">20</text>
-        </svg>
-        <div class="navbar-title-group">
-          <span class="navbar-title">D&amp;D 5e</span>
-          <span class="navbar-subtitle">AI Game Engine</span>
+      <div class="navbar-brand-wrap" @mouseenter="showBuildTip = true" @mouseleave="showBuildTip = false">
+        <RouterLink to="/" class="navbar-brand">
+          <svg class="d20-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon
+              points="20,3 37,14 37,26 20,37 3,26 3,14"
+              stroke="#c9a227"
+              stroke-width="1.5"
+              fill="none"
+            />
+            <line x1="20" y1="3"  x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
+            <line x1="37" y1="14" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
+            <line x1="37" y1="26" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
+            <line x1="20" y1="37" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
+            <line x1="3"  y1="26" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
+            <line x1="3"  y1="14" x2="20" y2="15" stroke="#c9a227" stroke-width="1" opacity="0.6"/>
+            <text x="20" y="21" text-anchor="middle" dominant-baseline="middle"
+                  fill="#c9a227" font-size="9" font-family="Cinzel, serif" font-weight="700">20</text>
+          </svg>
+          <div class="navbar-title-group">
+            <span class="navbar-title">D&amp;D 5e</span>
+            <span class="navbar-subtitle">AI Game Engine</span>
+          </div>
+        </RouterLink>
+        <div v-if="showBuildTip && buildInfo" class="build-tooltip">
+          <div class="build-head-line">
+            <span class="build-commit">{{ buildInfo.commit }}</span>
+            <span class="build-sep">·</span>
+            <span class="build-date">{{ formatBuildDate(buildInfo.date) }}</span>
+            <span class="build-sep">·</span>
+            <span class="build-author">{{ buildInfo.author }}</span>
+          </div>
+          <div v-if="buildInfo.recent_commits?.length" class="build-commits-divider"></div>
+          <div
+            v-for="c in buildInfo.recent_commits"
+            :key="c.hash"
+            class="build-commit-row"
+          >
+            <span class="build-commit-hash">{{ c.hash }}</span>
+            <span class="build-commit-subject">{{ c.subject }}</span>
+          </div>
         </div>
-      </RouterLink>
+      </div>
     </div>
 
     <!-- Right: Nav links + auth -->
@@ -75,6 +95,8 @@ const router = useRouter()
 
 const dropdownOpen = ref(false)
 const profileMenuRef = ref(null)
+const showBuildTip = ref(false)
+const buildInfo = ref(null)
 
 const userInitial = computed(() => {
   return authStore.user?.username?.charAt(0)?.toUpperCase() || '?'
@@ -90,7 +112,20 @@ function closeDropdown(e) {
   }
 }
 
-onMounted(() => document.addEventListener('click', closeDropdown))
+function formatBuildDate(dateStr) {
+  if (!dateStr || dateStr === 'unknown') return dateStr
+  const d = new Date(dateStr)
+  if (isNaN(d)) return dateStr
+  return d.toISOString().slice(0, 16).replace('T', ' ')
+}
+
+onMounted(async () => {
+  document.addEventListener('click', closeDropdown)
+  try {
+    const res = await fetch('/api/build-info')
+    if (res.ok) buildInfo.value = await res.json()
+  } catch { /* non-critical */ }
+})
 onUnmounted(() => document.removeEventListener('click', closeDropdown))
 
 async function handleLogout() {
@@ -297,6 +332,80 @@ async function handleLogout() {
 .navbar-left {
   display: flex;
   align-items: center;
+}
+
+.navbar-brand-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.build-tooltip {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  white-space: normal;
+  max-width: 480px;
+  background: linear-gradient(to bottom, #1a1109, #150f06);
+  border: 1px solid #7a6115;
+  border-radius: 5px;
+  padding: 0.35rem 0.7rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: #c9a227;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  z-index: 300;
+  pointer-events: none;
+}
+
+.build-head-line {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.build-sep {
+  margin: 0 0.4rem;
+  color: #5a4a20;
+}
+
+.build-commit {
+  color: #e8d5b7;
+  letter-spacing: 0.05em;
+}
+
+.build-date {
+  color: #8a7355;
+}
+
+.build-author {
+  color: #c9a227;
+}
+
+.build-commits-divider {
+  height: 1px;
+  background: #3d2e10;
+  margin: 0.35rem 0;
+}
+
+.build-commit-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.1rem 0;
+}
+
+.build-commit-hash {
+  color: #8a7355;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.build-commit-subject {
+  color: #c8b98a;
+  font-size: 0.68rem;
+  white-space: normal;
+  word-break: break-word;
 }
 
 @media (max-width: 640px) {

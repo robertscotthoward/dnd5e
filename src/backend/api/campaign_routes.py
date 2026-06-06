@@ -2,7 +2,9 @@
 
 import random
 import secrets
+import subprocess
 from datetime import datetime
+from functools import lru_cache
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request
@@ -47,6 +49,43 @@ from src.backend.models.player import (
 )
 
 router = APIRouter(tags=["campaigns"])
+
+
+@lru_cache(maxsize=1)
+def _get_build_info() -> dict:
+    try:
+        head = subprocess.check_output(
+            ["git", "log", "-1", "--format=%H|%ci|%an"],
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+        commit, date_str, author = head.split("|", 2)
+
+        recent_raw = subprocess.check_output(
+            ["git", "log", "-5", "--format=%h|%s"],
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+        recent_commits = []
+        for line in recent_raw.splitlines():
+            if "|" in line:
+                h, s = line.split("|", 1)
+                recent_commits.append({"hash": h.strip(), "subject": s.strip()})
+
+        return {
+            "commit": commit[:10],
+            "date": date_str.strip(),
+            "author": author.strip(),
+            "recent_commits": recent_commits,
+        }
+    except Exception:
+        return {"commit": "unknown", "date": "unknown", "author": "unknown", "recent_commits": []}
+
+
+@router.get("/build-info")
+def get_build_info():
+    """Return last git commit info and last 5 commit subjects."""
+    return _get_build_info()
 
 
 class CreateCampaignRequest(BaseModel):

@@ -109,6 +109,11 @@ The world is a YAML file with `name`, `max_id`, `delete_ids`, and `objects` (dic
 
 ## Ad-hoc & Experimental Features
 
+### Build Info Tooltip on Nav Title (Added: 2026-06-05)
+- **Context / Why**: Developers and players need a quick way to confirm which build is running without opening a terminal or checking git. Surfacing this on the logo hover keeps it discoverable without cluttering the UI. Adding the last 5 commit messages gives immediate changelog context without leaving the app.
+- **Purpose / What**: Hovering the upper-left title/logo in the navbar shows a tooltip with the first 10 characters of the last git commit hash, the commit date/time, the committer's name, and a list of the last 5 commit messages (each prefixed with its short hash). The backend `/api/build-info` endpoint returns all of this in a single cached response.
+- **Usage / How**: Hover over the "D&D 5e / AI Game Engine" logo in the top-left navbar. A tooltip appears below showing the HEAD commit line followed by a divider and the 5 most recent commit subjects, e.g. `53e19affd1 · 2026-06-05 21:15 · Rob Howard` then a list of recent commits. No interaction required beyond hover.
+
 ### F1 Help Wiki (Added: 2026-06-05)
 - **Context / Why**: Players need in-game guidance on controls, rules, and interface features without leaving the app. A keyboard shortcut makes help instantly accessible from any screen.
 - **Purpose / What**: Pressing F1 opens a full-screen help overlay that renders a wiki built from Markdown files rooted at `docs/help/home.md`. The wiki supports internal relative links, images, a keyword search bar, and browser-style back navigation via Backspace.

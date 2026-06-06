@@ -161,6 +161,17 @@ def cmd_turn(
     console.print("[bold cyan]--------------------[/bold cyan]")
 
 
+@cli.command("serve")
+def cmd_serve(
+    host: str = typer.Option("127.0.0.1", "--host", help="Bind host."),
+    port: int = typer.Option(8000, "--port", help="Bind port."),
+    reload: bool = typer.Option(False, "--reload", help="Enable auto-reload."),
+) -> None:
+    """Start the FastAPI server with uvicorn."""
+    import uvicorn
+    uvicorn.run("src.backend.main:app", host=host, port=port, reload=reload)
+
+
 # ---------------------------------------------------------------------------
 # FastAPI application (used by uvicorn)
 # ---------------------------------------------------------------------------
