@@ -112,6 +112,23 @@
   - [ ] Verify `LevelUpDialog.vue` intentionally blocks ESC (no change needed)
   - [ ] Verify functionality across all dialogs
 
+## Phase 16: Procedural World Generator
+
+- [ ] Feature: On-demand terrain and object population
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [ ] Design `WorldGenerator` class in `src/backend/world/generator.py` — accepts visible coordinates + campaign context, returns list of new world objects to persist
+  - [ ] Implement ground-tile fallback — any LOS coordinate with no existing object receives a `ground` object (type, terrain variant, coordinates) so no tile is ever empty after being seen
+  - [ ] Implement biome/region context resolver — derives terrain type (grassland, dungeon stone, cobblestone street, etc.) from the player's current parent region object
+  - [ ] Implement large-feature placement — probabilistic placement of villages, ruins, forests, caves as bounded parent objects within an open region; children left ungenerated (`generated: false` flag)
+  - [ ] Implement recursive child generation — when LOS hits coordinates inside a parent object whose `generated` flag is false, trigger child-fill for that parent (doors, walls, interior layout); set `generated: true` on the parent when complete
+  - [ ] Implement interior entry trigger — crossing the threshold of a building (entering via a door object) triggers child-object generation for that building's interior
+  - [ ] Persist all generated objects to `world.yaml` immediately after generation; broadcast world-state delta to all connected clients via WS
+  - [ ] Mobile-object flagging — generated NPCs and creatures carry `mobile: true`; the World Agent re-simulates their position each turn rather than treating them as fixed
+  - [ ] Integrate generator call into the DM turn pipeline (`turn` command and WS move handler) — after computing LOS, pass unseen coords to `WorldGenerator.fill()`
+  - [ ] Frontend: update `WorldMap.vue` fog-of-war layer — explored tiles (player has had LOS) stay revealed; unvisited tiles render dark until LOS reaches them
+  - [ ] Add robust error handling and tests for generator edge cases (boundary coords, re-entry of existing tiles, nested parent generation)
+  - [ ] Verify end-to-end: player moves, new tiles generate, world map updates, re-visit produces no duplicate objects
+
 ## Phase 13: Quality & Deployment
 
 * [x] **`dev.bat` Typer CLI mode** — Update `dev.bat` to also support running `python -m src.backend.main` CLI commands alongside the Vite/FastAPI servers.
