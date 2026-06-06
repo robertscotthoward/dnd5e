@@ -144,6 +144,18 @@
   - [x] Add error handling and tests: re-entry of occupied tiles produces no duplicates, door-crossing generates exactly one set of children, mobile objects regenerate correctly, `explored` set survives session reconnect
   - [x] Verify end-to-end: player moves into open terrain → ground tiles appear, player approaches village → village shell exists with `generated: false` children, player enters door → interior populates, revisit produces no new objects
 
+## Phase 19: Server-Down Toast Notification
+
+- [ ] Feature: Server-down toast notification
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [ ] Add `serverDown` ref to campaign store; set true on WS `error`/`close`, false on WS `open`
+  - [ ] Show toast in `App.vue` whenever `serverDown` is true or an action is attempted while disconnected
+  - [ ] `sendChat`, `sendAction`, `sendSnapshot` set `serverDown` flag and surface message when WS is not open
+  - [ ] Wrap all `fetch` calls in campaign store with a shared helper that catches `TypeError` (network failure) and sets `serverDown`
+  - [ ] Toast auto-dismisses 3 seconds after WS reconnects
+  - [ ] Toast includes a manual reconnect button that calls `connectWs`
+  - [ ] Verify: disconnect server → attempt action → toast appears; restart server → toast fades
+
 ## Phase 18: Build Info Tooltip on Nav Title
 
 - [ ] Feature: Build info tooltip on nav title

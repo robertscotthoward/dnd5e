@@ -1,8 +1,18 @@
 """WebSocket endpoint for real-time campaign chat and game events."""
 
 import asyncio
+import concurrent.futures
 import json
 from datetime import datetime
+
+
+def _init_thread_loop():
+    """Give each executor thread its own event loop so LlamaIndex's sync helpers don't touch uvicorn's loop."""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+
+_dm_executor = concurrent.futures.ThreadPoolExecutor(max_workers=4, initializer=_init_thread_loop)
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
@@ -141,8 +151,8 @@ async def _run_dm_response(
         situation = situation[3:].strip()
 
     try:
-        narration = await asyncio.get_event_loop().run_in_executor(
-            None,
+        narration = await asyncio.get_running_loop().run_in_executor(
+            _dm_executor,
             lambda: ai_client.generate_dm_response(campaign, situation, tools, meta),
         )
     except Exception as e:
@@ -258,8 +268,8 @@ async def _run_dm_response(
     # Generate and append a journal entry for this turn
     try:
         player_names = [p.character_name or p.username for p in get_players(campaign_id) if p.character_name or p.username]
-        journal_entry = await asyncio.get_event_loop().run_in_executor(
-            None,
+        journal_entry = await asyncio.get_running_loop().run_in_executor(
+            _dm_executor,
             lambda: ai_client.generate_journal_entry(
                 campaign_name=meta.name,
                 turn_number=meta.turn_number,

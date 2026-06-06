@@ -56,6 +56,8 @@ export const useCampaignStore = defineStore('campaign', () => {
   const timeDescription = ref('morning')
   const worldTileObjects = ref([])  // objects received via world_tiles_generated WS events
   const exploredCoords = ref([])   // [[x, y], ...] tiles the player has had LOS on
+  const serverDown = ref(false)
+  let _serverDownTimer = null
 
   async function fetchCampaigns() {
     loading.value = true
@@ -203,6 +205,10 @@ export const useCampaignStore = defineStore('campaign', () => {
 
     socket.onopen = () => {
       wsStatus.value = 'connected'
+      if (serverDown.value) {
+        // auto-dismiss after 3s once reconnected
+        _serverDownTimer = setTimeout(() => { serverDown.value = false }, 3000)
+      }
     }
 
     socket.onmessage = (event) => {
@@ -217,10 +223,12 @@ export const useCampaignStore = defineStore('campaign', () => {
     socket.onclose = () => {
       wsStatus.value = 'disconnected'
       ws.value = null
+      serverDown.value = true
     }
 
     socket.onerror = () => {
       wsStatus.value = 'error'
+      serverDown.value = true
     }
   }
 
@@ -401,22 +409,25 @@ export const useCampaignStore = defineStore('campaign', () => {
     }
   }
 
-  function sendChat(text) {
+  function _wsSend(payload) {
     if (ws.value && ws.value.readyState === WebSocket.OPEN) {
-      ws.value.send(JSON.stringify({ type: 'chat', text }))
+      ws.value.send(JSON.stringify(payload))
+      return true
     }
+    serverDown.value = true
+    return false
+  }
+
+  function sendChat(text) {
+    _wsSend({ type: 'chat', text })
   }
 
   function sendAction(action, targetId = null) {
-    if (ws.value && ws.value.readyState === WebSocket.OPEN) {
-      ws.value.send(JSON.stringify({ type: 'action', action, target_id: targetId }))
-    }
+    _wsSend({ type: 'action', action, target_id: targetId })
   }
 
   function sendSnapshot(label) {
-    if (ws.value && ws.value.readyState === WebSocket.OPEN) {
-      ws.value.send(JSON.stringify({ type: 'snapshot', label }))
-    }
+    _wsSend({ type: 'snapshot', label })
   }
 
   function sendAwardXp(characterId, amount, reason = '') {
@@ -566,7 +577,7 @@ export const useCampaignStore = defineStore('campaign', () => {
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
     pendingLevelUp, pendingDiceRoll, initiativeOrder, pendingLoot, journal, quests,
     npcRelationships, dayNumber, hourOfDay, isNight, timeDescription, worldTileObjects,
-    exploredCoords,
+    exploredCoords, serverDown,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
     fetchSnapshots, fetchJournal, fetchQuests, fetchNpcs, restoreSnapshot, sendAwardXp, awardXp,

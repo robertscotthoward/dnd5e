@@ -109,6 +109,11 @@ The world is a YAML file with `name`, `max_id`, `delete_ids`, and `objects` (dic
 
 ## Ad-hoc & Experimental Features
 
+### Server-Down Toast Notification (Added: 2026-06-05)
+- **Context / Why**: When the backend goes offline, user actions (chat, Investigate, Attack, snapshots) silently fail with no feedback. Players have no idea whether their command was received or dropped.
+- **Purpose / What**: A persistent toast banner appears at the top of the screen whenever the WebSocket is disconnected or in error state, or when any HTTP fetch fails with a network error. Any user action attempted while the server is down shows the toast immediately. The toast auto-dismisses 3 seconds after the connection is restored.
+- **Usage / How**: No player action required. The toast appears automatically on disconnect and on any failed action. It reads "Server unreachable — your action was not sent. Reconnecting…" with a reconnect button. Once the WS reconnects successfully the banner fades out.
+
 ### Build Info Tooltip on Nav Title (Added: 2026-06-05)
 - **Context / Why**: Developers and players need a quick way to confirm which build is running without opening a terminal or checking git. Surfacing this on the logo hover keeps it discoverable without cluttering the UI. Adding the last 5 commit messages gives immediate changelog context without leaving the app.
 - **Purpose / What**: Hovering the upper-left title/logo in the navbar shows a tooltip with the first 10 characters of the last git commit hash, the commit date/time, the committer's name, and a list of the last 5 commit messages (each prefixed with its short hash). The backend `/api/build-info` endpoint returns all of this in a single cached response.
