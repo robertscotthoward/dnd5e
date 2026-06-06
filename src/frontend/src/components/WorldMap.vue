@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div v-if="visible" class="map-overlay" @click.self="$emit('close')" @keydown.esc="$emit('close')">
+    <div v-if="visible" class="map-overlay" @click.self="$emit('close')">
       <div class="map-dialog" @contextmenu.prevent>
         <!-- Header -->
         <div class="map-header">
@@ -61,7 +61,16 @@ const props = defineProps({
   visible: { type: Boolean, default: false },
   campaignId: { type: String, required: true },
 })
-defineEmits(['close'])
+const emit = defineEmits(['close'])
+
+function onWindowKeydown(event) {
+  if (!props.visible) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    emit('close')
+  }
+}
 
 const canvasEl = ref(null)
 
@@ -451,10 +460,12 @@ watch(() => props.visible, (val) => {
 
 onMounted(() => {
   window.addEventListener('resize', onResize)
+  window.addEventListener('keydown', onWindowKeydown)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', onResize)
+  window.removeEventListener('keydown', onWindowKeydown)
 })
 </script>
 

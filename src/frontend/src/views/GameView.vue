@@ -470,6 +470,19 @@ function onKeydown(e) {
     e.preventDefault()
     mapOpen.value = !mapOpen.value
   }
+  if (e.key === 'Escape') {
+    if (showSnapshotModal.value) {
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      showSnapshotModal.value = false
+      return
+    }
+    if (restoreTarget.value) {
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      restoreTarget.value = null
+    }
+  }
 }
 
 onMounted(async () => {

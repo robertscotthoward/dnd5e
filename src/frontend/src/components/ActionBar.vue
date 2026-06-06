@@ -89,7 +89,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useCampaignStore } from '../stores/campaign'
 
 const props = defineProps({
@@ -115,6 +115,18 @@ const showLongRestConfirm = ref(false)
 const isResting = ref(false)
 
 const campaignStore = useCampaignStore()
+
+function onWindowKeydown(event) {
+  if (!showLongRestConfirm.value) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    showLongRestConfirm.value = false
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', onWindowKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onWindowKeydown))
 
 const ACTIONS = {
   Exploration: [

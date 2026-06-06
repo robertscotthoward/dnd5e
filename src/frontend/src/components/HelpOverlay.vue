@@ -75,7 +75,12 @@ const canGoBack = computed(() => historyStack.value.length > 0)
 
 function onWindowKeydown(event) {
   if (!props.visible) return
-  if (event.key === 'Escape') { event.preventDefault(); close(); return }
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    close()
+    return
+  }
   if (event.key === 'Backspace' && document.activeElement !== searchInput.value) {
     event.preventDefault()
     goBack()

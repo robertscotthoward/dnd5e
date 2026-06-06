@@ -73,7 +73,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useCampaignStore } from '../stores/campaign'
 import { useAuthStore } from '../stores/auth'
 
@@ -104,6 +104,18 @@ function takeItem(item) {
 function dismiss() {
   campaignStore.clearLoot()
 }
+
+function onWindowKeydown(event) {
+  if (!loot.value) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    dismiss()
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', onWindowKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onWindowKeydown))
 </script>
 
 <style scoped>

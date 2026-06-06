@@ -203,7 +203,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 
 const ABILITY_LABELS = {
   str: 'STR', dex: 'DEX', con: 'CON',
@@ -216,7 +216,19 @@ const props = defineProps({
   characterId: { type: Number, default: null },
 })
 
-defineEmits(['close'])
+const emit = defineEmits(['close'])
+
+function onWindowKeydown(event) {
+  if (!props.open) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    emit('close')
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', onWindowKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onWindowKeydown))
 
 const char = ref(null)
 const loading = ref(false)

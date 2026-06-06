@@ -20,9 +20,6 @@ function onKeydown(event) {
     event.preventDefault()
     helpVisible.value = !helpVisible.value
   }
-  if (event.key === 'Escape' && helpVisible.value) {
-    helpVisible.value = false
-  }
 }
 
 onMounted(() => window.addEventListener('keydown', onKeydown))
