@@ -203,6 +203,34 @@ function worldToCanvas(wx, wy) {
   return { cx, cy }
 }
 
+// Build a fast lookup of explored coords from the store
+function buildExploredSet() {
+  const s = new Set()
+  for (const pair of store.exploredCoords) {
+    s.add(`${pair[0]},${pair[1]}`)
+  }
+  return s
+}
+
+function drawFogOfWar(ctx, canvas, exploredSet) {
+  // Fill entire canvas with dark fog first
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.72)'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  if (exploredSet.size === 0) return
+
+  // For each explored coordinate punch a clear hole
+  const tileSize = Math.max(4, 5 * zoom.value)  // 5 ft tile in canvas pixels
+  ctx.globalCompositeOperation = 'destination-out'
+  for (const key of exploredSet) {
+    const [wx, wy] = key.split(',').map(Number)
+    const { cx, cy } = worldToCanvas(wx, wy)
+    ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+    ctx.fillRect(cx - tileSize / 2, cy - tileSize / 2, tileSize, tileSize)
+  }
+  ctx.globalCompositeOperation = 'source-over'
+}
+
 function draw() {
   const canvas = canvasEl.value
   if (!canvas) return
@@ -256,6 +284,9 @@ function draw() {
     ctx.fillStyle = n.is_player ? '#c9a227' : cfg.color
     ctx.fill()
   }
+
+  // Fog-of-war layer: dark except explored tiles
+  drawFogOfWar(ctx, canvas, buildExploredSet())
 }
 
 function drawGrid(ctx, canvas) {
@@ -460,6 +491,11 @@ watch(() => props.visible, (val) => {
     })
   }
 })
+
+// Redraw when fog-of-war explored set changes
+watch(() => store.exploredCoords, () => {
+  if (props.visible) nextTick(() => draw())
+}, { deep: true })
 
 // When new tiles arrive via WebSocket, merge them into the node list and redraw.
 // New objects arrive as raw world Object dicts; we normalise them into the same

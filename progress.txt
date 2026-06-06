@@ -1,7 +1,7 @@
 # Project Progress: D&D 5e Agentic Campaign Engine
 
 Total Tasks: 47
-Completed Tasks: 15
+Completed Tasks: 16
 
 ---
 
@@ -38,6 +38,9 @@ Completed Tasks: 15
 - CampaignMeta.combat_queue field added (user.py)
 - 35 new tests in tests/test_combat.py — all pass
 - Spell slot tracker: FULL/HALF/WARLOCK slot tables in player.py; cast_spell + long_rest tools in tools.py; spell_slots seeded on character creation; CharacterSheet.vue shows pip rows per spell level with Long Rest button; /cast-spell and /long-rest API endpoints; 23 new tests in test_spell_slots.py — all pass
+
+## Completed (Phase 17)
+- Lazy recursive LOS-driven world expansion: `fill_coordinate` (skip-if-occupied, mobile exemption), `fill_children` (lazy interior generation), `find_ungenerated_parents_in_coords`, `fill_interior` alias; door-crossing detection in WS move handler; per-session explored set (`_session_explored` dict in ws_routes.py); `explored_updated` WS broadcast; `get_explored` sent on join for reconnect; `exploredCoords` state in campaign store; fog-of-war canvas layer in WorldMap.vue (dark fog + destination-out clear for explored tiles); 14 new Phase 17 tests added (33 total in test_world_generator.py); 530 tests all pass.
 
 ## In Progress / Remaining
 - Typer CLI `new-campaign` command in main.py (randomized race/class/stats, seeded world YAML, seeds.log)

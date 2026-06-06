@@ -55,6 +55,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   const isNight = ref(false)
   const timeDescription = ref('morning')
   const worldTileObjects = ref([])  // objects received via world_tiles_generated WS events
+  const exploredCoords = ref([])   // [[x, y], ...] tiles the player has had LOS on
 
   async function fetchCampaigns() {
     loading.value = true
@@ -235,6 +236,9 @@ export const useCampaignStore = defineStore('campaign', () => {
     switch (msg.type) {
       case 'joined':
         currentMeta.value = msg.campaign
+        if (Array.isArray(msg.explored)) {
+          exploredCoords.value = msg.explored
+        }
         break
       case 'chat':
         chat.value.push(msg.message)
@@ -376,6 +380,11 @@ export const useCampaignStore = defineStore('campaign', () => {
       case 'world_tiles_generated':
         if (Array.isArray(msg.objects) && msg.objects.length > 0) {
           worldTileObjects.value = worldTileObjects.value.concat(msg.objects)
+        }
+        break
+      case 'explored_updated':
+        if (Array.isArray(msg.explored)) {
+          exploredCoords.value = msg.explored
         }
         break
       case 'time_updated':
@@ -557,6 +566,7 @@ export const useCampaignStore = defineStore('campaign', () => {
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
     pendingLevelUp, pendingDiceRoll, initiativeOrder, pendingLoot, journal, quests,
     npcRelationships, dayNumber, hourOfDay, isNight, timeDescription, worldTileObjects,
+    exploredCoords,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
     fetchSnapshots, fetchJournal, fetchQuests, fetchNpcs, restoreSnapshot, sendAwardXp, awardXp,

@@ -88,6 +88,32 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+# Per-session fog-of-war: maps (campaign_id, user_id) → set of explored coords
+# Format: {(campaign_id, user_id): set of (x, y) float tuples}
+_session_explored: dict[tuple[str, str], set[tuple[float, float]]] = {}
+
+
+def _update_explored(
+    campaign_id: str,
+    user_id: str,
+    visible_coords: list[tuple[float, float]],
+) -> list[list[float]]:
+    """
+    Add visible_coords to the per-session explored set.
+    Returns the full explored set as a list of [x, y] pairs for WS broadcast.
+    """
+    key = (campaign_id, user_id)
+    if key not in _session_explored:
+        _session_explored[key] = set()
+    _session_explored[key].update(visible_coords)
+    return [[x, y] for x, y in _session_explored[key]]
+
+
+def _get_explored(campaign_id: str, user_id: str) -> list[list[float]]:
+    """Return the current explored set for a session."""
+    key = (campaign_id, user_id)
+    return [[x, y] for x, y in _session_explored.get(key, set())]
+
 
 async def _run_dm_response(
     campaign_id: str,
@@ -131,24 +157,42 @@ async def _run_dm_response(
             _tile_seed = meta.seed if hasattr(meta, "seed") else 0
             _tile_gen = WorldGenerator(_tile_campaign.world, seed=_tile_seed)
             _all_new_tile_objects = []
+
+            # Find the player whose character just acted (for explored tracking)
+            _players = get_players(campaign_id)
+            _acting_player = next(
+                (p for p in _players if p.character_name == char_name or p.username == username),
+                None,
+            )
+            _acting_user_id = _acting_player.user_id if _acting_player else username
+
             for _pc in _tile_campaign.world.get_pcs():
                 if _pc.parent is None:
                     continue
                 _visible = _tile_campaign.world.get_visible_world(_pc.id)
-                _existing_coords: set[tuple[float, float]] = {
-                    (c.location.x, c.location.y)
-                    for c in _tile_campaign.world.get_children(_pc.parent)
-                }
-                _missing: list[tuple[float, float]] = [
+                _visible_coords: list[tuple[float, float]] = [
                     (obj.location.x, obj.location.y)
                     for obj in _visible.objects.values()
-                    if obj.parent == _pc.parent
-                    and obj.id != _pc.id
-                    and (obj.location.x, obj.location.y) not in _existing_coords
+                    if obj.parent == _pc.parent and obj.id != _pc.id
                 ]
-                if _missing:
-                    _new = _tile_gen.fill(_missing, _pc.parent)
-                    _all_new_tile_objects.extend(_new)
+
+                # fill_coordinate for every empty visible tile (skip-if-occupied inside)
+                for _coord in _visible_coords:
+                    _new_obj = _tile_gen.fill_coordinate(_coord, _pc.parent)
+                    if _new_obj is not None:
+                        _all_new_tile_objects.append(_new_obj)
+
+                # Lazy fill_children for ungenerated parents in visible range
+                _ungenerated = _tile_gen.find_ungenerated_parents_in_coords(
+                    _visible_coords, _pc.parent
+                )
+                for _parent_id in _ungenerated:
+                    _children = _tile_gen.fill_children(_parent_id)
+                    _all_new_tile_objects.extend(_children)
+
+                # Update explored set for this PC's owner
+                _explored = _update_explored(campaign_id, _acting_user_id, _visible_coords)
+
             if _all_new_tile_objects:
                 save_campaign_world(campaign_id, _tile_campaign)
                 await manager.broadcast(
@@ -158,6 +202,16 @@ async def _run_dm_response(
                         "objects": [o.model_dump(mode="json") for o in _all_new_tile_objects],
                     },
                 )
+
+            # Broadcast updated explored set so frontend can reconstruct fog-of-war
+            await manager.broadcast(
+                campaign_id,
+                {
+                    "type": "explored_updated",
+                    "user_id": _acting_user_id,
+                    "explored": _explored,
+                },
+            )
     except Exception:
         pass
 
@@ -370,6 +424,7 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
             "campaign": meta.model_dump(mode="json"),
             "you": {"username": session.username, "character_name": char_name},
             "online_users": manager.get_users(campaign_id),
+            "explored": _get_explored(campaign_id, session.user_id),
         },
     )
 
@@ -906,6 +961,121 @@ async def campaign_websocket(campaign_id: str, websocket: WebSocket) -> None:
                                 websocket,
                                 {"type": "error", "message": lrest_result.message},
                             )
+
+            elif msg_type == "move":
+                # Player movement: compute LOS, generate tiles, detect door-crossing.
+                new_x = data.get("x")
+                new_y = data.get("y")
+                char_obj_id = data.get("character_id")
+                if (
+                    not isinstance(char_obj_id, int)
+                    or not isinstance(new_x, (int, float))
+                    or not isinstance(new_y, (int, float))
+                ):
+                    await manager.send_personal(
+                        websocket,
+                        {"type": "error", "message": "move requires character_id, x, y"},
+                    )
+                else:
+                    move_campaign = load_campaign_world(campaign_id)
+                    if move_campaign:
+                        move_meta = get_campaign_meta(campaign_id) or meta
+                        _move_seed = move_meta.seed if hasattr(move_meta, "seed") else 0
+                        _move_gen = WorldGenerator(move_campaign.world, seed=_move_seed)
+                        _move_char = move_campaign.world.get_object(char_obj_id)
+                        if _move_char and _move_char.parent is not None:
+                            # Check for door-crossing before moving
+                            _old_x = _move_char.location.x
+                            _old_y = _move_char.location.y
+                            _parent_children = move_campaign.world.get_children(_move_char.parent)
+                            _door_parents: list[int] = []
+                            for _sib in _parent_children:
+                                if _sib.type == "door":
+                                    # Treat door as a 5×5 ft threshold
+                                    _dx = abs(_sib.location.x - float(new_x))
+                                    _dy = abs(_sib.location.y - float(new_y))
+                                    if _dx <= 5.0 and _dy <= 5.0:
+                                        # Player is crossing through this door
+                                        if _sib.parent is not None:
+                                            _door_parents.append(_sib.parent)
+
+                            # Apply the move
+                            _move_char.location.x = float(new_x)
+                            _move_char.location.y = float(new_y)
+
+                            _move_new_objects: list = []
+
+                            # Generate children for any door thresholds just crossed
+                            for _building_id in _door_parents:
+                                _door_children = _move_gen.fill_children(_building_id)
+                                _move_new_objects.extend(_door_children)
+
+                            # Compute LOS from new position and fill empty tiles
+                            _move_visible = move_campaign.world.get_visible_world(char_obj_id)
+                            _move_visible_coords: list[tuple[float, float]] = [
+                                (obj.location.x, obj.location.y)
+                                for obj in _move_visible.objects.values()
+                                if obj.parent == _move_char.parent and obj.id != char_obj_id
+                            ]
+                            for _coord in _move_visible_coords:
+                                _new_obj = _move_gen.fill_coordinate(_coord, _move_char.parent)
+                                if _new_obj is not None:
+                                    _move_new_objects.append(_new_obj)
+
+                            # Lazy fill_children for ungenerated parents now visible
+                            _ungenerated_move = _move_gen.find_ungenerated_parents_in_coords(
+                                _move_visible_coords, _move_char.parent
+                            )
+                            for _pid in _ungenerated_move:
+                                _move_new_objects.extend(_move_gen.fill_children(_pid))
+
+                            save_campaign_world(campaign_id, move_campaign)
+
+                            # Update explored set
+                            _move_explored = _update_explored(
+                                campaign_id, session.user_id, _move_visible_coords
+                            )
+
+                            # Broadcast position update
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "character_moved",
+                                    "character_id": char_obj_id,
+                                    "x": float(new_x),
+                                    "y": float(new_y),
+                                },
+                            )
+
+                            if _move_new_objects:
+                                await manager.broadcast(
+                                    campaign_id,
+                                    {
+                                        "type": "world_tiles_generated",
+                                        "objects": [o.model_dump(mode="json") for o in _move_new_objects],
+                                    },
+                                )
+
+                            await manager.broadcast(
+                                campaign_id,
+                                {
+                                    "type": "explored_updated",
+                                    "user_id": session.user_id,
+                                    "explored": _move_explored,
+                                },
+                            )
+
+            elif msg_type == "get_explored":
+                # Client requesting their current explored set (e.g. on reconnect)
+                _reconnect_explored = _get_explored(campaign_id, session.user_id)
+                await manager.send_personal(
+                    websocket,
+                    {
+                        "type": "explored_updated",
+                        "user_id": session.user_id,
+                        "explored": _reconnect_explored,
+                    },
+                )
 
             elif msg_type == "snapshot":
                 label = str(data.get("label", f"Snapshot by {char_name}"))

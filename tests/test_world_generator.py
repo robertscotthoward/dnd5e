@@ -335,3 +335,295 @@ def test_coords_at_parent_empty_when_no_children():
     gen = WorldGenerator(world, seed=15)
     occupied = gen._coords_at_parent(1)
     assert occupied == set()
+
+
+# ---------------------------------------------------------------------------
+# Phase 17 — fill_coordinate (skip-if-occupied, mobile exemption)
+# ---------------------------------------------------------------------------
+
+def test_fill_coordinate_creates_ground_on_empty_tile():
+    """fill_coordinate returns a ground object for an empty coordinate."""
+    world = _make_world()
+    gen = WorldGenerator(world, seed=20)
+    obj = gen.fill_coordinate((5.0, 10.0), parent_id=1)
+    assert obj is not None
+    assert obj.type == "ground"
+    assert obj.location.x == 5.0
+    assert obj.location.y == 10.0
+    assert obj.parent == 1
+
+
+def test_fill_coordinate_skips_occupied_tile():
+    """fill_coordinate returns None when a fixed object already occupies the coord."""
+    world = _make_world()
+    gen = WorldGenerator(world, seed=21)
+    # Place a fixed object manually
+    fixed = Object(
+        id=world.next_id(),
+        parent=1,
+        type="wall",
+        name="Wall",
+        location=Location(x=0.0, y=0.0),
+        size=Size(),
+        is_moveable=False,
+    )
+    world.add_object(fixed)
+    result = gen.fill_coordinate((0.0, 0.0), parent_id=1)
+    assert result is None
+
+
+def test_fill_coordinate_does_not_skip_mobile_objects():
+    """fill_coordinate still generates a ground tile when only a mobile object is at the coord."""
+    world = _make_world()
+    gen = WorldGenerator(world, seed=22)
+    # Place a mobile NPC
+    npc = Object(
+        id=world.next_id(),
+        parent=1,
+        type="NPC",
+        name="Wanderer",
+        location=Location(x=5.0, y=5.0),
+        size=Size(),
+        is_moveable=True,
+        properties={"mobile": True},
+    )
+    world.add_object(npc)
+    # Should still create a ground tile at that coord
+    result = gen.fill_coordinate((5.0, 5.0), parent_id=1)
+    assert result is not None
+    assert result.type == "ground"
+
+
+def test_fill_coordinate_idempotent_on_second_call():
+    """Calling fill_coordinate twice on the same coord produces only one object."""
+    world = _make_world()
+    gen = WorldGenerator(world, seed=23)
+    first = gen.fill_coordinate((0.0, 0.0), parent_id=1)
+    assert first is not None
+    second = gen.fill_coordinate((0.0, 0.0), parent_id=1)
+    assert second is None
+    # Only one ground object should exist at this coord
+    children_at_coord = [
+        c for c in world.get_children(1)
+        if c.location.x == 0.0 and c.location.y == 0.0 and not c.properties.get("mobile")
+    ]
+    assert len(children_at_coord) == 1
+
+
+# ---------------------------------------------------------------------------
+# Phase 17 — fill_children (lazy interior generation)
+# ---------------------------------------------------------------------------
+
+def test_fill_children_creates_interior_layout():
+    """fill_children populates wall/floor/door children for an ungenerated parent."""
+    world = _make_world()
+    feature = Object(
+        id=world.next_id(),
+        parent=1,
+        type="ruin",
+        name="Old Keep",
+        location=Location(x=0, y=0),
+        size=Size(length=15.0, width=15.0, height=10.0),
+        is_moveable=False,
+        properties={"generated": False},
+    )
+    world.add_object(feature)
+    gen = WorldGenerator(world, seed=30)
+    children = gen.fill_children(feature.id)
+    assert len(children) > 0
+    types = {c.type for c in children}
+    assert "door" in types
+    assert "wall" in types
+
+
+def test_fill_children_marks_parent_generated():
+    """fill_children sets generated=True on the parent after filling."""
+    world = _make_world()
+    feature = Object(
+        id=world.next_id(),
+        parent=1,
+        type="cave_entrance",
+        name="Dark Cave",
+        location=Location(x=0, y=0),
+        size=Size(length=15.0, width=15.0, height=5.0),
+        is_moveable=False,
+        properties={"generated": False},
+    )
+    world.add_object(feature)
+    gen = WorldGenerator(world, seed=31)
+    gen.fill_children(feature.id)
+    assert world.get_object(feature.id).properties.get("generated") is True
+
+
+def test_fill_children_idempotent_when_already_generated():
+    """fill_children returns empty list if parent is already generated."""
+    world = _make_world()
+    feature = Object(
+        id=world.next_id(),
+        parent=1,
+        type="forest",
+        name="Forest",
+        location=Location(x=0, y=0),
+        size=Size(length=15.0, width=15.0),
+        is_moveable=False,
+        properties={"generated": True},
+    )
+    world.add_object(feature)
+    gen = WorldGenerator(world, seed=32)
+    result = gen.fill_children(feature.id)
+    assert result == []
+
+
+def test_fill_children_does_not_duplicate_on_second_call():
+    """Calling fill_children twice creates no duplicate objects."""
+    world = _make_world()
+    feature = Object(
+        id=world.next_id(),
+        parent=1,
+        type="ruin",
+        name="Ruin",
+        location=Location(x=0, y=0),
+        size=Size(length=15.0, width=15.0, height=5.0),
+        is_moveable=False,
+        properties={"generated": False},
+    )
+    world.add_object(feature)
+    gen = WorldGenerator(world, seed=33)
+    first_pass = gen.fill_children(feature.id)
+    count_after_first = len(world.get_children(feature.id))
+    second_pass = gen.fill_children(feature.id)
+    assert second_pass == []
+    assert len(world.get_children(feature.id)) == count_after_first
+
+
+# ---------------------------------------------------------------------------
+# Phase 17 — find_ungenerated_parents_in_coords
+# ---------------------------------------------------------------------------
+
+def test_find_ungenerated_parents_in_coords_finds_match():
+    """Returns IDs of child features whose generated flag is False at given coords."""
+    world = _make_world()
+    shell = Object(
+        id=world.next_id(),
+        parent=1,
+        type="forest",
+        name="Forest Shell",
+        location=Location(x=10.0, y=10.0),
+        size=Size(length=15.0, width=15.0),
+        is_moveable=False,
+        properties={"generated": False},
+    )
+    world.add_object(shell)
+    gen = WorldGenerator(world, seed=40)
+    result = gen.find_ungenerated_parents_in_coords([(10.0, 10.0)], parent_id=1)
+    assert shell.id in result
+
+
+def test_find_ungenerated_parents_skips_already_generated():
+    """Does not return IDs for features that are already generated."""
+    world = _make_world()
+    shell = Object(
+        id=world.next_id(),
+        parent=1,
+        type="forest",
+        name="Forest",
+        location=Location(x=5.0, y=5.0),
+        size=Size(length=15.0, width=15.0),
+        is_moveable=False,
+        properties={"generated": True},
+    )
+    world.add_object(shell)
+    gen = WorldGenerator(world, seed=41)
+    result = gen.find_ungenerated_parents_in_coords([(5.0, 5.0)], parent_id=1)
+    assert result == []
+
+
+def test_find_ungenerated_parents_no_match():
+    """Returns empty list when no features exist at the given coords."""
+    world = _make_world()
+    gen = WorldGenerator(world, seed=42)
+    result = gen.find_ungenerated_parents_in_coords([(100.0, 200.0)], parent_id=1)
+    assert result == []
+
+
+# ---------------------------------------------------------------------------
+# Phase 17 — mobile object exemption in fill()
+# ---------------------------------------------------------------------------
+
+def test_fill_ignores_mobile_objects_in_occupied_check():
+    """fill() places a ground tile even when only mobile objects occupy the coord."""
+    world = _make_world()
+    # Place a mobile NPC at a coord
+    npc = Object(
+        id=world.next_id(),
+        parent=1,
+        type="NPC",
+        name="Wanderer",
+        location=Location(x=0.0, y=0.0),
+        size=Size(),
+        is_moveable=True,
+        properties={"mobile": True},
+    )
+    world.add_object(npc)
+    gen = WorldGenerator(world, seed=50)
+    from unittest.mock import patch
+    with patch.object(gen.rng, "random", return_value=1.0):  # suppress large features
+        new_objs = gen.fill([(0.0, 0.0)], parent_id=1)
+    assert len(new_objs) == 1
+    assert new_objs[0].type == "ground"
+
+
+def test_fill_skips_coord_with_existing_fixed_object():
+    """fill() does not create a new tile when a fixed object already exists."""
+    world = _make_world()
+    fixed = Object(
+        id=world.next_id(),
+        parent=1,
+        type="wall",
+        name="Wall",
+        location=Location(x=0.0, y=0.0),
+        size=Size(),
+        is_moveable=False,
+    )
+    world.add_object(fixed)
+    gen = WorldGenerator(world, seed=51)
+    from unittest.mock import patch
+    with patch.object(gen.rng, "random", return_value=1.0):
+        new_objs = gen.fill([(0.0, 0.0)], parent_id=1)
+    assert new_objs == []
+
+
+# ---------------------------------------------------------------------------
+# Phase 17 — fill_interior alias
+# ---------------------------------------------------------------------------
+
+def test_fill_interior_is_alias_for_fill_children():
+    """fill_interior and fill_children produce identical results."""
+    def _make_feature(world):
+        f = Object(
+            id=world.next_id(),
+            parent=1,
+            type="ruin",
+            name="Ruin",
+            location=Location(x=0, y=0),
+            size=Size(length=15.0, width=15.0, height=5.0),
+            is_moveable=False,
+            properties={"generated": False},
+        )
+        world.add_object(f)
+        return f
+
+    world_a = _make_world()
+    feature_a = _make_feature(world_a)
+    gen_a = WorldGenerator(world_a, seed=60)
+    result_a = gen_a.fill_interior(feature_a.id)
+
+    world_b = _make_world()
+    feature_b = _make_feature(world_b)
+    gen_b = WorldGenerator(world_b, seed=60)
+    result_b = gen_b.fill_children(feature_b.id)
+
+    assert len(result_a) == len(result_b)
+    types_a = sorted(o.type for o in result_a)
+    types_b = sorted(o.type for o in result_b)
+    assert types_a == types_b

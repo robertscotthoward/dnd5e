@@ -48,6 +48,9 @@ _LARGE_FEATURES = ("forest", "ruin", "cave_entrance")
 # Probability (0–1) that a 5×5 cluster spawns a large feature
 _FEATURE_PROBABILITY = 0.10
 
+# Large area cover types — one object can span many LOS tiles
+_AREA_COVER_TYPES = ("park", "forum", "road", "plaza", "courtyard")
+
 
 class WorldGenerator:
     """
@@ -57,6 +60,8 @@ class WorldGenerator:
 
         gen = WorldGenerator(world, seed=42)
         new_objs = gen.fill(missing_coords, parent_id)
+        new_obj = gen.fill_coordinate(coord, parent_id)
+        children = gen.fill_children(parent_id)
     """
 
     def __init__(self, world: World, seed: int) -> None:
@@ -93,88 +98,53 @@ class WorldGenerator:
             obj = self.world.get_object(obj.parent)
         return BIOME_GRASSLAND
 
-    def fill(
+    def fill_coordinate(
         self,
-        coords: list[tuple[float, float]],
+        coord: tuple[float, float],
         parent_id: int,
-    ) -> list[Object]:
+    ) -> Optional[Object]:
         """
-        Populate empty tile coordinates under parent_id.
+        Ensure a single (x, y) coordinate under parent_id has at least one object.
 
-        For each (x, y) pair in *coords* that has no existing child object at
-        that position, creates at minimum a ground tile.  Also attempts
-        large-feature placement once per 5×5 cluster (10 % chance).
+        Skip-if-occupied guard: if any non-mobile object already exists at this
+        coordinate, returns None immediately — preventing re-generation on revisit.
 
-        Returns the list of newly created Object instances.
+        Mobile objects (mobile: true) are exempt from the guard and do not block
+        generation of a ground marker.
+
+        Returns the newly created Object, or None if the coordinate was already
+        occupied by a fixed object.
         """
-        occupied = self._coords_at_parent(parent_id)
+        x, y = float(coord[0]), float(coord[1])
+
+        # Check whether a fixed (non-mobile) object already occupies this coord
+        children = self.world.get_children(parent_id)
+        for child in children:
+            if child.location.x == x and child.location.y == y:
+                if not child.properties.get("mobile", False):
+                    return None  # fixed object present — skip generation
+
         biome = self.resolve_biome(parent_id)
         ground_name = _BIOME_GROUND_NAME.get(biome, "Ground")
+        return self._make_object(
+            obj_type="ground",
+            name=ground_name,
+            parent_id=parent_id,
+            x=x,
+            y=y,
+        )
 
-        new_objects: list[Object] = []
-
-        # Deduplicate input coords while preserving order
-        seen_input: set[tuple[float, float]] = set()
-        unique_coords: list[tuple[float, float]] = []
-        for c in coords:
-            key = (float(c[0]), float(c[1]))
-            if key not in seen_input:
-                seen_input.add(key)
-                unique_coords.append(key)
-
-        # Cluster coords into 5×5 buckets for large-feature roll
-        clusters: dict[tuple[int, int], list[tuple[float, float]]] = {}
-        for x, y in unique_coords:
-            cluster_key = (int(x // 25), int(y // 25))
-            clusters.setdefault(cluster_key, []).append((x, y))
-
-        placed_features: set[tuple[float, float]] = set()
-
-        for cluster_coords in clusters.values():
-            # Large-feature roll: one attempt per cluster
-            if self.rng.random() < _FEATURE_PROBABILITY:
-                feature_type = self.rng.choice(_LARGE_FEATURES)
-                # Place the feature at the first available coord in this cluster
-                for fx, fy in cluster_coords:
-                    if (fx, fy) not in occupied and (fx, fy) not in placed_features:
-                        feature = self._make_object(
-                            obj_type=feature_type,
-                            name=feature_type.replace("_", " ").title(),
-                            parent_id=parent_id,
-                            x=fx,
-                            y=fy,
-                            properties={"generated": False},
-                        )
-                        new_objects.append(feature)
-                        occupied.add((fx, fy))
-                        placed_features.add((fx, fy))
-                        break
-
-            # Ground tiles for every remaining empty coord in this cluster
-            for x, y in cluster_coords:
-                if (x, y) not in occupied:
-                    ground = self._make_object(
-                        obj_type="ground",
-                        name=ground_name,
-                        parent_id=parent_id,
-                        x=x,
-                        y=y,
-                    )
-                    new_objects.append(ground)
-                    occupied.add((x, y))
-
-        return new_objects
-
-    def fill_interior(self, parent_id: int) -> list[Object]:
+    def fill_children(self, parent_id: int) -> list[Object]:
         """
-        Generate children for a parent object whose properties.generated is False.
+        Populate the immediate children of a parent whose `generated` flag is False.
 
-        Creates a minimal interior layout: floor tiles, perimeter walls, and
-        a door on the south face.  Sets properties.generated = True on parent
-        when done.
+        This is the lazy-fill trigger: called when LOS reaches a coordinate inside
+        an ungenerated parent (e.g. a village shell, building, or dungeon room).
 
-        Returns newly created objects (empty list if parent already generated
-        or does not exist).
+        Creates a minimal interior layout: floor tiles, perimeter walls, and a door
+        on the south face.  Sets `generated: true` on the parent when done.
+
+        Returns newly created objects (empty list if already generated or missing).
         """
         parent = self.world.get_object(parent_id)
         if parent is None:
@@ -239,14 +209,120 @@ class WorldGenerator:
 
         return new_objects
 
+    def fill(
+        self,
+        coords: list[tuple[float, float]],
+        parent_id: int,
+    ) -> list[Object]:
+        """
+        Populate empty tile coordinates under parent_id.
+
+        For each (x, y) pair in *coords* that has no existing fixed child object at
+        that position, creates at minimum a ground tile.  Also attempts
+        large-feature placement once per 5×5 cluster (10 % chance).
+
+        Mobile objects (mobile: true) do not block ground tile creation.
+
+        Returns the list of newly created Object instances.
+        """
+        occupied = self._fixed_coords_at_parent(parent_id)
+        biome = self.resolve_biome(parent_id)
+        ground_name = _BIOME_GROUND_NAME.get(biome, "Ground")
+
+        new_objects: list[Object] = []
+
+        # Deduplicate input coords while preserving order
+        seen_input: set[tuple[float, float]] = set()
+        unique_coords: list[tuple[float, float]] = []
+        for c in coords:
+            key = (float(c[0]), float(c[1]))
+            if key not in seen_input:
+                seen_input.add(key)
+                unique_coords.append(key)
+
+        # Cluster coords into 5×5 buckets for large-feature roll
+        clusters: dict[tuple[int, int], list[tuple[float, float]]] = {}
+        for x, y in unique_coords:
+            cluster_key = (int(x // 25), int(y // 25))
+            clusters.setdefault(cluster_key, []).append((x, y))
+
+        placed_features: set[tuple[float, float]] = set()
+
+        for cluster_coords in clusters.values():
+            # Large-feature roll: one attempt per cluster
+            if self.rng.random() < _FEATURE_PROBABILITY:
+                feature_type = self.rng.choice(_LARGE_FEATURES)
+                # Place the feature at the first available coord in this cluster
+                for fx, fy in cluster_coords:
+                    if (fx, fy) not in occupied and (fx, fy) not in placed_features:
+                        feature = self._make_object(
+                            obj_type=feature_type,
+                            name=feature_type.replace("_", " ").title(),
+                            parent_id=parent_id,
+                            x=fx,
+                            y=fy,
+                            properties={"generated": False},
+                        )
+                        new_objects.append(feature)
+                        occupied.add((fx, fy))
+                        placed_features.add((fx, fy))
+                        break
+
+            # Ground tiles for every remaining empty coord in this cluster
+            for x, y in cluster_coords:
+                if (x, y) not in occupied:
+                    ground = self._make_object(
+                        obj_type="ground",
+                        name=ground_name,
+                        parent_id=parent_id,
+                        x=x,
+                        y=y,
+                    )
+                    new_objects.append(ground)
+                    occupied.add((x, y))
+
+        return new_objects
+
+    # fill_interior is an alias kept for backwards compatibility
+    def fill_interior(self, parent_id: int) -> list[Object]:
+        """Alias for fill_children — generates interior of an ungenerated parent."""
+        return self.fill_children(parent_id)
+
+    def find_ungenerated_parents_in_coords(
+        self,
+        coords: list[tuple[float, float]],
+        parent_id: int,
+    ) -> list[int]:
+        """
+        Return IDs of child objects at the given coordinates whose `generated`
+        flag is False.  Used to trigger lazy fill_children calls.
+        """
+        result: list[int] = []
+        children = self.world.get_children(parent_id)
+        coord_set = {(float(c[0]), float(c[1])) for c in coords}
+        for child in children:
+            pos = (child.location.x, child.location.y)
+            if pos in coord_set and child.properties.get("generated") is False:
+                result.append(child.id)
+        return result
+
     # ------------------------------------------------------------------
     # Private helpers
     # ------------------------------------------------------------------
 
     def _coords_at_parent(self, parent_id: int) -> set[tuple[float, float]]:
-        """Return the set of (x, y) positions already occupied by children."""
+        """Return the set of (x, y) positions occupied by ALL children (mobile + fixed)."""
         children = self.world.get_children(parent_id)
         return {(child.location.x, child.location.y) for child in children}
+
+    def _fixed_coords_at_parent(self, parent_id: int) -> set[tuple[float, float]]:
+        """Return (x, y) positions occupied by fixed (non-mobile) children only."""
+        children = self.world.get_children(parent_id)
+        return {
+            (child.location.x, child.location.y)
+            for child in children
+            if not child.properties.get("mobile", False)
+        }
 
     def _make_object(
         self,
