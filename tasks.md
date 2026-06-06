@@ -86,7 +86,7 @@
 
 ## Phase 14: F1 Help Wiki
 
-- [ ] Feature: F1 Help Wiki
+- [x] Feature: F1 Help Wiki
   - [x] Integrate into PRD.md (Why/What/How)
   - [x] Scaffold `docs/help/home.md` and supporting wiki pages (combat, controls, character, spells)
   - [x] Create `HelpOverlay.vue` component — full-screen modal, renders Markdown, internal link navigation, image support
