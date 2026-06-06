@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from src.backend.api.admin_routes import router as admin_router
 from src.backend.api.auth_routes import router as auth_router
 from src.backend.api.campaign_routes import router as campaign_router
+from src.backend.api.help_routes import router as help_router
 from src.backend.api.ws_routes import router as ws_router
 
 router = APIRouter()
@@ -13,6 +14,7 @@ router.include_router(auth_router, prefix="/auth")
 router.include_router(campaign_router)
 router.include_router(ws_router)
 router.include_router(admin_router)
+router.include_router(help_router)
 
 
 @router.get("/health")

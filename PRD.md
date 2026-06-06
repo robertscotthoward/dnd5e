@@ -107,6 +107,13 @@ The world is a YAML file with `name`, `max_id`, `delete_ids`, and `objects` (dic
 - **As the DM (AI)**, I want a filtered world snapshot so I only process what is visible to the party.
 - **As an admin**, I want to inspect and edit the world tree so I can fix corrupt campaign state.
 
+## Ad-hoc & Experimental Features
+
+### F1 Help Wiki (Added: 2026-06-05)
+- **Context / Why**: Players need in-game guidance on controls, rules, and interface features without leaving the app. A keyboard shortcut makes help instantly accessible from any screen.
+- **Purpose / What**: Pressing F1 opens a full-screen help overlay that renders a wiki built from Markdown files rooted at `docs/help/home.md`. The wiki supports internal relative links, images, and a keyword search bar. Players can click through topic pages or search for specific content.
+- **Usage / How**: Press F1 (or Escape to close) from anywhere in the app. The overlay renders `docs/help/home.md` as the landing page. Relative Markdown links (e.g., `[Combat](combat.md)`) navigate within the wiki. Images referenced relative to `docs/help/` render inline. The search bar at the top filters across all `.md` files under `docs/help/` and lists matching pages; clicking a result opens that page.
+
 ## 5. Success Criteria
 
 1. `index-corpus` indexes all markdown files in `data/corpus/` without errors.

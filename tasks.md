@@ -84,6 +84,19 @@
 * [x] **Short rest / long rest buttons** — Buttons visible during Exploration mode. Short rest: player rolls hit dice to recover HP. Long rest: restore all HP, spell slots, and abilities. DM agent narrates the rest sequence.
 * [x] **Ambient sound toggle** — Settings toggle to play looped ambient audio matching current location type (tavern, dungeon, forest, outdoor). Audio files stored under `src/frontend/public/audio/`. Location type inferred from the party's parent object type.
 
+## Phase 14: F1 Help Wiki
+
+- [x] Feature: F1 Help Wiki
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [x] Scaffold `docs/help/home.md` and supporting wiki pages (combat, controls, character, spells)
+  - [x] Create `HelpOverlay.vue` component — full-screen modal, renders Markdown, internal link navigation, image support
+  - [x] Wire F1 keydown listener in `App.vue` (and Escape to close)
+  - [x] Backend route `GET /api/help/{path}` — serves `.md` file content from `docs/help/`
+  - [x] Backend route `GET /api/help/search?q=` — searches all `.md` files under `docs/help/` and returns matching page list
+  - [x] Search bar in overlay header — calls search endpoint, lists results, click navigates to page
+  - [x] Add robust error handling & tests
+  - [x] Verify functionality & update documentation
+
 ## Phase 13: Quality & Deployment
 
 * [x] **`dev.bat` Typer CLI mode** — Update `dev.bat` to also support running `python -m src.backend.main` CLI commands alongside the Vite/FastAPI servers.

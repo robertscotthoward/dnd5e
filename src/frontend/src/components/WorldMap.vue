@@ -104,12 +104,75 @@ function typeConfig(type) {
   return TYPE_CONFIG[type] || TYPE_CONFIG._default
 }
 
+// Spacing radius per type for the tree layout.
+// When all siblings are at [0,0,0] relative to their parent, we spread them
+// in a circle of this radius (world units = feet) around the parent.
+const LAYOUT_RADIUS = {
+  system: 2000, planet: 1200, continent: 800, region: 400,
+  town: 200, city: 250, inn: 100, dungeon: 120,
+  room: 50, party: 25, _default: 30,
+}
+
+function applyTreeLayout(rawNodes) {
+  const byId = {}
+  const childrenOf = {}
+  rawNodes.forEach(n => {
+    byId[n.id] = { ...n }
+    childrenOf[n.id] = []
+  })
+  rawNodes.forEach(n => {
+    if (n.parent != null && childrenOf[n.parent]) {
+      childrenOf[n.parent].push(n.id)
+    }
+  })
+
+  const laid = {}  // id -> { x, y }
+
+  function layout(id, px, py) {
+    laid[id] = { x: px, y: py }
+    const kids = childrenOf[id] || []
+    if (kids.length === 0) return
+
+    const parentType = byId[id]?.type || '_default'
+    const radius = LAYOUT_RADIUS[parentType] || LAYOUT_RADIUS._default
+
+    // If ALL children have zero relative offset, spread in a circle.
+    // If some have real offsets, honour them as-is (relative to parent layout pos).
+    const allZero = kids.every(kidId => {
+      const k = byId[kidId]
+      return k && Math.abs(k.x) < 0.1 && Math.abs(k.y) < 0.1
+    })
+
+    kids.forEach((kidId, i) => {
+      const kid = byId[kidId]
+      if (allZero) {
+        const angle = (i / kids.length) * Math.PI * 2 - Math.PI / 2
+        layout(kidId, px + Math.cos(angle) * radius, py + Math.sin(angle) * radius)
+      } else {
+        layout(kidId, px + kid.x, py + kid.y)
+      }
+    })
+  }
+
+  // Find roots: nodes whose parent is absent from the set
+  rawNodes
+    .filter(n => n.parent == null || !byId[n.parent])
+    .forEach(r => layout(r.id, 0, 0))
+
+  // Return nodes with layout coordinates substituted for x/y
+  return rawNodes.map(n => ({
+    ...n,
+    x: laid[n.id]?.x ?? n.x,
+    y: laid[n.id]?.y ?? n.y,
+  }))
+}
+
 async function loadMap() {
   try {
     const res = await fetch(`/api/campaigns/${props.campaignId}/map`, { credentials: 'include' })
     if (!res.ok) return
     const data = await res.json()
-    nodes.value = data.nodes || []
+    nodes.value = applyTreeLayout(data.nodes || [])
     playerNode.value = nodes.value.find(n => n.is_player) || null
     nextTick(() => {
       initCanvas()
