@@ -2,6 +2,22 @@
 
 This game generates items in the world dynamically (like Minecraft) as the player moves through the world.
 
+Each object should have a size range like this: 
+```yaml
+size: 
+  min: [l, w, h]
+  max: [l, w, h]
+```
+Ensure the every min components never exceed its corresponding max component and all values are not negative.
+The unit is 5 feet, so a height of 0.5 means 2.5 feet. A "grid square" (or just "square") means a 5'x5' area. Default ceilings are 10' tall, or 2 units.
+All types that a player can enter (like an inn, a room, or a cave) or stand on (like a street, path, floor) must be integer units.
+In some cases, a hole in the wall might be 0.2, which is too small to crawl through for a human.
+Use standard knowledge of type sizes to create a min and max range. 
+A planet might have 2e14 squares on its surface. A city might be 250K squares. Daggerfall was a big city of 900K squares.
+The height of area types, like region, planet, city, town, floor, forum, road should be 0. The children (like buildings, rooms, trees, statues) on those areas will likely have height.
+
+
+
 The parent-child hierarchy:
 ```
 System: Realmspace
@@ -57,5 +73,4 @@ System: Realmspace
         Swamp: The Mere of Dead Men
         Island: The Moonshae Isles
         Trade Road: The High Road
-
 ```
