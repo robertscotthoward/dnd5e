@@ -31,22 +31,6 @@
       "text": "As you look around the common room of Stonehill Inn, you see your companions Thorin (Dwarf Fighter), Elara (Elf Wizard), Mira (Halfling Rogue), Aldric (Human Cleric), and Lyria (Half-Elf Cleric). The room is modestly furnished with tables and a fireplace. You notice that the inn is quiet as it's early in the morning, but you can hear faint sounds of people preparing for the day outside.\n\nYour surroundings are as follows:\n1. Thorin: Dwarven Fighter standing near the entrance.\n2. Elara: Elf Wizard seated at a table with her books and scrolls spread out.\n3. Mira: Halfling Rogue leaning against a wall, looking around curiously.\n4. Aldric: Human Cleric praying by the fireplace.\n5. Lyria: Half-Elf Cleric is not present in the common room.\n\nThe party seems to be ready for their next adventure, and it's up to you how you proceed. Do you have any specific actions or questions in mind?",
       "turn_number": 0,
       "timestamp": "2026-05-31T15:23:45.798086"
-    },
-    {
-      "id": "9fd6485cda1c",
-      "sender": "robeblade",
-      "sender_type": "PC",
-      "text": "Look around me. Any thing here?",
-      "turn_number": 0,
-      "timestamp": "2026-06-05T20:17:54.862668"
-    },
-    {
-      "id": "44f5f0ff0c5a",
-      "sender": "DM",
-      "sender_type": "DM",
-      "text": "You find yourselves in the Common Room of Stonehill Inn, a modest inn run by Toblen Stonehill and his family. The room is bustling with activity, filled with wooden tables and chairs arranged around a welcoming fireplace. There are no immediate dangers or hidden objects visible within your range.\n\nYour fellow adventurers, Thorin (Dwarf Fighter), Elara (Elf Wizard), Mira (Halfling Rogue), Aldric (Human Cleric) and Lyria (Half-Elf Cleric) are present in the room as well.",
-      "turn_number": 0,
-      "timestamp": "2026-06-05T20:18:21.663063"
     }
   ]
 }

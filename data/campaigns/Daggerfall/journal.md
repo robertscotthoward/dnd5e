@@ -10,3 +10,9 @@ As dawn broke over Stonehill Inn, the party gathered in the common room, each me
 
 ---
 
+## Turn 0 — 2026-06-05 20:18
+
+As the sun dipped below the horizon, casting long shadows across the Common Room of Stonehill Inn, the party gathered around a cozy wooden table near the crackling fireplace. Thorin engaged in hearty conversation with Toblen Stonehill himself, discussing tactics for defending the inn against potential threats, while Elara meticulously studied an ancient scroll she had recently acquired, her eyes darting back and forth over the cryptic runes. Mira kept watchful eyes on the bustling crowd, her hand resting lightly on her dagger, ever vigilant for any signs of trouble. Aldric and Lyria, meanwhile, conferred quietly in a corner, their voices low as they planned spells and prayers that could aid them in their upcoming adventures.
+
+---
+

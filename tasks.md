@@ -129,6 +129,21 @@
   - [x] Add robust error handling and tests for generator edge cases (boundary coords, re-entry of existing tiles, nested parent generation)
   - [x] Verify end-to-end: player moves, new tiles generate, world map updates, re-visit produces no duplicate objects
 
+## Phase 17: Lazy Recursive LOS-Driven World Expansion
+
+- [ ] Feature: Lazy recursive LOS-driven world expansion
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [ ] Ground-as-marker: ensure `WorldGenerator.fill_coordinate` writes a `ground` object (not nothing) for every empty LOS tile, so any object's presence — even bare ground — permanently suppresses re-generation at that coordinate. A large area, like "park", or "forum", or "road" and be used to cover a lot of LOS tiles. It is okay to convert areas that are not LOS, but all LOS tiles should be covered in some manner.
+  - [ ] Skip-if-occupied guard: at the top of `fill_coordinate`, query `world.yaml` for any object at the target coordinate; return early if one exists (prevents duplicates on re-visit)
+  - [ ] Parent-shell lazy fill: when LOS reaches a coordinate inside a parent object whose `generated` flag is `false`, call `WorldGenerator.fill_children(parent_id)` to populate immediate children only; set `generated: true` on the parent when complete
+  - [ ] Door-crossing trigger: in the WS move handler, detect when the player's new coordinates overlap a `door` object's bounding box; call `fill_children` on the door's parent building to spawn interior layout (furniture, NPCs, containers)
+  - [ ] Mobile-object exemption: objects with `mobile: true` are excluded from the skip-if-occupied guard — their position is re-simulated each turn by the World Agent regardless of prior generation
+  - [ ] Per-session fog-of-war persistence: maintain a per-player-session `explored` set (coordinate list); update it after every LOS computation; expose it via the WS session state so the frontend can reconstruct it on reconnect
+  - [ ] Frontend `WorldMap.vue` fog-of-war layer: render explored tiles clear, unexplored tiles as dark fog, boundary tiles (partial visibility) dimmed; source data from the session `explored` set broadcast by the backend
+  - [ ] Integration: wire `fill_coordinate` and `fill_children` calls into the DM turn pipeline and WS move handler after the LOS step; broadcast world-state delta to all connected clients
+  - [ ] Add error handling and tests: re-entry of occupied tiles produces no duplicates, door-crossing generates exactly one set of children, mobile objects regenerate correctly, `explored` set survives session reconnect
+  - [ ] Verify end-to-end: player moves into open terrain → ground tiles appear, player approaches village → village shell exists with `generated: false` children, player enters door → interior populates, revisit produces no new objects
+
 ## Phase 13: Quality & Deployment
 
 * [x] **`dev.bat` Typer CLI mode** — Update `dev.bat` to also support running `python -m src.backend.main` CLI commands alongside the Vite/FastAPI servers.
