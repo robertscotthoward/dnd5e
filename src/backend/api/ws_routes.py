@@ -22,6 +22,7 @@ from src.backend.core.tools import WorldTools
 from src.backend.core.loot import generate_loot
 from src.backend.core.ai_client import ai_client
 from src.backend.core.time_cycle import advance_time
+from src.backend.world.generator import WorldGenerator
 
 router = APIRouter(tags=["websocket"])
 
@@ -122,6 +123,43 @@ async def _run_dm_response(
         narration = f"[DM is unavailable: {str(e)[:80]}]"
 
     save_campaign_world(campaign_id, campaign)
+
+    # Generate world tiles for each PC after the DM turn
+    try:
+        _tile_campaign = load_campaign_world(campaign_id)
+        if _tile_campaign:
+            _tile_seed = meta.seed if hasattr(meta, "seed") else 0
+            _tile_gen = WorldGenerator(_tile_campaign.world, seed=_tile_seed)
+            _all_new_tile_objects = []
+            for _pc in _tile_campaign.world.get_pcs():
+                if _pc.parent is None:
+                    continue
+                _visible = _tile_campaign.world.get_visible_world(_pc.id)
+                _existing_coords: set[tuple[float, float]] = {
+                    (c.location.x, c.location.y)
+                    for c in _tile_campaign.world.get_children(_pc.parent)
+                }
+                _missing: list[tuple[float, float]] = [
+                    (obj.location.x, obj.location.y)
+                    for obj in _visible.objects.values()
+                    if obj.parent == _pc.parent
+                    and obj.id != _pc.id
+                    and (obj.location.x, obj.location.y) not in _existing_coords
+                ]
+                if _missing:
+                    _new = _tile_gen.fill(_missing, _pc.parent)
+                    _all_new_tile_objects.extend(_new)
+            if _all_new_tile_objects:
+                save_campaign_world(campaign_id, _tile_campaign)
+                await manager.broadcast(
+                    campaign_id,
+                    {
+                        "type": "world_tiles_generated",
+                        "objects": [o.model_dump(mode="json") for o in _all_new_tile_objects],
+                    },
+                )
+    except Exception:
+        pass
 
     # Update meta turn info
     meta.turn_number = campaign.turn_number

@@ -54,6 +54,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   const hourOfDay = ref(9)
   const isNight = ref(false)
   const timeDescription = ref('morning')
+  const worldTileObjects = ref([])  // objects received via world_tiles_generated WS events
 
   async function fetchCampaigns() {
     loading.value = true
@@ -372,6 +373,11 @@ export const useCampaignStore = defineStore('campaign', () => {
         }
         break
       }
+      case 'world_tiles_generated':
+        if (Array.isArray(msg.objects) && msg.objects.length > 0) {
+          worldTileObjects.value = worldTileObjects.value.concat(msg.objects)
+        }
+        break
       case 'time_updated':
         dayNumber.value = msg.day_number
         hourOfDay.value = msg.hour_of_day
@@ -550,7 +556,7 @@ export const useCampaignStore = defineStore('campaign', () => {
     campaigns, currentMeta, players, chat, gameMode, activeTurn,
     dmThinking, snapshots, loading, error, ws, wsStatus, joinResult,
     pendingLevelUp, pendingDiceRoll, initiativeOrder, pendingLoot, journal, quests,
-    npcRelationships, dayNumber, hourOfDay, isNight, timeDescription,
+    npcRelationships, dayNumber, hourOfDay, isNight, timeDescription, worldTileObjects,
     fetchCampaigns, createCampaign, joinCampaign, generateBackground, createCharacter,
     loadState, connectWs, disconnectWs, sendChat, sendAction, sendSnapshot,
     fetchSnapshots, fetchJournal, fetchQuests, fetchNpcs, restoreSnapshot, sendAwardXp, awardXp,

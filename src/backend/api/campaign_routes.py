@@ -37,6 +37,7 @@ from src.backend.models.player import RACE_MODIFIERS
 from src.backend.core.ai_client import ai_client
 from src.backend.models.user import CampaignMeta, CharacterCreate, ChatMessage, Snapshot
 from src.backend.models.world import Object, Location
+from src.backend.world.generator import WorldGenerator
 from src.backend.models.player import (
     CLASS_HIT_DICE,
     get_ability_modifier,
@@ -898,3 +899,68 @@ def post_snapshot_restore(campaign_id: str, snapshot_id: str, request: Request):
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     return {"restored": True, "snapshot": snap}
+
+
+class GenerateTilesRequest(BaseModel):
+    observer_id: int
+    parent_id: int
+
+
+@router.post("/campaigns/{campaign_id}/generate-tiles")
+def generate_tiles(campaign_id: str, req: GenerateTilesRequest, request: Request):
+    """
+    Generate world tiles visible to the given observer that have not yet been populated.
+
+    Identifies every coordinate within line-of-sight of the observer that has no
+    existing child object under parent_id, then calls WorldGenerator.fill() to
+    populate those coordinates with at minimum ground tiles.  Large features may
+    also be placed probabilistically.
+
+    The updated world is saved and the new objects are returned so the caller can
+    broadcast them to connected WebSocket clients.
+    """
+    get_current_user(request)
+    meta = get_campaign_meta(campaign_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=500, detail="Could not load campaign world")
+
+    world = campaign.world
+    observer = world.get_object(req.observer_id)
+    if not observer:
+        raise HTTPException(status_code=404, detail="Observer not found")
+
+    # Get the set of coords that already exist under the parent
+    existing_coords: set[tuple[float, float]] = {
+        (child.location.x, child.location.y)
+        for child in world.get_children(req.parent_id)
+    }
+
+    # Compute which coords are visible to the observer but not yet populated.
+    # We use get_visible_world to get all objects the observer can see, then
+    # collect sibling positions under parent_id that are absent from existing_coords.
+    visible_world = world.get_visible_world(req.observer_id)
+    visible_siblings = [
+        obj for obj in visible_world.objects.values()
+        if obj.parent == req.parent_id and obj.id != req.observer_id
+    ]
+    missing_coords: list[tuple[float, float]] = [
+        (obj.location.x, obj.location.y)
+        for obj in visible_siblings
+        if (obj.location.x, obj.location.y) not in existing_coords
+    ]
+
+    if not missing_coords:
+        return {"generated": []}
+
+    seed = getattr(meta, "seed", 0) or 0
+    gen = WorldGenerator(world, seed=seed)
+    new_objects = gen.fill(missing_coords, req.parent_id)
+
+    if new_objects:
+        save_campaign_world(campaign_id, campaign)
+
+    return {"generated": [obj.model_dump(mode="json") for obj in new_objects]}

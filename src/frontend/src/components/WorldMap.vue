@@ -56,12 +56,15 @@
 
 <script setup>
 import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useCampaignStore } from '../stores/campaign'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
   campaignId: { type: String, required: true },
 })
 const emit = defineEmits(['close'])
+
+const store = useCampaignStore()
 
 function onWindowKeydown(event) {
   if (!props.visible) return
@@ -457,6 +460,34 @@ watch(() => props.visible, (val) => {
     })
   }
 })
+
+// When new tiles arrive via WebSocket, merge them into the node list and redraw.
+// New objects arrive as raw world Object dicts; we normalise them into the same
+// shape used by nodes (id, parent, type, name, x, y from location).
+watch(() => store.worldTileObjects, (tileObjs) => {
+  if (!props.visible || !tileObjs || tileObjs.length === 0) return
+  const existingIds = new Set(nodes.value.map(n => n.id))
+  const toAdd = []
+  for (const obj of tileObjs) {
+    if (existingIds.has(obj.id)) continue
+    const loc = obj.location || {}
+    toAdd.push({
+      id: obj.id,
+      parent: obj.parent ?? null,
+      type: obj.type || 'ground',
+      name: obj.name || obj.type || 'Ground',
+      description: obj.description || null,
+      x: loc.x ?? 0,
+      y: loc.y ?? 0,
+      is_player: false,
+    })
+    existingIds.add(obj.id)
+  }
+  if (toAdd.length > 0) {
+    nodes.value = nodes.value.concat(toAdd)
+    nextTick(() => draw())
+  }
+}, { deep: true })
 
 onMounted(() => {
   window.addEventListener('resize', onResize)
