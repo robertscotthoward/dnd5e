@@ -1,18 +1,20 @@
 {
-  "_note": "Size unit = 5 feet. Size format [length, width, height]. Height = 0 for flat area containers (planet, region, city, road, etc). Enterable spaces and standable surfaces use integer units only. Furniture and wall-mounted objects may use fractional units.",
+  "_note": "Size unit = 5 feet. Size format [length, width, height]. Height = 0 for flat area containers. Enterable spaces use integer units only. Cost is in copper pieces (1 cp = $1). null cost = not independently sellable.",
   "system": {
     "type": "system",
     "description": "A crystal sphere containing a solar system and all its celestial bodies.",
     "example_name": "Realmspace",
     "named": true,
     "size": { "min": [1000000000000, 1000000000000, 0], "max": [1000000000000000, 1000000000000000, 0] },
+    "cost": null,
     "children": [
       {
         "type": "planet",
         "description": "A world orbiting the system's sun, home to continents and oceans.",
         "example_name": "Toril",
         "named": true,
-        "size": { "min": [3000000, 3000000, 0], "max": [20000000, 20000000, 0], "note": "Surface footprint in grid squares. Earth-like planet ~2e14 squares; sqrt gives ~14M units per side." },
+        "size": { "min": [3000000, 3000000, 0], "max": [20000000, 20000000, 0] },
+        "cost": null,
         "children": [
           {
             "type": "continent",
@@ -20,6 +22,7 @@
             "example_name": "Faerûn",
             "named": true,
             "size": { "min": [200000, 200000, 0], "max": [5000000, 5000000, 0] },
+            "cost": null,
             "children": [
               {
                 "type": "region",
@@ -27,13 +30,15 @@
                 "example_name": "The Sword Coast",
                 "named": true,
                 "size": { "min": [10000, 10000, 0], "max": [3000000, 3000000, 0] },
+                "cost": null,
                 "children": [
                   {
                     "type": "city",
                     "description": "A large, densely populated settlement with districts, guilds, and varied establishments.",
                     "example_name": "Baldur's Gate",
                     "named": true,
-                    "size": { "min": [400, 400, 0], "max": [1400, 1400, 0], "note": "250K–900K+ squares. Daggerfall ~950x950 units." },
+                    "size": { "min": [400, 400, 0], "max": [1400, 1400, 0] },
+                    "cost": null,
                     "children": [
                       {
                         "type": "inn",
@@ -41,18 +46,21 @@
                         "example_name": "The Elfsong Tavern",
                         "named": true,
                         "size": { "min": [4, 6, 2], "max": [20, 16, 8] },
+                        "cost": { "min": 100000, "max": 5000000, "_note": "1,000–50,000 gp" },
                         "children": [
                           {
                             "type": "room",
                             "description": "A private sleeping or utility chamber within the inn.",
                             "named": false,
                             "size": { "min": [2, 2, 2], "max": [4, 4, 3] },
+                            "cost": { "min": 2000, "max": 50000, "_note": "20–500 gp; room within a larger property" },
                             "children": [
                               {
                                 "type": "bed",
                                 "description": "A sleeping surface with frame and linens.",
                                 "named": false,
                                 "size": { "min": [0.6, 0.4, 0.3], "max": [1.5, 1.5, 0.6] },
+                                "cost": { "min": 100, "max": 5000, "_note": "1–50 gp; simple rope bed to ornate four-poster" },
                                 "children": []
                               },
                               {
@@ -60,6 +68,7 @@
                                 "description": "A general storage shelf or alcove fixed to the wall.",
                                 "named": false,
                                 "size": { "min": [1, 1, 1], "max": [3, 3, 2] },
+                                "cost": { "min": 50, "max": 500, "_note": "5–50 gp" },
                                 "children": []
                               },
                               {
@@ -67,6 +76,7 @@
                                 "description": "A lockable container for valuables or personal items.",
                                 "named": false,
                                 "size": { "min": [0.2, 0.1, 0.1], "max": [1.0, 0.6, 0.5] },
+                                "cost": { "min": 100, "max": 2000, "_note": "1–20 gp; simple pine to iron-banded with lock" },
                                 "children": []
                               },
                               {
@@ -74,6 +84,7 @@
                                 "description": "A small enclosed space for hanging garments, accessed from the room.",
                                 "named": false,
                                 "size": { "min": [1, 1, 2], "max": [2, 2, 3] },
+                                "cost": null,
                                 "children": []
                               },
                               {
@@ -81,6 +92,7 @@
                                 "description": "A single seat, often beside the bed or writing desk.",
                                 "named": false,
                                 "size": { "min": [0.2, 0.2, 0.5], "max": [0.6, 0.6, 0.8] },
+                                "cost": { "min": 20, "max": 2000, "_note": "0.2–20 gp; common stool to carved armchair" },
                                 "children": []
                               },
                               {
@@ -88,6 +100,7 @@
                                 "description": "A flat-surfaced piece of furniture for eating, writing, or storage.",
                                 "named": false,
                                 "size": { "min": [0.4, 0.4, 0.4], "max": [2.0, 1.0, 0.6] },
+                                "cost": { "min": 100, "max": 5000, "_note": "1–50 gp" },
                                 "children": []
                               },
                               {
@@ -95,6 +108,7 @@
                                 "description": "A branched candleholder providing ambient light; may be floor-standing or wall-mounted.",
                                 "named": false,
                                 "size": { "min": [0.1, 0.1, 0.4], "max": [0.3, 0.3, 1.2] },
+                                "cost": { "min": 100, "max": 10000, "_note": "1–100 gp; iron to silver-chased" },
                                 "children": []
                               },
                               {
@@ -102,20 +116,23 @@
                                 "description": "An open-topped metal vessel holding burning coals for heat.",
                                 "named": false,
                                 "size": { "min": [0.2, 0.2, 0.4], "max": [0.6, 0.6, 0.8] },
+                                "cost": { "min": 100, "max": 2000, "_note": "1–20 gp" },
                                 "children": []
                               },
                               {
                                 "type": "tapestry",
-                                "description": "A woven wall-hanging depicting scenes or patterns. Width = horizontal span, depth = fabric thickness, height = vertical drop.",
+                                "description": "A woven wall-hanging depicting scenes or patterns.",
                                 "named": false,
                                 "size": { "min": [0.4, 0.02, 0.4], "max": [2.0, 0.1, 3.0] },
+                                "cost": { "min": 500, "max": 100000, "_note": "5–1,000 gp; common weave to masterwork silk" },
                                 "children": []
                               },
                               {
                                 "type": "painting",
-                                "description": "A framed painted artwork mounted on the wall. Width = frame width, depth = frame depth, height = frame height.",
+                                "description": "A framed painted artwork mounted on the wall.",
                                 "named": false,
                                 "size": { "min": [0.2, 0.02, 0.2], "max": [1.2, 0.1, 1.0] },
+                                "cost": { "min": 500, "max": 500000, "_note": "5–5,000 gp; amateur sketch to renowned master" },
                                 "children": []
                               },
                               {
@@ -123,6 +140,7 @@
                                 "description": "A small stand holding a basin and pitcher for washing.",
                                 "named": false,
                                 "size": { "min": [0.2, 0.2, 0.5], "max": [0.5, 0.5, 0.9] },
+                                "cost": { "min": 50, "max": 1000, "_note": "0.5–10 gp" },
                                 "children": []
                               },
                               {
@@ -130,6 +148,7 @@
                                 "description": "A large freestanding wardrobe cabinet.",
                                 "named": false,
                                 "size": { "min": [0.3, 0.8, 1.0], "max": [0.6, 1.4, 1.6] },
+                                "cost": { "min": 200, "max": 10000, "_note": "2–100 gp; plain pine to carved hardwood" },
                                 "children": []
                               }
                             ]
@@ -139,6 +158,7 @@
                             "description": "A below-ground level used for storage, cellaring, or secret purposes.",
                             "named": false,
                             "size": { "min": [4, 4, 2], "max": [20, 16, 3] },
+                            "cost": null,
                             "children": []
                           },
                           {
@@ -146,6 +166,7 @@
                             "description": "The uppermost storage space beneath the roof; low ceiling.",
                             "named": false,
                             "size": { "min": [4, 4, 1], "max": [20, 16, 2] },
+                            "cost": null,
                             "children": []
                           },
                           {
@@ -153,6 +174,7 @@
                             "description": "A small recessed alcove, often with seating, tucked off a corridor or common room.",
                             "named": false,
                             "size": { "min": [1, 1, 2], "max": [2, 2, 2] },
+                            "cost": null,
                             "children": []
                           },
                           {
@@ -160,13 +182,15 @@
                             "description": "A private reading or writing room.",
                             "named": false,
                             "size": { "min": [2, 2, 2], "max": [4, 4, 3] },
+                            "cost": null,
                             "children": []
                           },
                           {
                             "type": "hallway",
-                            "description": "A corridor connecting rooms on the same floor. Length may vary widely; width is typically 1–2 units.",
+                            "description": "A corridor connecting rooms on the same floor.",
                             "named": false,
                             "size": { "min": [4, 1, 2], "max": [40, 2, 3] },
+                            "cost": null,
                             "children": []
                           },
                           {
@@ -174,6 +198,7 @@
                             "description": "A reinforced, lockable room for securing valuables.",
                             "named": false,
                             "size": { "min": [2, 2, 2], "max": [6, 6, 3] },
+                            "cost": null,
                             "children": []
                           },
                           {
@@ -181,6 +206,7 @@
                             "description": "An underground storage space, often for wine and provisions.",
                             "named": false,
                             "size": { "min": [4, 4, 2], "max": [16, 12, 3] },
+                            "cost": null,
                             "children": []
                           },
                           {
@@ -188,6 +214,7 @@
                             "description": "A cool room adjacent to the kitchen for storing dry goods.",
                             "named": false,
                             "size": { "min": [1, 2, 2], "max": [3, 4, 3] },
+                            "cost": null,
                             "children": []
                           },
                           {
@@ -195,6 +222,7 @@
                             "description": "The food-preparation area with hearth, cookware, and supplies.",
                             "named": false,
                             "size": { "min": [3, 3, 2], "max": [8, 6, 3] },
+                            "cost": null,
                             "children": []
                           },
                           {
@@ -202,6 +230,7 @@
                             "description": "A small entry chamber between the exterior door and the main hall.",
                             "named": false,
                             "size": { "min": [1, 2, 2], "max": [4, 4, 3] },
+                            "cost": null,
                             "children": []
                           },
                           {
@@ -209,6 +238,7 @@
                             "description": "A smoke-vented room used for curing meats or burning herbs.",
                             "named": false,
                             "size": { "min": [2, 2, 2], "max": [4, 4, 3] },
+                            "cost": null,
                             "children": []
                           }
                         ]
@@ -218,6 +248,7 @@
                         "description": "An underground complex of tunnels, cells, and chambers, often dangerous and trap-filled.",
                         "named": false,
                         "size": { "min": [10, 10, 2], "max": [200, 200, 4] },
+                        "cost": null,
                         "children": []
                       },
                       {
@@ -225,6 +256,7 @@
                         "description": "A natural underground hollow, sometimes repurposed as a lair or hideout.",
                         "named": false,
                         "size": { "min": [2, 2, 1], "max": [100, 100, 10] },
+                        "cost": null,
                         "children": []
                       },
                       {
@@ -233,6 +265,7 @@
                         "example_name": "The Yawning Portal",
                         "named": true,
                         "size": { "min": [4, 6, 2], "max": [16, 12, 6] },
+                        "cost": { "min": 100000, "max": 3000000, "_note": "1,000–30,000 gp" },
                         "children": []
                       },
                       {
@@ -241,6 +274,7 @@
                         "example_name": "The House of Wonder",
                         "named": true,
                         "size": { "min": [8, 10, 2], "max": [30, 40, 8] },
+                        "cost": { "min": 200000, "max": 10000000, "_note": "2,000–100,000 gp" },
                         "children": []
                       },
                       {
@@ -249,6 +283,7 @@
                         "example_name": "Aurora's Whole Realms Shop",
                         "named": true,
                         "size": { "min": [4, 4, 2], "max": [12, 10, 4] },
+                        "cost": { "min": 50000, "max": 1000000, "_note": "500–10,000 gp" },
                         "children": []
                       },
                       {
@@ -257,14 +292,16 @@
                         "example_name": "Sorcerous Sundries",
                         "named": true,
                         "size": { "min": [3, 4, 2], "max": [10, 8, 4] },
+                        "cost": { "min": 100000, "max": 5000000, "_note": "1,000–50,000 gp; rarity of arcane licence inflates price" },
                         "children": []
                       },
                       {
                         "type": "market",
-                        "description": "An open-air or covered trading area with multiple vendor stalls. The market area itself is flat; stalls and structures within have height.",
+                        "description": "An open-air or covered trading area with multiple vendor stalls.",
                         "example_name": "The Grand Bazaar",
                         "named": true,
                         "size": { "min": [20, 20, 0], "max": [200, 200, 0] },
+                        "cost": null,
                         "children": []
                       },
                       {
@@ -273,14 +310,16 @@
                         "example_name": "The Low Lantern",
                         "named": true,
                         "size": { "min": [2, 4, 2], "max": [20, 20, 4] },
+                        "cost": { "min": 50000, "max": 2000000, "_note": "500–20,000 gp; price includes bribes and secrecy" },
                         "children": []
                       },
                       {
                         "type": "temple",
-                        "description": "A religious building dedicated to a deity, offering worship, healing, and sanctuary. Grand temples have soaring ceilings.",
+                        "description": "A religious building dedicated to a deity, offering worship, healing, and sanctuary.",
                         "example_name": "The Hall of Justice",
                         "named": true,
                         "size": { "min": [10, 8, 4], "max": [60, 40, 20] },
+                        "cost": null,
                         "children": []
                       },
                       {
@@ -289,22 +328,25 @@
                         "example_name": "Revel's End",
                         "named": true,
                         "size": { "min": [20, 20, 3], "max": [100, 100, 12] },
+                        "cost": null,
                         "children": []
                       },
                       {
                         "type": "manor",
-                        "description": "A noble estate comprising grounds, a grand residence, and outbuildings. The estate footprint is flat; buildings within have height.",
+                        "description": "A noble estate comprising grounds, a grand residence, and outbuildings. Grounds footprint is flat; buildings within have height.",
                         "example_name": "Cassalanter Villa",
                         "named": true,
                         "size": { "min": [20, 20, 0], "max": [400, 400, 0] },
+                        "cost": { "min": 1000000, "max": 100000000, "_note": "10,000–1,000,000 gp; modest manor to palatial estate with grounds" },
                         "children": []
                       },
                       {
                         "type": "academy",
-                        "description": "An institution of learning, magical study, or martial training. Campus grounds are flat; buildings within have height.",
+                        "description": "An institution of learning, magical study, or martial training. Campus footprint is flat.",
                         "example_name": "The Blackstaff Tower",
                         "named": true,
                         "size": { "min": [20, 20, 0], "max": [200, 200, 0] },
+                        "cost": null,
                         "children": []
                       },
                       {
@@ -313,6 +355,7 @@
                         "example_name": "Hammer and Tongs",
                         "named": true,
                         "size": { "min": [3, 4, 2], "max": [10, 8, 4] },
+                        "cost": { "min": 50000, "max": 500000, "_note": "500–5,000 gp" },
                         "children": []
                       }
                     ]
@@ -322,7 +365,8 @@
                     "description": "A smaller, self-sufficient settlement with a market, inn, and civic buildings.",
                     "example_name": "Phandalin",
                     "named": true,
-                    "size": { "min": [40, 40, 0], "max": [400, 400, 0], "note": "1,600–160,000 squares." },
+                    "size": { "min": [40, 40, 0], "max": [400, 400, 0] },
+                    "cost": null,
                     "children": []
                   },
                   {
@@ -331,6 +375,7 @@
                     "example_name": "Candlekeep",
                     "named": true,
                     "size": { "min": [20, 20, 0], "max": [100, 100, 0] },
+                    "cost": null,
                     "children": []
                   },
                   {
@@ -339,6 +384,7 @@
                     "example_name": "Helm's Hold",
                     "named": true,
                     "size": { "min": [20, 20, 0], "max": [200, 200, 0] },
+                    "cost": { "min": 5000000, "max": 500000000, "_note": "50,000–5,000,000 gp; fortified keeps and castle complexes" },
                     "children": []
                   },
                   {
@@ -347,22 +393,25 @@
                     "example_name": "High Forest Outpost",
                     "named": true,
                     "size": { "min": [10, 10, 0], "max": [100, 100, 0] },
+                    "cost": null,
                     "children": []
                   },
                   {
                     "type": "forest",
-                    "description": "A large wooded area with dense canopy, wildlife, and hidden paths. The forest floor is flat; trees within have height.",
+                    "description": "A large wooded area with dense canopy, wildlife, and hidden paths. Floor is flat; trees are child objects.",
                     "example_name": "The High Forest",
                     "named": true,
-                    "size": { "min": [200, 200, 0], "max": [60000, 60000, 0], "note": "The High Forest ~3e9 squares; sqrt ~55,000 units per side." },
+                    "size": { "min": [200, 200, 0], "max": [60000, 60000, 0] },
+                    "cost": null,
                     "children": []
                   },
                   {
                     "type": "mountain_range",
-                    "description": "A chain of high peaks presenting natural barriers. The range footprint is flat; individual peaks are child objects with height.",
+                    "description": "A chain of high peaks. Footprint is flat; individual peaks are child objects.",
                     "example_name": "The Spine of the World",
                     "named": true,
                     "size": { "min": [1000, 100, 0], "max": [100000, 20000, 0] },
+                    "cost": null,
                     "children": []
                   },
                   {
@@ -371,6 +420,7 @@
                     "example_name": "The Mere of Dead Men",
                     "named": true,
                     "size": { "min": [200, 200, 0], "max": [20000, 20000, 0] },
+                    "cost": null,
                     "children": []
                   },
                   {
@@ -379,14 +429,16 @@
                     "example_name": "The Moonshae Isles",
                     "named": true,
                     "size": { "min": [100, 100, 0], "max": [40000, 40000, 0] },
+                    "cost": { "min": 500000, "max": 500000000, "_note": "5,000–5,000,000 gp; tiny uninhabited isle to large island territory" },
                     "children": []
                   },
                   {
                     "type": "trade_road",
-                    "description": "A maintained overland route connecting settlements. Long and narrow; width is typically 2–6 units (10–30 feet).",
+                    "description": "A maintained overland route connecting settlements. Long and narrow.",
                     "example_name": "The High Road",
                     "named": true,
                     "size": { "min": [1000, 2, 0], "max": [200000, 6, 0] },
+                    "cost": null,
                     "children": []
                   }
                 ]
@@ -399,6 +451,7 @@
             "example_name": "Selûne",
             "named": true,
             "size": { "min": [500000, 500000, 0], "max": [8000000, 8000000, 0] },
+            "cost": null,
             "children": []
           }
         ]

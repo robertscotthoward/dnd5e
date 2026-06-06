@@ -142,7 +142,7 @@ Object
   weight: in pounds
   cost: in copper pieces
   is_moveable: BOOL - true means the location can change. False means the children cannot move outside the size. A bag on an elf will have location [0,0,0] and size [0,0,0] to mean that the elf has the bag, assumes the elf's location, and items (like a ring) can be in the bag (the parent is the bag) or out of the bag (the parent is the elf wearing/equiping the ring).
-  is_virtual: BOOL - true means the children can extend beyond the parent; e.g. a party. A party might have a a location, like in a room, but each party member can be in different locations of the room. When a member says "let the party move to another room", then all party members change their location to [0,0,0], to denote that all members came together, and the party's parent becomes another room and the relative location is set for the party, e.g. [-3, 7, 0].
+  is_virtual: BOOL - true means the children can extend beyond the parent; e.g. a party. A party might have a location, like in a room, but each party member can be in different locations of the room. When a member says "let the party move to another room", then all party members change their location to [0,0,0], to denote that all members came together, and the party's parent becomes another room and the relative location is set for the party, e.g. [-3, 7, 0].
 ```
 
 Other properties can be added as needed, like number_of_charges, bonus, color, material, etc.

@@ -9,12 +9,24 @@ size:
   max: [l, w, h]
 ```
 Ensure the every min components never exceed its corresponding max component and all values are not negative.
-The unit is 5 feet, so a height of 0.5 means 2.5 feet. A "grid square" (or just "square") means a 5'x5' area. Default ceilings are 10' tall, or 2 units.
+The unit is 5 feet, so a height of 0.5 means 2.5 feet. A "grid square" (or just "square") means a 5'x 5' area. Default ceilings are 10' tall, or 2 units.
 All types that a player can enter (like an inn, a room, or a cave) or stand on (like a street, path, floor) must be integer units.
 In some cases, a hole in the wall might be 0.2, which is too small to crawl through for a human.
 Use standard knowledge of type sizes to create a min and max range. 
 A planet might have 2e14 squares on its surface. A city might be 250K squares. Daggerfall was a big city of 900K squares.
 The height of area types, like region, planet, city, town, floor, forum, road should be 0. The children (like buildings, rooms, trees, statues) on those areas will likely have height.
+
+
+Add a cost to each item if such an item can be owned. A house can be owned. A city might not be sellable. A planet is not sellable. If not sellable, set cost to null.
+Else use a range "cost": {"min": NUMBER, "max": NUMBER} where NUMBER is the number of copper pieces (equivalent to a dollar).
+
+
+There are cases where we are given a parent object P, like a town, in which we find ourself. We are typically at some location relative to the P, e.g. we are at [0,0,0].
+The we are given a radius distance R, like 50 units, and we want to generate child items in P without exceeding the P's boundaries, or going beyond R from us
+
+Create a binary space partitioning algorithm in some library python module.
+
+
 
 
 
