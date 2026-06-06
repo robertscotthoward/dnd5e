@@ -86,11 +86,12 @@
 
 ## Phase 14: F1 Help Wiki
 
-- [x] Feature: F1 Help Wiki
+- [ ] Feature: F1 Help Wiki
   - [x] Integrate into PRD.md (Why/What/How)
   - [x] Scaffold `docs/help/home.md` and supporting wiki pages (combat, controls, character, spells)
   - [x] Create `HelpOverlay.vue` component — full-screen modal, renders Markdown, internal link navigation, image support
   - [x] Wire F1 keydown listener in `App.vue` (and Escape to close)
+  - [x] Implement page history stack in `HelpOverlay.vue`; Backspace pops stack to previous page (no-op at `home.md`)
   - [x] Backend route `GET /api/help/{path}` — serves `.md` file content from `docs/help/`
   - [x] Backend route `GET /api/help/search?q=` — searches all `.md` files under `docs/help/` and returns matching page list
   - [x] Search bar in overlay header — calls search endpoint, lists results, click navigates to page

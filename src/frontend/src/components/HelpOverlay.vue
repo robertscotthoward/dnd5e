@@ -1,9 +1,15 @@
 <template>
   <Teleport to="body">
     <div v-if="visible" class="help-backdrop" @click.self="close">
-      <div class="help-overlay" role="dialog" aria-label="Help Wiki">
+      <div class="help-overlay" role="dialog" aria-label="Help Wiki" @keydown="onKeydown" tabindex="-1">
         <!-- Header -->
         <div class="help-header">
+          <button
+            class="help-back"
+            :disabled="!canGoBack"
+            title="Back (Backspace)"
+            @click="goBack"
+          >&#8592;</button>
           <div class="help-title">Help &amp; Wiki</div>
           <div class="help-search-wrap">
             <input
@@ -47,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { marked } from 'marked'
 
 const props = defineProps({
@@ -56,6 +62,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible'])
 
 const currentPath = ref('home.md')
+const historyStack = ref([])
 const rawMarkdown = ref('')
 const renderedMarkdown = ref('')
 const loading = ref(false)
@@ -64,6 +71,8 @@ const searchQuery = ref('')
 const searchResults = ref(null)
 const searchTimeout = ref(null)
 const searchInput = ref(null)
+
+const canGoBack = computed(() => historyStack.value.length > 0)
 
 function close() {
   emit('update:visible', false)
@@ -88,8 +97,18 @@ async function loadPage(path) {
 function navigateTo(path) {
   searchQuery.value = ''
   searchResults.value = null
+  historyStack.value.push(currentPath.value)
   currentPath.value = path
   loadPage(path)
+}
+
+function goBack() {
+  if (!canGoBack.value) return
+  const prev = historyStack.value.pop()
+  currentPath.value = prev
+  searchQuery.value = ''
+  searchResults.value = null
+  loadPage(prev)
 }
 
 function onContentClick(event) {
@@ -99,6 +118,13 @@ function onContentClick(event) {
   if (!href || href.startsWith('http')) return
   event.preventDefault()
   navigateTo(href)
+}
+
+function onKeydown(event) {
+  if (event.key === 'Backspace' && document.activeElement !== searchInput.value) {
+    event.preventDefault()
+    goBack()
+  }
 }
 
 function onSearch() {
@@ -124,6 +150,8 @@ watch(
     if (val) {
       searchQuery.value = ''
       searchResults.value = null
+      historyStack.value = []
+      currentPath.value = 'home.md'
       await loadPage(currentPath.value)
       await nextTick()
       searchInput.value?.focus()
@@ -189,6 +217,28 @@ watch(
 
 .help-search:focus {
   border-color: var(--gold-dim);
+}
+
+.help-back {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.help-back:hover:not(:disabled) {
+  color: var(--parchment);
+  background: var(--border);
+}
+
+.help-back:disabled {
+  opacity: 0.3;
+  cursor: default;
 }
 
 .help-close {
