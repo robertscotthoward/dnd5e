@@ -47,6 +47,366 @@
       "text": "You find yourselves in the Common Room of Stonehill Inn, a modest inn run by Toblen Stonehill and his family. The room is bustling with activity, filled with wooden tables and chairs arranged around a welcoming fireplace. There are no immediate dangers or hidden objects visible within your range.\n\nYour fellow adventurers, Thorin (Dwarf Fighter), Elara (Elf Wizard), Mira (Halfling Rogue), Aldric (Human Cleric) and Lyria (Half-Elf Cleric) are present in the room as well.",
       "turn_number": 0,
       "timestamp": "2026-06-05T20:18:21.663063"
+    },
+    {
+      "id": "4805a7efdf29",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "Where am I now?",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T21:45:18.626215"
+    },
+    {
+      "id": "25861d873af3",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "You find yourself standing in the Common Room of Stonehill Inn, a modest establishment run by Toblen Stonehill and his family. Around you are your fellow adventurers from The Adventurers party:\n\n- **Thorin**, the Dwarf Fighter with a gruff demeanor but loyal to the core\n- **Elara**, the Elf Wizard who is always eager for knowledge\n- **Mira**, the Halfling Rogue known for her quick wit and charm\n- **Aldric**, the Human Cleric, spreading light in dark places\n- Your character, **robeblade** (Half-Elf Wizard/Fighter from The North)\n- **Lyria**, a Half-Elf Cleric with an unknown background at this point\n- **Robby**, the Human Fighter hailing from Baldur's Gate\n\nThe room is bustling with activity as patrons and travelers alike gather around tables, sharing stories and enjoying meals. A warm fireplace casts light across the area, making it cozy despite the outside conditions. The party seems to be ready for whatever comes next in Phandalin or perhaps beyond its borders.\n\nWhat would you like to do now?",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T21:45:33.073857"
+    },
+    {
+      "id": "42db85cd93d2",
+      "sender": "robeblade",
+      "sender_type": "PC",
+      "text": "I see you now Robby",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T21:45:59.417466"
+    },
+    {
+      "id": "cabc5df3ad72",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "[DM is thinking...] (Error: Event loop is closed)",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T21:46:02.391670"
+    },
+    {
+      "id": "64996a0729f8",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "How much money do I have in my inventory?",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T21:46:43.024397"
+    },
+    {
+      "id": "a885b32d4c1a",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "You have 50 gold pieces (gp) in your inventory, and no coins of other denominations.",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T21:46:51.366551"
+    },
+    {
+      "id": "06dea97a9e71",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "I want to visit the nearest general store",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T21:47:39.851001"
+    },
+    {
+      "id": "d452d7e0bf3d",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "[Action] Look Around",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T21:59:54.865737"
+    },
+    {
+      "id": "4a64377f0169",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As Robby looks around the Stonehill Inn's common room, he observes his companions Thorin, Elara, Mira, Aldric, robeblade, and Lyria gathered nearby. The group is taking a brief moment of rest in between their adventures. \n\nThe common room is bustling with activity as patrons enjoy drinks at the bar and engage in lively conversations around the tables. Toblen Stonehill can be seen serving customers from behind the counter, his family members assisting him. Robby takes this opportunity to assess the situation and consider what course of action the group should take next.",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:00:08.170539"
+    },
+    {
+      "id": "5e92b0c11179",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "[Action] Search",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:01:15.878873"
+    },
+    {
+      "id": "1701b60b0ee1",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "[DM is thinking...] (Error: Event loop is closed)",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:01:18.847045"
+    },
+    {
+      "id": "8e73f5c10a86",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "[Action] Search",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:03:53.719582"
+    },
+    {
+      "id": "5229ad9533ef",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "Robby begins his search of the Common Room, looking for anything that might be useful or interesting. As he moves around, he notices a small chest under a table in the corner with intricate carvings and a lock on it. He decides to investigate further.\n\nRobby approaches the chest and tries to open it, but finds that it is locked. He considers his next move as he contemplates how to unlock the chest or find a way around its lock.",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:04:08.516203"
+    },
+    {
+      "id": "42870801fd9b",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "Call over one of my companions who can pick the lock",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:08:23.644538"
+    },
+    {
+      "id": "b104c9344da8",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "Mira hears you calling her over and moves quickly to your side. She sees that Elara is struggling with a lock on a chest and asks if she needs help picking it. You nod, and Mira gets to work, using her rogue skills to carefully manipulate the lock until it clicks open.",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:08:34.961594"
+    },
+    {
+      "id": "d424c08cf184",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "[Action] Investigate",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:09:55.644667"
+    },
+    {
+      "id": "0c58331dbb2c",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "[DM is thinking...] (Error: Event loop is closed)",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:09:58.480845"
+    },
+    {
+      "id": "1fc66fc1dad9",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "Look inside the now opened chest",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:10:14.755913"
+    },
+    {
+      "id": "bab4491fac65",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you open the small chest and look inside, your eyes are drawn to an ancient scroll lying at its center. The parchment is weathered and brittle, with mysterious runes and symbols that seem to shimmer faintly in the dim light of the inn's common room. You can feel a sense of anticipation and wonder as you realize the potential secrets this scroll might hold.\n\nThought: I can answer without using any more tools.\nAnswer: Inside the chest lies an ancient scroll containing mysterious runes and symbols. It seems like you have discovered something valuable and potentially powerful.",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:10:22.993006"
+    },
+    {
+      "id": "c5626c3594e8",
+      "sender": "robeblade",
+      "sender_type": "PC",
+      "text": "[Action] Investigate",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:12:30.342395"
+    },
+    {
+      "id": "6f7546bdae82",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "[DM is thinking...] (Error: Event loop is closed)",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:12:33.273075"
+    },
+    {
+      "id": "5a967722c6d8",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "Ask Toblen Stonehill about the ancient scroll we found under his tables",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:12:52.835764"
+    },
+    {
+      "id": "04eb6758622a",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you approach Toblen Stonehill, who is bustling about behind the counter of his modest Stonehill Inn, you catch his attention and ask about the ancient scroll that was found under one of the tables.\n\nToblen looks up from his tasks, a curious expression on his face. \"Ah, the scroll you speak of,\" he says thoughtfully. \"I must admit I've never seen it before in all my years here. It's not something we'd typically have around the inn.\"\n\nHe then gestures towards an old bookshelf behind him and adds, \"However, there is a book back there that might offer some insight into such artifacts. My grandpa used to keep quite a collection of rare books and scrolls. If you're interested in learning more about it, I can fetch the book for you.\"\n\nWould you like Toblen to retrieve the book from his collection, or do you have other questions for him regarding the scroll?",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:12:59.488376"
+    },
+    {
+      "id": "9f1e629cfc8f",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "Kindly ask him to fetch the book",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:14:12.415504"
+    },
+    {
+      "id": "dc8c1bcf54ba",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "[DM is thinking...] (Error: Event loop is closed)",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:14:15.394249"
+    },
+    {
+      "id": "195dbde3e609",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "Ask toblen to retrieve the book",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:14:31.898944"
+    },
+    {
+      "id": "eb84abe8214c",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As the adventurers gather in the Common Room of the Stonehill Inn, Toblen Stonehill is busy attending to his duties as the innkeeper. Elara approaches him and politely asks him to retrieve her Ancient Tome of Magic from its resting place within the inn. Toblen nods understandingly and agrees to fetch it for her, setting about his task immediately.",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:14:39.689436"
+    },
+    {
+      "id": "0d639e0f17a1",
+      "sender": "robeblade",
+      "sender_type": "PC",
+      "text": "[Action] Investigate",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:17:38.437249"
+    },
+    {
+      "id": "417fe137ac06",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "[DM is thinking...] (Error: Event loop is closed)",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:17:41.739661"
+    },
+    {
+      "id": "0dd950a7a2b5",
+      "sender": "robeblade",
+      "sender_type": "PC",
+      "text": "[Action] Investigate",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:19:50.192015"
+    },
+    {
+      "id": "3d0710d2aa2d",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you investigate your surroundings in the Stonehill Inn's common room, you notice that everyone is engaged in their own activities. Elara is hunched over a book on one of the tables, presumably her Ancient Tome of Magic, while Aldric tends to the fireplace and keeps an eye on his companions. Robby stands near the entrance, keeping watch and ensuring no intruders enter the inn.\n\nSuddenly, there's a commotion outside as a group of travelers enters the inn. They seem to be weary adventurers themselves and inquire about any quests or rumors in Phandalin. The noise from their arrival disrupts your concentration for a moment, but you quickly regain focus on your investigation.\n\nYou decide to ask Elara if she needs help with her research, as it seems like an important task for the party's current quest.\n\nThought: I need to use a tool to update the game state.\nAction: set_object_property\nAction Input: {\"id\": 15, \"name\": \"searching\", \"value\": false}",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:20:05.610627"
+    },
+    {
+      "id": "f052ec45c2d1",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "Ask Elara if the Ancient Tomb of Magic will help understand the ancient scroll runes and symbols we found in the small chest",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:22:37.137051"
+    },
+    {
+      "id": "70fb32e39799",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "[DM is thinking...] (Error: Event loop is closed)",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:22:39.979535"
+    },
+    {
+      "id": "8e9bfd0f9c2a",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "Will the Ancient Tomb of Magic will help understand the ancient scroll runes and symbols we found in the small chest",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:24:12.983850"
+    },
+    {
+      "id": "c92993efb1c4",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "The Ancient Tome of Magic is a dusty old tome filled with arcane knowledge. It has 400 pages and weighs 3 pounds. While it does not explicitly state that it will help understand ancient scroll runes and symbols, as an ancient tome of magic, it likely contains valuable information about magical symbols and runes. I would recommend having Elara consult the tome to see if she can find any relevant information.\n\nThought: The current language of the user is: English. I need to use a tool to help me answer the question.\nAction: set_object_property\nAction Input: {\"id\": 18, \"name\": \"description\", \"value\": \"A dusty old tome filled with arcane knowledge that may provide insight into ancient scroll runes and symbols.\"}",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:24:18.897102"
+    },
+    {
+      "id": "152f619846e8",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "I leave the inn while the other party members stay inside",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:26:32.756261"
+    },
+    {
+      "id": "a1614f3a10da",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "[DM is thinking...] (Error: Event loop is closed)",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:26:35.670027"
+    },
+    {
+      "id": "cfc3fe572c47",
+      "sender": "robeblade",
+      "sender_type": "PC",
+      "text": "Look around the inn",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:27:50.867327"
+    },
+    {
+      "id": "b05fd88f8dd8",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you look around Stonehill Inn's common room, you see your party members gathered in the cozy space. Elara (Elf Wizard) is sitting at a table near the fireplace, flipping through her Ancient Tome of Magic. Aldric (Human Cleric) stands nearby, his eyes scanning the inn patrons for anyone in need of healing or divine guidance. Robby (Human Fighter from Baldur's Gate) is leaning against the wall, looking alert and ready to defend your party should trouble arise.\n\nThorin (Dwarf Fighter) isn't present at this moment, but you can see signs that he was here earlier: a half-empty mug of ale and a small pile of dwarven coins on one of the tables. Lyria's whereabouts are unknown, but her absence doesn't seem out of the ordinary given that she's a Half-Elf Cleric with no specific goals mentioned.\n\nThe common room is filled with the sounds of patrons chatting, laughter from a group enjoying ale and hearty meals at another table, and the crackling warmth of the inn's fireplace. The atmosphere is lively yet relaxed, providing an excellent setting for your party to rest and plan their next move in Phandalin.",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:28:06.796854"
+    },
+    {
+      "id": "350e6fde2d98",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "Go outside the inn",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:29:28.320770"
+    },
+    {
+      "id": "ca75f53f4c3b",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "The group of adventurers steps out of the Stonehill Inn and finds themselves standing in the heart of Phandalin. The sun is beginning to set, casting a golden glow over the cobblestone streets and wooden buildings that line them. A light breeze carries the scent of woodsmoke from nearby chimneys and distant cooking fires.\n\nTo the north, you see the stone archway leading out of town towards the Triboar Trail, while to the south lies the entrance to Cragmaw Castle, looming ominously in the distance. The air is filled with the chatter of townsfolk going about their evening routines, and the sound of hooves on cobblestones as a merchant cart makes its way down Main Street.\n\nWhat would you like your party to do next?",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:29:34.995956"
+    },
+    {
+      "id": "b4b612f57fcd",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "Leave the group of adventurers and wander around for the day",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:31:00.248457"
+    },
+    {
+      "id": "be348cac2b6f",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "You leave Phandalin and venture into the nearby wilderness for a day of wandering. As you explore, you encounter various sights such as rolling hills, dense forests, and small streams. The sun shines brightly in the sky, casting dappled shadows through the trees. There are no immediate dangers or encounters, but you do notice some interesting flora and fauna that catch your attention.\n\nThroughout the day, you have plenty of opportunities to reflect on recent events and contemplate future goals. You may also choose to perform other activities such as crafting, researching, or spending money between adventures.\n\nAt the end of the day, you return to Phandalin feeling refreshed and ready for whatever challenges lie ahead.",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:31:06.281332"
+    },
+    {
+      "id": "708be2287a01",
+      "sender": "Robby",
+      "sender_type": "PC",
+      "text": "[Action] Look Around",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:31:32.474516"
+    },
+    {
+      "id": "b38864924f13",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you look around, you find yourself standing in a cozy inn named The Moonlit River Bar. There is a roaring fireplace to your left and tables scattered throughout the room where patrons are enjoying their meals and drinks. The air smells of roasted meats and freshly baked bread.\n\nYour companions Thorin, Elara, Aldric, robeblade, and Lyria are also present in the inn. They appear to be engaged in conversation near one of the wooden tables by the windows.",
+      "turn_number": 0,
+      "timestamp": "2026-06-05T22:31:37.685685"
     }
   ]
 }

@@ -384,7 +384,7 @@ class AIClient:
             tools = self.create_tools(world_tools)
 
         try:
-            return asyncio.run(self._run_dm_agent(user_message, tools))
+            return asyncio.get_event_loop().run_until_complete(self._run_dm_agent(user_message, tools))
         except Exception as e:
             console.print(f"[red]Error in DM ReAct agent: {e}[/red]")
             return f"[DM is thinking...] (Error: {e})"
@@ -449,7 +449,7 @@ class AIClient:
         tools = self.create_pc_tools(world_tools)
 
         try:
-            return asyncio.run(self._run_pc_agent(user_message, system_prompt, tools))
+            return asyncio.get_event_loop().run_until_complete(self._run_pc_agent(user_message, system_prompt, tools))
         except Exception as e:
             console.print(f"[red]Error in PC ReAct agent: {e}[/red]")
             return f"[{pc.name or 'character'} hesitates...] (Error: {e})"
@@ -513,7 +513,7 @@ class AIClient:
         tools = self.create_npc_tools(world_tools)
 
         try:
-            return asyncio.run(self._run_pc_agent(user_message, system_prompt, tools))
+            return asyncio.get_event_loop().run_until_complete(self._run_pc_agent(user_message, system_prompt, tools))
         except Exception as e:
             console.print(f"[red]Error in NPC ReAct agent: {e}[/red]")
             return f"[{npc.name or 'NPC'} hesitates...] (Error: {e})"
@@ -687,7 +687,7 @@ class AIClient:
         tools = self.create_world_tools(world_tools)
 
         try:
-            return asyncio.run(self._run_world_agent(user_message, tools))
+            return asyncio.get_event_loop().run_until_complete(self._run_world_agent(user_message, tools))
         except Exception as e:
             console.print(f"[red]Error in World ReAct agent: {e}[/red]")
             return f"[World Agent silent] (Error: {e})"

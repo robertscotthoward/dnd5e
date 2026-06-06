@@ -12,7 +12,21 @@
       "encumbrance_current": 0.0,
       "encumbrance_max": 150.0,
       "joined_at": "2026-05-04T15:08:38.633102",
-      "last_seen": "2026-06-05T20:15:17.502448"
+      "last_seen": "2026-06-05T21:40:28.685683"
+    },
+    {
+      "user_id": "42baedbafbbde9c9",
+      "username": "Robby",
+      "character_object_id": 15,
+      "character_name": "Robby",
+      "race": "Human",
+      "class_type": "Fighter",
+      "hp_current": 13,
+      "hp_max": 13,
+      "encumbrance_current": 0.0,
+      "encumbrance_max": 150.0,
+      "joined_at": "2026-06-05T21:40:40.464903",
+      "last_seen": "2026-06-05T22:28:29.409844"
     }
   ]
 }

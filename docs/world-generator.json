@@ -1,0 +1,21 @@
+{
+  "system": {
+    "name": "System",
+    "description": "A system is a set of planets, moons, and other celestial bodies that orbit a common center of mass. Each system has a unique name and may contain multiple planets and moons.",
+    "example_name": "Realmspace",
+    "children": [
+      {
+        "name": "Planet",
+        "description": "A planet is a celestial body that orbits a star and has sufficient mass to assume a nearly round shape. Each planet has a unique name and may have multiple moons.",
+        "example_name": "Toril",
+        "children": {}
+      },
+      {
+        "name": "Moon",
+        "description": "A moon is a natural satellite that orbits a planet. Each moon has a unique name and may have its own characteristics and features.",
+        "example_name": "Luna",
+        "children": {}
+      }
+    ]
+  }
+}
