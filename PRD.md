@@ -114,6 +114,11 @@ The world is a YAML file with `name`, `max_id`, `delete_ids`, and `objects` (dic
 - **Purpose / What**: Pressing F1 opens a full-screen help overlay that renders a wiki built from Markdown files rooted at `docs/help/home.md`. The wiki supports internal relative links, images, a keyword search bar, and browser-style back navigation via Backspace.
 - **Usage / How**: Press F1 (or Escape to close) from anywhere in the app. The overlay renders `docs/help/home.md` as the landing page. Relative Markdown links (e.g., `[Combat](combat.md)`) navigate within the wiki. Pressing Backspace returns to the previously visited page (stack-based history); at `home.md` Backspace has no effect. Images referenced relative to `docs/help/` render inline. The search bar at the top filters across all `.md` files under `docs/help/` and lists matching pages; clicking a result opens that page.
 
+### ESC to Close All Dialogs (Added: 2026-06-05)
+- **Context / Why**: Several dialogs — CharacterSheet, LootSummary, ActionBar long-rest confirm, GameView snapshot/restore modals — have no ESC handler. WorldMap declares `@keydown.esc` on its overlay div but that div must hold DOM focus to fire, so ESC silently fails unless the user first clicks the map. The pattern must be consistent: every dismissible dialog closes on ESC without requiring mouse interaction first.
+- **Purpose / What**: A global `window` keydown listener in `App.vue` dispatches ESC to whichever dialog is topmost and visible. `LevelUpDialog` is excluded — it requires the player to complete the flow before dismissing.
+- **Usage / How**: Press ESC from anywhere in the app to dismiss the frontmost open dialog. Priority order (highest to lowest): HelpOverlay, WorldMap, CharacterSheet, LootSummary, ActionBar long-rest confirm, GameView snapshot modal, GameView restore confirm modal.
+
 ## 5. Success Criteria
 
 1. `index-corpus` indexes all markdown files in `data/corpus/` without errors.

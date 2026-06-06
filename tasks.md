@@ -98,6 +98,20 @@
   - [x] Add robust error handling & tests
   - [x] Verify functionality & update documentation
 
+## Phase 15: ESC to Close All Dialogs
+
+- [ ] Feature: ESC closes all dismissible dialogs
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [ ] Extend global `window` keydown handler in `App.vue` to dispatch ESC to visible dialogs in priority order: HelpOverlay, WorldMap, CharacterSheet, LootSummary, ActionBar long-rest confirm, GameView snapshot modal, GameView restore confirm modal
+  - [ ] Fix `WorldMap.vue` — replace `@keydown.esc` on overlay div (requires focus) with the global handler so ESC works without clicking first
+  - [ ] Add ESC close to `CharacterSheet.vue`
+  - [ ] Add ESC close to `LootSummary.vue`
+  - [ ] Add ESC close to ActionBar long-rest confirm overlay in `ActionBar.vue`
+  - [ ] Add ESC close to snapshot modal in `GameView.vue`
+  - [ ] Add ESC close to restore confirm modal in `GameView.vue`
+  - [ ] Verify `LevelUpDialog.vue` intentionally blocks ESC (no change needed)
+  - [ ] Verify functionality across all dialogs
+
 ## Phase 13: Quality & Deployment
 
 * [x] **`dev.bat` Typer CLI mode** — Update `dev.bat` to also support running `python -m src.backend.main` CLI commands alongside the Vite/FastAPI servers.

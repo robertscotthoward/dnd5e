@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div v-if="visible" class="help-backdrop" @click.self="close">
-      <div class="help-overlay" role="dialog" aria-label="Help Wiki" @keydown="onKeydown" tabindex="-1">
+      <div class="help-overlay" role="dialog" aria-label="Help Wiki">
         <!-- Header -->
         <div class="help-header">
           <button
@@ -19,7 +19,6 @@
               type="search"
               placeholder="Search wiki..."
               @input="onSearch"
-              @keydown.escape.prevent="close"
             />
           </div>
           <button class="help-close" title="Close (Escape)" @click="close">✕</button>
@@ -53,7 +52,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { marked } from 'marked'
 
 const props = defineProps({
@@ -73,6 +72,18 @@ const searchTimeout = ref(null)
 const searchInput = ref(null)
 
 const canGoBack = computed(() => historyStack.value.length > 0)
+
+function onWindowKeydown(event) {
+  if (!props.visible) return
+  if (event.key === 'Escape') { event.preventDefault(); close(); return }
+  if (event.key === 'Backspace' && document.activeElement !== searchInput.value) {
+    event.preventDefault()
+    goBack()
+  }
+}
+
+window.addEventListener('keydown', onWindowKeydown)
+onUnmounted(() => window.removeEventListener('keydown', onWindowKeydown))
 
 function close() {
   emit('update:visible', false)
@@ -120,13 +131,6 @@ function onContentClick(event) {
   navigateTo(href)
 }
 
-function onKeydown(event) {
-  if (event.key === 'Backspace' && document.activeElement !== searchInput.value) {
-    event.preventDefault()
-    goBack()
-  }
-}
-
 function onSearch() {
   clearTimeout(searchTimeout.value)
   if (!searchQuery.value.trim()) {
@@ -153,8 +157,6 @@ watch(
       historyStack.value = []
       currentPath.value = 'home.md'
       await loadPage(currentPath.value)
-      await nextTick()
-      searchInput.value?.focus()
     }
   }
 )
