@@ -123,28 +123,33 @@ def create_default_world(name: str) -> World:
     )
     world.add_object(town)
 
-    # Inn: Stonehill Inn
+    # Inn: Stonehill Inn — 60×40 ft footprint inside Phandalin
     inn = Object(
         id=world.next_id(),
         parent=town.id,
         type="inn",
         name="Stonehill Inn",
         description="A modest inn run by Toblen Stonehill and his family",
+        location=Location(x=0, y=0, z=0),
+        size=Size(length=60, width=40, height=15),
         is_moveable=False,
         is_virtual=True,
+        properties={"generated": False},
     )
     world.add_object(inn)
 
-    # Common Room
+    # Common Room — 30×20 ft, positioned in the southern half of the inn
     common_room = Object(
         id=world.next_id(),
         parent=inn.id,
         type="room",
         name="Common Room",
         description="The main gathering area of the inn with tables and a fireplace",
+        location=Location(x=0, y=0, z=0),
+        size=Size(length=30, width=20, height=10),
         is_moveable=False,
         is_virtual=True,
-        size=Size(length=30, width=20, height=10),
+        properties={"generated": False},
     )
     world.add_object(common_room)
 

@@ -249,7 +249,7 @@ class WorldGenerator:
         parent = self.world.get_object(parent_id)
         if parent is None:
             return []
-        if parent.properties.get("generated", True):
+        if parent.properties.get("generated", False):
             return []
 
         # Settlement-type parents get BSP building placement

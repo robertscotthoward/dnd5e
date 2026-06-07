@@ -314,33 +314,40 @@ function draw() {
   }
 
   // --- FOG OF WAR ---
-  // Only apply fog when we have actual tile data AND explored data.
-  // If either is empty (new game, no movement yet), skip fog so the
-  // player can at least see the hierarchy tree.
+  // Only apply fog when we have both tile data AND an explored set.
+  // If explored is empty (new game / no movement yet), skip fog entirely
+  // so the player can see tiles immediately.
   if (!noTiles && !noExplored) {
     drawFog(ctx, canvas)
-  } else if (!noTiles && noExplored) {
-    // Have tiles but no explored record yet — draw a light dim overlay
-    // but punch through everything so the local area is still visible
-    ctx.fillStyle = 'rgba(0,0,0,0.3)'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
   }
 }
 
 function drawFog(ctx, canvas) {
-  // Cover with opaque black fog, then punch holes for explored tiles
-  ctx.fillStyle = 'rgba(0,0,0,0.88)'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  // Build fog on an OFFSCREEN canvas so destination-out never erases
+  // the tiles already drawn on the main canvas.
+  const fog = document.createElement('canvas')
+  fog.width  = canvas.width
+  fog.height = canvas.height
+  const fc = fog.getContext('2d')
 
+  // Start fully opaque black (unexplored = dark)
+  fc.fillStyle = '#000'
+  fc.fillRect(0, 0, fog.width, fog.height)
+
+  // Punch transparent holes for every explored coordinate
   const ts = Math.max(4, 5 * zoom.value)
-  ctx.globalCompositeOperation = 'destination-out'
+  fc.globalCompositeOperation = 'destination-out'
+  fc.fillStyle = 'rgba(0,0,0,1)'
   for (const key of exploredSet.value) {
     const [wx, wy] = key.split(',').map(Number)
     const { cx, cy } = w2c(wx, wy)
-    ctx.fillStyle = 'rgba(0,0,0,1)'
-    ctx.fillRect(cx - ts / 2, cy - ts / 2, ts, ts)
+    fc.fillRect(cx - ts / 2, cy - ts / 2, ts, ts)
   }
-  ctx.globalCompositeOperation = 'source-over'
+  fc.globalCompositeOperation = 'source-over'
+
+  // Composite fog layer onto main canvas — transparent holes reveal tiles,
+  // opaque black covers unexplored areas.
+  ctx.drawImage(fog, 0, 0)
 }
 
 function drawGrid(ctx, canvas) {

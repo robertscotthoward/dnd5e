@@ -2,10 +2,10 @@ name: Daggerfall
 seed: 432
 turn_number: 0
 created_at: '2026-05-04T15:08:38.492042'
-updated_at: '2026-06-06T21:24:35.856253'
+updated_at: '2026-06-06T22:55:23.378585'
 world:
   name: Daggerfall
-  max_id: 15
+  max_id: 456
   delete_ids: []
   objects:
     1:
@@ -63,6 +63,8 @@ world:
       - 10.0
       is_moveable: false
       is_virtual: true
+      properties:
+        generated: true
     8:
       id: 8
       type: party
@@ -288,3 +290,5290 @@ world:
         user_id: 42baedbafbbde9c9
         spell_slots: {}
         searching: true
+    16:
+      id: 16
+      type: wall
+      parent: 7
+      name: Wall
+      is_moveable: false
+      properties:
+        tile_color: brown
+    17:
+      id: 17
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 5.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    18:
+      id: 18
+      type: door
+      parent: 7
+      name: Door
+      location:
+      - 10.0
+      - 0.0
+      - 0.0
+      properties:
+        tile_color: brown
+    19:
+      id: 19
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 15.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    20:
+      id: 20
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 0.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    21:
+      id: 21
+      type: floor
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    22:
+      id: 22
+      type: floor
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    23:
+      id: 23
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 15.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    24:
+      id: 24
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 0.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    25:
+      id: 25
+      type: floor
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    26:
+      id: 26
+      type: floor
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    27:
+      id: 27
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 15.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    28:
+      id: 28
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 0.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    29:
+      id: 29
+      type: floor
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    30:
+      id: 30
+      type: floor
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    31:
+      id: 31
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 15.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    32:
+      id: 32
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 0.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    33:
+      id: 33
+      type: floor
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    34:
+      id: 34
+      type: floor
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    35:
+      id: 35
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 15.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    36:
+      id: 36
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 0.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    37:
+      id: 37
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 5.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    38:
+      id: 38
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 10.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    39:
+      id: 39
+      type: wall
+      parent: 7
+      name: Wall
+      location:
+      - 15.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    40:
+      id: 40
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -60.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    41:
+      id: 41
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -55.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    42:
+      id: 42
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -55.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    43:
+      id: 43
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -55.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    44:
+      id: 44
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -55.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    45:
+      id: 45
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -55.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    46:
+      id: 46
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -55.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    47:
+      id: 47
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -55.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    48:
+      id: 48
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -55.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    49:
+      id: 49
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -55.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    50:
+      id: 50
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    51:
+      id: 51
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    52:
+      id: 52
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    53:
+      id: 53
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    54:
+      id: 54
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    55:
+      id: 55
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    56:
+      id: 56
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    57:
+      id: 57
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    58:
+      id: 58
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    59:
+      id: 59
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    60:
+      id: 60
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    61:
+      id: 61
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    62:
+      id: 62
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -50.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    63:
+      id: 63
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    64:
+      id: 64
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    65:
+      id: 65
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    66:
+      id: 66
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    67:
+      id: 67
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    68:
+      id: 68
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    69:
+      id: 69
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    70:
+      id: 70
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    71:
+      id: 71
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    72:
+      id: 72
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    73:
+      id: 73
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    74:
+      id: 74
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    75:
+      id: 75
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    76:
+      id: 76
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    77:
+      id: 77
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -45.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    78:
+      id: 78
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    79:
+      id: 79
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    80:
+      id: 80
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    81:
+      id: 81
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    82:
+      id: 82
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    83:
+      id: 83
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    84:
+      id: 84
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    85:
+      id: 85
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    86:
+      id: 86
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    87:
+      id: 87
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    88:
+      id: 88
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    89:
+      id: 89
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    90:
+      id: 90
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    91:
+      id: 91
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    92:
+      id: 92
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    93:
+      id: 93
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    94:
+      id: 94
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -40.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    95:
+      id: 95
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    96:
+      id: 96
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    97:
+      id: 97
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    98:
+      id: 98
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    99:
+      id: 99
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    100:
+      id: 100
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    101:
+      id: 101
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    102:
+      id: 102
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    103:
+      id: 103
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    104:
+      id: 104
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    105:
+      id: 105
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    106:
+      id: 106
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    107:
+      id: 107
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    108:
+      id: 108
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    109:
+      id: 109
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    110:
+      id: 110
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    111:
+      id: 111
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    112:
+      id: 112
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    113:
+      id: 113
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -35.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    114:
+      id: 114
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    115:
+      id: 115
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    116:
+      id: 116
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    117:
+      id: 117
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    118:
+      id: 118
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    119:
+      id: 119
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    120:
+      id: 120
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    121:
+      id: 121
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    122:
+      id: 122
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    123:
+      id: 123
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    124:
+      id: 124
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    125:
+      id: 125
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    126:
+      id: 126
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    127:
+      id: 127
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    128:
+      id: 128
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    129:
+      id: 129
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    130:
+      id: 130
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    131:
+      id: 131
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    132:
+      id: 132
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    133:
+      id: 133
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    134:
+      id: 134
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -30.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    135:
+      id: 135
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    136:
+      id: 136
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    137:
+      id: 137
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    138:
+      id: 138
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    139:
+      id: 139
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    140:
+      id: 140
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    141:
+      id: 141
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    142:
+      id: 142
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    143:
+      id: 143
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    144:
+      id: 144
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    145:
+      id: 145
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    146:
+      id: 146
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    147:
+      id: 147
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    148:
+      id: 148
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    149:
+      id: 149
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    150:
+      id: 150
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    151:
+      id: 151
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    152:
+      id: 152
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    153:
+      id: 153
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    154:
+      id: 154
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    155:
+      id: 155
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -25.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    156:
+      id: 156
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - -45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    157:
+      id: 157
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    158:
+      id: 158
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    159:
+      id: 159
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    160:
+      id: 160
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    161:
+      id: 161
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    162:
+      id: 162
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    163:
+      id: 163
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    164:
+      id: 164
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    165:
+      id: 165
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    166:
+      id: 166
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    167:
+      id: 167
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    168:
+      id: 168
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    169:
+      id: 169
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    170:
+      id: 170
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    171:
+      id: 171
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    172:
+      id: 172
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    173:
+      id: 173
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    174:
+      id: 174
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    175:
+      id: 175
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    176:
+      id: 176
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    177:
+      id: 177
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    178:
+      id: 178
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -20.0
+      - 65.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    179:
+      id: 179
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - -45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    180:
+      id: 180
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    181:
+      id: 181
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    182:
+      id: 182
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    183:
+      id: 183
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    184:
+      id: 184
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    185:
+      id: 185
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    186:
+      id: 186
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    187:
+      id: 187
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    188:
+      id: 188
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    189:
+      id: 189
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    190:
+      id: 190
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    191:
+      id: 191
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    192:
+      id: 192
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    193:
+      id: 193
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    194:
+      id: 194
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    195:
+      id: 195
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    196:
+      id: 196
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    197:
+      id: 197
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    198:
+      id: 198
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    199:
+      id: 199
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    200:
+      id: 200
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    201:
+      id: 201
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -15.0
+      - 65.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    202:
+      id: 202
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - -45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    203:
+      id: 203
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    204:
+      id: 204
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    205:
+      id: 205
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    206:
+      id: 206
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    207:
+      id: 207
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    208:
+      id: 208
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    209:
+      id: 209
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    210:
+      id: 210
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    211:
+      id: 211
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    212:
+      id: 212
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    213:
+      id: 213
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    214:
+      id: 214
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    215:
+      id: 215
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    216:
+      id: 216
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    217:
+      id: 217
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    218:
+      id: 218
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    219:
+      id: 219
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    220:
+      id: 220
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    221:
+      id: 221
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    222:
+      id: 222
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    223:
+      id: 223
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    224:
+      id: 224
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -10.0
+      - 65.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    225:
+      id: 225
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - -45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    226:
+      id: 226
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    227:
+      id: 227
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    228:
+      id: 228
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    229:
+      id: 229
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    230:
+      id: 230
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    231:
+      id: 231
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    232:
+      id: 232
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    233:
+      id: 233
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    234:
+      id: 234
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    235:
+      id: 235
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    236:
+      id: 236
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    237:
+      id: 237
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    238:
+      id: 238
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    239:
+      id: 239
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    240:
+      id: 240
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    241:
+      id: 241
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    242:
+      id: 242
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    243:
+      id: 243
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    244:
+      id: 244
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    245:
+      id: 245
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    246:
+      id: 246
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    247:
+      id: 247
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - -5.0
+      - 65.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    248:
+      id: 248
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - -50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    249:
+      id: 249
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - -45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    250:
+      id: 250
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    251:
+      id: 251
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    252:
+      id: 252
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    253:
+      id: 253
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    254:
+      id: 254
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    255:
+      id: 255
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    256:
+      id: 256
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    257:
+      id: 257
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    258:
+      id: 258
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    259:
+      id: 259
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    260:
+      id: 260
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    261:
+      id: 261
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    262:
+      id: 262
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    263:
+      id: 263
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    264:
+      id: 264
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    265:
+      id: 265
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - 65.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    266:
+      id: 266
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 0.0
+      - 70.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    267:
+      id: 267
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - -45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    268:
+      id: 268
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    269:
+      id: 269
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    270:
+      id: 270
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    271:
+      id: 271
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    272:
+      id: 272
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    273:
+      id: 273
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    274:
+      id: 274
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    275:
+      id: 275
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    276:
+      id: 276
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    277:
+      id: 277
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    278:
+      id: 278
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    279:
+      id: 279
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    280:
+      id: 280
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    281:
+      id: 281
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    282:
+      id: 282
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    283:
+      id: 283
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 5.0
+      - 65.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    284:
+      id: 284
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - -45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    285:
+      id: 285
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    286:
+      id: 286
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    287:
+      id: 287
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    288:
+      id: 288
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    289:
+      id: 289
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    290:
+      id: 290
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    291:
+      id: 291
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    292:
+      id: 292
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    293:
+      id: 293
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    294:
+      id: 294
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    295:
+      id: 295
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    296:
+      id: 296
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    297:
+      id: 297
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    298:
+      id: 298
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    299:
+      id: 299
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    300:
+      id: 300
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 10.0
+      - 65.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    301:
+      id: 301
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - -45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    302:
+      id: 302
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    303:
+      id: 303
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    304:
+      id: 304
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    305:
+      id: 305
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    306:
+      id: 306
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    307:
+      id: 307
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    308:
+      id: 308
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    309:
+      id: 309
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    310:
+      id: 310
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    311:
+      id: 311
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    312:
+      id: 312
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    313:
+      id: 313
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    314:
+      id: 314
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    315:
+      id: 315
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    316:
+      id: 316
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    317:
+      id: 317
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 15.0
+      - 65.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    318:
+      id: 318
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - -45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    319:
+      id: 319
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    320:
+      id: 320
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    321:
+      id: 321
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    322:
+      id: 322
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    323:
+      id: 323
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    324:
+      id: 324
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    325:
+      id: 325
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    326:
+      id: 326
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    327:
+      id: 327
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    328:
+      id: 328
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    329:
+      id: 329
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    330:
+      id: 330
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    331:
+      id: 331
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    332:
+      id: 332
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    333:
+      id: 333
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    334:
+      id: 334
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    335:
+      id: 335
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    336:
+      id: 336
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    337:
+      id: 337
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    338:
+      id: 338
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    339:
+      id: 339
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    340:
+      id: 340
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 20.0
+      - 65.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    341:
+      id: 341
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    342:
+      id: 342
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    343:
+      id: 343
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    344:
+      id: 344
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    345:
+      id: 345
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    346:
+      id: 346
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    347:
+      id: 347
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    348:
+      id: 348
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    349:
+      id: 349
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    350:
+      id: 350
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    351:
+      id: 351
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    352:
+      id: 352
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    353:
+      id: 353
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    354:
+      id: 354
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    355:
+      id: 355
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    356:
+      id: 356
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    357:
+      id: 357
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    358:
+      id: 358
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    359:
+      id: 359
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    360:
+      id: 360
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    361:
+      id: 361
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 25.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    362:
+      id: 362
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - -40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    363:
+      id: 363
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    364:
+      id: 364
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    365:
+      id: 365
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    366:
+      id: 366
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    367:
+      id: 367
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    368:
+      id: 368
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    369:
+      id: 369
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    370:
+      id: 370
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    371:
+      id: 371
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    372:
+      id: 372
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    373:
+      id: 373
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    374:
+      id: 374
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    375:
+      id: 375
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    376:
+      id: 376
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    377:
+      id: 377
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    378:
+      id: 378
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    379:
+      id: 379
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    380:
+      id: 380
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    381:
+      id: 381
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    382:
+      id: 382
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 30.0
+      - 60.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    383:
+      id: 383
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - -35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    384:
+      id: 384
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    385:
+      id: 385
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    386:
+      id: 386
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    387:
+      id: 387
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    388:
+      id: 388
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    389:
+      id: 389
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    390:
+      id: 390
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    391:
+      id: 391
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    392:
+      id: 392
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    393:
+      id: 393
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    394:
+      id: 394
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    395:
+      id: 395
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    396:
+      id: 396
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    397:
+      id: 397
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    398:
+      id: 398
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    399:
+      id: 399
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    400:
+      id: 400
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    401:
+      id: 401
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 35.0
+      - 55.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    402:
+      id: 402
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - -30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    403:
+      id: 403
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    404:
+      id: 404
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    405:
+      id: 405
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    406:
+      id: 406
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    407:
+      id: 407
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    408:
+      id: 408
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    409:
+      id: 409
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    410:
+      id: 410
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    411:
+      id: 411
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    412:
+      id: 412
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    413:
+      id: 413
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    414:
+      id: 414
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    415:
+      id: 415
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    416:
+      id: 416
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    417:
+      id: 417
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    418:
+      id: 418
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 40.0
+      - 50.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    419:
+      id: 419
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - -25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    420:
+      id: 420
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    421:
+      id: 421
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    422:
+      id: 422
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    423:
+      id: 423
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    424:
+      id: 424
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    425:
+      id: 425
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    426:
+      id: 426
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    427:
+      id: 427
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    428:
+      id: 428
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    429:
+      id: 429
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    430:
+      id: 430
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    431:
+      id: 431
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    432:
+      id: 432
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    433:
+      id: 433
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 45.0
+      - 45.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    434:
+      id: 434
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - -20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    435:
+      id: 435
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - -15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    436:
+      id: 436
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    437:
+      id: 437
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    438:
+      id: 438
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    439:
+      id: 439
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    440:
+      id: 440
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    441:
+      id: 441
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    442:
+      id: 442
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    443:
+      id: 443
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    444:
+      id: 444
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    445:
+      id: 445
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - 35.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    446:
+      id: 446
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 50.0
+      - 40.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    447:
+      id: 447
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 55.0
+      - -10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    448:
+      id: 448
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 55.0
+      - -5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    449:
+      id: 449
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 55.0
+      - 0.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    450:
+      id: 450
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 55.0
+      - 5.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    451:
+      id: 451
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 55.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    452:
+      id: 452
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 55.0
+      - 15.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    453:
+      id: 453
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 55.0
+      - 20.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    454:
+      id: 454
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 55.0
+      - 25.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    455:
+      id: 455
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 55.0
+      - 30.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown
+    456:
+      id: 456
+      type: ground
+      parent: 7
+      name: Cobblestone
+      location:
+      - 60.0
+      - 10.0
+      - 0.0
+      is_moveable: false
+      properties:
+        tile_color: brown

@@ -905,27 +905,34 @@ def get_map(campaign_id: str, request: Request):
 
     # --- Generate floor tiles for the local container on demand ---
     tiles_changed = False
+    seed = meta.seed if hasattr(meta, "seed") else 0
+
     if local_container_id is not None:
         container = campaign.world.get_object(local_container_id)
         if container and not container.properties.get("generated", False):
-            seed = meta.seed if hasattr(meta, "seed") else 0
             gen = WorldGenerator(campaign.world, seed=seed)
             gen.fill_children(local_container_id)
             tiles_changed = True
-        # Also generate any direct children tiles the player can currently see
-        if player_obj and player_char_id:
-            seed = meta.seed if hasattr(meta, "seed") else 0
+
+        # Fill individual ground tiles visible from the player's position.
+        # We can't rely on get_visible_world here — it only sees siblings of
+        # the PC (other party members), not the floor tiles which are children
+        # of the container.  Instead, sample a grid within vision range.
+        if player_obj:
+            px = player_obj.location.x
+            py = player_obj.location.y
+            vision_ft = 60.0
+            step = 5.0
             gen = WorldGenerator(campaign.world, seed=seed)
-            visible = campaign.world.get_visible_world(player_char_id)
-            visible_coords = [
-                (obj.location.x, obj.location.y)
-                for obj in visible.objects.values()
-                if obj.parent == local_container_id and obj.id != player_char_id
-            ]
-            for coord in visible_coords:
-                new_obj = gen.fill_coordinate(coord, local_container_id)
-                if new_obj:
-                    tiles_changed = True
+            radius_steps = int(vision_ft / step)
+            for dx in range(-radius_steps, radius_steps + 1):
+                for dy in range(-radius_steps, radius_steps + 1):
+                    if dx * dx + dy * dy > radius_steps * radius_steps:
+                        continue
+                    coord = (px + dx * step, py + dy * step)
+                    new_obj = gen.fill_coordinate(coord, local_container_id)
+                    if new_obj:
+                        tiles_changed = True
 
     if tiles_changed:
         save_campaign_world(campaign_id, campaign)
@@ -969,19 +976,20 @@ def get_map(campaign_id: str, request: Request):
 
     # --- Seed explored set from player's current visible area ---
     explored: list[list[float]] = []
-    if player_char_id and local_container_id:
+    if player_char_id and local_container_id and player_obj:
         from src.backend.api.ws_routes import _update_explored
-        visible = campaign.world.get_visible_world(player_char_id)
+        px = player_obj.location.x
+        py = player_obj.location.y
+        vision_ft = 60.0
+        step = 5.0
+        radius_steps = int(vision_ft / step)
         visible_coords: list[tuple[float, float]] = [
-            (obj.location.x, obj.location.y)
-            for obj in visible.objects.values()
-            if obj.parent == local_container_id and obj.id != player_char_id
+            (px + dx * step, py + dy * step)
+            for dx in range(-radius_steps, radius_steps + 1)
+            for dy in range(-radius_steps, radius_steps + 1)
+            if dx * dx + dy * dy <= radius_steps * radius_steps
         ]
-        if visible_coords:
-            explored = _update_explored(campaign_id, session.user_id, visible_coords)
-        else:
-            from src.backend.api.ws_routes import _get_explored
-            explored = _get_explored(campaign_id, session.user_id)
+        explored = _update_explored(campaign_id, session.user_id, visible_coords)
 
     return {
         "nodes": hierarchy + tiles,   # keep backwards compat field
