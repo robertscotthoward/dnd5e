@@ -178,6 +178,15 @@
   - [x] Frontend — fog-of-war: explored tiles never go dark again; current LOS tiles fully lit; unseen tiles are black (pure black background + destination-out punch-through)
   - [ ] Verify: open map (F4) after movement → tiles display in correct colors; unexplored areas are black; explored-but-not-current-LOS areas are visible (memory)
 
+## Phase 23: Map Z-Order and Tooltip Ancestry
+
+- [ ] Feature: Map z-order rendering and tooltip ancestry chain
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [x] Add `TILE_Z` priority map in `WorldMap.vue`; sort tileNodes by z before draw pass
+  - [x] Reverse hit-test iteration so frontmost (highest-z) object wins tooltip
+  - [x] Build parent ancestry chain in tooltip from allNodes (hierarchy + tiles)
+  - [ ] Verify: hovering player shows player tooltip; hovering floor shows floor + ancestry
+
 ## Phase 22: DM ReAct Silent Tool Execution
 
 - [ ] Feature: DM ReAct tool execution — silent action loop

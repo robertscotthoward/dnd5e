@@ -38,6 +38,13 @@
           <span class="tt-name">{{ tooltip.node.name }}</span>
           <span class="tt-type">{{ tooltip.node.type }}</span>
           <span v-if="tooltip.node.description" class="tt-desc">{{ tooltip.node.description }}</span>
+          <div v-if="tooltip.ancestry && tooltip.ancestry.length" class="tt-ancestry">
+            <span
+              v-for="(anc, i) in tooltip.ancestry"
+              :key="i"
+              class="tt-anc-item"
+            >{{ anc.name }} <em>({{ anc.type }})</em></span>
+          </div>
         </div>
 
         <!-- Right-click context menu -->
@@ -79,7 +86,7 @@ const zoom = ref(4)
 const dragging = ref(false)
 const dragStart = ref({ x: 0, y: 0, panX: 0, panY: 0 })
 const ctxMenu = ref({ visible: false, x: 0, y: 0 })
-const tooltip = ref({ node: null, x: 0, y: 0 })
+const tooltip = ref({ node: null, ancestry: [], x: 0, y: 0 })
 
 // Data from the server
 const hierarchyNodes = ref([])  // abstract container objects (tree-layouted)
@@ -149,6 +156,27 @@ const ABSTRACT_CONFIG = {
 }
 
 function absCfg(type) { return ABSTRACT_CONFIG[type] || ABSTRACT_CONFIG._default }
+
+// Z-order priority for draw pass (lower number = drawn first = behind)
+const TILE_Z = {
+  // ground layer — paint first
+  ground: 0, floor: 0, cobblestone: 0, path: 0, plaza: 0, courtyard: 0, forum: 0,
+  // structural layer
+  wall: 1, door: 1, entrance: 1, road: 1,
+  // feature/building layer
+  building: 2, store: 2, general_store: 2, magic_shop: 2, smithy: 2,
+  market: 2, black_market: 2, festhall: 2, temple: 2, manor: 2,
+  academy: 2, prison: 2, dungeon: 2, cave: 2, ruin: 2,
+  inn: 2, tavern: 2, pub: 2,
+  forest: 2, tree: 2, vegetation: 2, park: 2, water: 2, river: 2, ocean: 2,
+  // furniture / loose items
+  chest: 3, container: 3, item: 3,
+  // entities
+  NPC: 4, monster: 4,
+  // player always on top
+  PC: 5,
+}
+function tileZ(type) { return TILE_Z[type] ?? 2 }
 
 // Entity types always drawn on top as circles
 const ENTITY_TYPES = new Set(['PC', 'NPC', 'monster', 'item'])
@@ -264,13 +292,23 @@ function draw() {
   const noTiles = tileNodes.value.length === 0
   const noExplored = exploredSet.value.size === 0
 
-  // --- TILE LAYER: concrete floor/wall/door/building objects ---
-  if (tileNodes.value.length > 0) {
-    const ts = Math.max(3, 5 * zoom.value)  // 5 ft tile in pixels
-    for (const n of tileNodes.value) {
-      if (ENTITY_TYPES.has(n.type)) continue   // entities drawn separately
-      const { cx, cy } = w2c(n.x, n.y)
-      if (cx < -ts || cx > canvas.width + ts || cy < -ts || cy > canvas.height + ts) continue
+  // --- TILE + ENTITY LAYER: sorted by z so floors paint under walls under players ---
+  const ts = Math.max(3, 5 * zoom.value)
+  const sortedTiles = [...tileNodes.value].sort((a, b) => tileZ(a.type) - tileZ(b.type))
+  for (const n of sortedTiles) {
+    const { cx, cy } = w2c(n.x, n.y)
+    if (cx < -ts * 2 || cx > canvas.width + ts * 2 || cy < -ts * 2 || cy > canvas.height + ts * 2) continue
+
+    if (ENTITY_TYPES.has(n.type)) {
+      const cfg = entCfg(n.type)
+      const r = Math.max(3, cfg.radius * Math.sqrt(zoom.value))
+      if (n.is_player) {
+        ctx.beginPath(); ctx.arc(cx, cy, r + 5, 0, Math.PI * 2)
+        ctx.strokeStyle = 'rgba(201,162,39,0.6)'; ctx.lineWidth = 2; ctx.stroke()
+      }
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2)
+      ctx.fillStyle = n.is_player ? '#c9a227' : cfg.color; ctx.fill()
+    } else {
       ctx.fillStyle = tileColorHex(n)
       ctx.fillRect(cx - ts / 2, cy - ts / 2, ts, ts)
     }
@@ -297,20 +335,6 @@ function draw() {
     const r = Math.max(2, cfg.radius * Math.sqrt(zoom.value))
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2)
     ctx.fillStyle = cfg.color; ctx.fill()
-  }
-
-  // --- ENTITY LAYER: PC / NPC / item circles on top ---
-  for (const n of tileNodes.value) {
-    if (!ENTITY_TYPES.has(n.type)) continue
-    const cfg = entCfg(n.type)
-    const { cx, cy } = w2c(n.x, n.y)
-    const r = Math.max(3, cfg.radius * Math.sqrt(zoom.value))
-    if (n.is_player) {
-      ctx.beginPath(); ctx.arc(cx, cy, r + 5, 0, Math.PI * 2)
-      ctx.strokeStyle = 'rgba(201,162,39,0.6)'; ctx.lineWidth = 2; ctx.stroke()
-    }
-    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2)
-    ctx.fillStyle = n.is_player ? '#c9a227' : cfg.color; ctx.fill()
   }
 
   // --- FOG OF WAR ---
@@ -429,12 +453,18 @@ function onMouseMove(e) {
   const rect = canvas.getBoundingClientRect()
   const mx = e.clientX - rect.left, my = e.clientY - rect.top
 
-  // Hit-test tiles first (pixel-perfect bounding box)
+  // Hit-test: iterate tiles sorted by z descending so highest-z (player/entity) wins
   const ts = Math.max(4, 5 * zoom.value)
   let hit = null
-  for (const n of [...tileNodes.value].reverse()) {
+  const sortedDesc = [...tileNodes.value].sort((a, b) => tileZ(b.type) - tileZ(a.type))
+  for (const n of sortedDesc) {
     const { cx, cy } = w2c(n.x, n.y)
-    if (mx >= cx - ts/2 && mx <= cx + ts/2 && my >= cy - ts/2 && my <= cy + ts/2) { hit = n; break }
+    if (ENTITY_TYPES.has(n.type)) {
+      const r = Math.max(3, entCfg(n.type).radius * Math.sqrt(zoom.value)) + 5
+      if (Math.hypot(cx - mx, cy - my) <= r) { hit = n; break }
+    } else {
+      if (mx >= cx - ts/2 && mx <= cx + ts/2 && my >= cy - ts/2 && my <= cy + ts/2) { hit = n; break }
+    }
   }
   // Then hierarchy circles
   if (!hit) {
@@ -444,11 +474,28 @@ function onMouseMove(e) {
       if (Math.hypot(cx - mx, cy - my) < 14) { hit = n; break }
     }
   }
-  tooltip.value = hit ? { node: hit, x: mx + 14, y: my - 10 } : { node: null, x: 0, y: 0 }
+
+  if (hit) {
+    // Build ancestry chain: walk parent IDs through the combined node list
+    const allById = {}
+    for (const n of hierarchyNodes.value) allById[n.id] = n
+    for (const n of tileNodes.value)     allById[n.id] = n
+    const ancestry = []
+    let pid = hit.parent
+    while (pid != null && ancestry.length < 8) {
+      const p = allById[pid]
+      if (!p) break
+      ancestry.push({ name: p.name || p.type, type: p.type })
+      pid = p.parent
+    }
+    tooltip.value = { node: hit, ancestry, x: mx + 14, y: my - 10 }
+  } else {
+    tooltip.value = { node: null, ancestry: [], x: 0, y: 0 }
+  }
 }
 
 function onMouseUp()    { dragging.value = false }
-function onMouseLeave() { dragging.value = false; tooltip.value.node = null }
+function onMouseLeave() { dragging.value = false; tooltip.value = { node: null, ancestry: [], x: 0, y: 0 } }
 
 function onWheel(e) {
   const f = e.deltaY < 0 ? 1.12 : 1 / 1.12
@@ -593,4 +640,13 @@ onUnmounted(() => {
 .tt-name { font-family: 'Cinzel', serif; font-size: 0.78rem; font-weight: 600; color: #c9a227; white-space: nowrap; }
 .tt-type { font-family: 'Crimson Text', serif; font-size: 0.72rem; color: #8a7355; text-transform: capitalize; font-style: italic; }
 .tt-desc { font-family: 'Crimson Text', serif; font-size: 0.8rem; color: #e8d5b7; line-height: 1.35; white-space: normal; }
+.tt-ancestry {
+  display: flex; flex-direction: column; gap: 0.1rem;
+  border-top: 1px solid #2a1e08; margin-top: 0.3rem; padding-top: 0.3rem;
+}
+.tt-anc-item {
+  font-family: 'Crimson Text', serif; font-size: 0.72rem; color: #5a4530;
+  white-space: nowrap;
+}
+.tt-anc-item em { font-style: italic; color: #4a3820; }
 </style>
