@@ -196,6 +196,13 @@
   - [x] Use unfiltered map when building tooltip ancestry chain so virtual parents (party, planet, etc.) resolve correctly
   - [ ] Verify: hovering player circle shows full ancestry chain on map tooltip
 
+- [ ] Feature: Unique per-type tile colors on world map
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [x] Replace `TILE_COLORS` + `TYPE_TO_TILE_COLOR` with direct `TYPE_COLOR` map in `WorldMap.vue`
+  - [x] Assign unique hex to each type: wall=gray, floor=tan, ground=dark dirt, door=amber, cobblestone=gray-tan, building subtypes each distinct
+  - [x] Update map legend to include Wall and Door swatches
+  - [ ] Verify: F4 map shows walls gray, floor tan, ground darker; building types render distinct colors
+
 ## Phase 22: DM ReAct Silent Tool Execution
 
 - [ ] Feature: DM ReAct tool execution — silent action loop

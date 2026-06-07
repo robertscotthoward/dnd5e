@@ -6,8 +6,11 @@
         <div class="map-header">
           <span class="map-title">World Map</span>
           <span class="map-legend">
-            <span class="legend-swatch" style="background:#6b4a20"></span>Ground/Road
-            <span class="legend-swatch" style="background:#c87533"></span>Building
+            <span class="legend-swatch" style="background:#5a3e18"></span>Ground
+            <span class="legend-swatch" style="background:#8a6a40"></span>Floor
+            <span class="legend-swatch" style="background:#9aa0a8"></span>Wall
+            <span class="legend-swatch" style="background:#b07040"></span>Door
+            <span class="legend-swatch" style="background:#c87533"></span>Room/Building
             <span class="legend-swatch" style="background:#3cb371"></span>Inn/Pub
             <span class="legend-swatch" style="background:#2d7a2d"></span>Forest
             <span class="legend-swatch" style="background:#1e6be0"></span>Water
@@ -97,8 +100,10 @@ const localContainerId = ref(null)
 const exploredSet = ref(new Set()) // "wx,wy" strings of explored world coords
 
 // ---------------------------------------------------------------------------
-// Tile color mapping
+// Tile color mapping — unique hex per type so wall ≠ floor ≠ ground
 // ---------------------------------------------------------------------------
+
+// Legacy named-color fallback for tiles that still carry tile_color:"brown" etc.
 const TILE_COLORS = {
   brown:      '#6b4a20',
   orange:     '#c87533',
@@ -107,29 +112,66 @@ const TILE_COLORS = {
   blue:       '#1e6be0',
 }
 
-const TYPE_TO_TILE_COLOR = {
-  // brown – ground/traversable
-  ground: 'brown', floor: 'brown', road: 'brown', wall: 'brown',
-  door: 'brown', entrance: 'brown', path: 'brown', plaza: 'brown',
-  courtyard: 'brown', forum: 'brown', cobblestone: 'brown',
-  // green – inn/pub
-  inn: 'green', tavern: 'green', pub: 'green',
-  // dark_green – forest/vegetation
-  forest: 'dark_green', park: 'dark_green', tree: 'dark_green', vegetation: 'dark_green',
-  // blue – water
-  water: 'blue', river: 'blue', ocean: 'blue', lake: 'blue', swamp: 'blue', pond: 'blue',
-  // orange – buildings/stores
-  building: 'orange', store: 'orange', general_store: 'orange',
-  magic_shop: 'orange', smithy: 'orange', market: 'orange',
-  black_market: 'orange', festhall: 'orange', temple: 'orange',
-  manor: 'orange', academy: 'orange', prison: 'orange',
-  dungeon: 'orange', cave: 'orange', ruin: 'orange', room: 'orange',
-  container: 'orange', chest: 'orange',
+const TYPE_COLOR = {
+  // ground/traversable — earthy browns, each channel ≥ 15 apart from its neighbors
+  ground:     '#5a3e18',  // darkest bare dirt
+  cobblestone:'#7a6a50',  // warm gray-tan
+  floor:      '#8a6a40',  // lighter interior tan
+  road:       '#9a7a50',  // worn path, lighter still
+  path:       '#6e5230',  // dim trail
+  wall:       '#9aa0a8',  // cool structural gray
+  door:       '#b07040',  // amber-brown threshold
+  entrance:   '#c08850',  // brighter than door
+  plaza:      '#a08860',  // sandy paving
+  courtyard:  '#7a6848',  // greenish-tan
+  forum:      '#887058',  // mid-earth
+
+  // inn / pub — greens
+  inn:        '#3cb371',
+  tavern:     '#2a9060',
+  pub:        '#50c890',
+
+  // forest / vegetation — dark greens
+  forest:     '#2d7a2d',
+  park:       '#3a8a3a',
+  tree:       '#1e6020',
+  vegetation: '#4a9040',
+
+  // water — blues
+  water:      '#1e6be0',
+  river:      '#3080f0',
+  ocean:      '#0a50c0',
+  lake:       '#2870d0',
+  swamp:      '#3a6848',
+  pond:       '#4878b0',
+
+  // buildings — each has its own character
+  room:          '#c87533',  // base orange interior
+  building:      '#b86020',  // darker brick
+  store:         '#d48840',
+  general_store: '#d48840',
+  magic_shop:    '#9060c8',  // purple — magical
+  smithy:        '#b04828',  // rust-red
+  market:        '#d89050',  // sandy stall
+  black_market:  '#503048',  // dark purple
+  festhall:      '#c860a8',  // pink-magenta
+  temple:        '#d4b870',  // pale gold-stone
+  manor:         '#a07050',  // earthy estate
+  academy:       '#7088b0',  // scholarly blue-gray
+  prison:        '#484848',  // dark gray
+  dungeon:       '#602020',  // deep blood red
+  cave:          '#806050',  // rocky brown
+  cave_entrance: '#806050',
+  ruin:          '#706858',  // ashy rubble
+  container:     '#c8a020',  // treasure gold
+  chest:         '#c8a020',
 }
 
 function tileColorHex(node) {
-  const tc = node.tile_color || node.properties?.tile_color || TYPE_TO_TILE_COLOR[node.type]
-  return TILE_COLORS[tc] || '#6b4a20'
+  // Honour an explicit tile_color property first (legacy generator override)
+  const override = node.tile_color || node.properties?.tile_color
+  if (override && TILE_COLORS[override]) return TILE_COLORS[override]
+  return TYPE_COLOR[node.type] || '#6b4a20'
 }
 
 // Abstract container types drawn as circles in the hierarchy tree

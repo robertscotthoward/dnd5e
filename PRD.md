@@ -164,6 +164,11 @@ The world is a YAML file with `name`, `max_id`, `delete_ids`, and `objects` (dic
 - **Purpose / What**: Retain an unfiltered `allHierarchyNodes` lookup in `WorldMap.vue` alongside the display-filtered `hierarchyNodes`. The ancestry chain walk at hover time uses the unfiltered map, so virtual containers (party, system, planet) contribute to the chain without ever being drawn on the canvas.
 - **Usage / How**: Hover a player icon (gold circle) on the world map. The tooltip shows the character name and type plus the full ancestry chain — e.g. "Common Room (room) → Stonehill Inn (inn) → Phandalin (town)" — identical to the chain shown for terrain tiles.
 
+### Unique Per-Type Tile Colors on World Map (Added: 2026-06-07)
+- **Context / Why**: All traversable tiles (`ground`, `floor`, `wall`, `cobblestone`, `road`, `door`) shared a single brown hex `#6b4a20`, making it impossible to visually distinguish a structural wall from the floor a player stands on. All building types similarly shared one orange. Players had no spatial intuition from the map color alone.
+- **Purpose / What**: Replace the 5-color named-palette with a direct `TYPE_COLOR` map that assigns a unique hex to every tile type. Walls become cool gray (`#9aa0a8`), floors warm tan (`#8a6a40`), ground dark dirt (`#5a3e18`), doors amber (`#b07040`). Building subtypes each get a distinct color (temple = pale gold, magic shop = purple, smithy = rust-red, etc.). The map legend gains Wall and Door swatches.
+- **Usage / How**: Transparent — open the world map (F4) and each tile type renders its own distinct color. No player action required.
+
 ## 5. Success Criteria
 
 1. `index-corpus` indexes all markdown files in `data/corpus/` without errors.
