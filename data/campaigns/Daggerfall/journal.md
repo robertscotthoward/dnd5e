@@ -142,3 +142,15 @@ As the sun dipped below the horizon, casting long shadows across the wooden floo
 
 ---
 
+## Turn 0 — 2026-06-06 20:42
+
+As the group settled into the dimly lit common room of their inn to rest after a long day of adventuring, Robeblade noticed an unusual sensation emanating from their robes. The dark blue garment, embroidered with tiny white stars, began to glow faintly, casting a radiant light in a thirty-foot radius that made it difficult for others to see clearly. When Thorin, Elara, Mira, Aldric, Lyria, and Robby glanced at Robeblade directly while the robe was aglow, they appeared momentarily stunned, their faces contorted with confusion as if grappling with some unseen force.
+
+---
+
+## Turn 0 — 2026-06-06 21:23
+
+In the cozy confines of Stonehill Inn's common room, robeblade and Robby found themselves among a diverse crowd of travelers and locals, their conversations mingling with the soft clink of mugs and plates. The dim light from flickering torches illuminated patches of the wooden beams and furniture, casting long shadows that danced across the stone walls as patrons moved about. For now, there was no immediate sign of danger or intrigue to prompt action; instead, the two adventurers observed their surroundings, noting various activities ranging from heated discussions by a corner table to quieter exchanges near the bar.
+
+---
+

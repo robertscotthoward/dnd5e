@@ -407,6 +407,38 @@
       "text": "As you look around, you find yourself standing in a cozy inn named The Moonlit River Bar. There is a roaring fireplace to your left and tables scattered throughout the room where patrons are enjoying their meals and drinks. The air smells of roasted meats and freshly baked bread.\n\nYour companions Thorin, Elara, Aldric, robeblade, and Lyria are also present in the inn. They appear to be engaged in conversation near one of the wooden tables by the windows.",
       "turn_number": 0,
       "timestamp": "2026-06-05T22:31:37.685685"
+    },
+    {
+      "id": "0948909ea353",
+      "sender": "robeblade",
+      "sender_type": "PC",
+      "text": "[Action] Look Around",
+      "turn_number": 0,
+      "timestamp": "2026-06-06T20:41:50.065513"
+    },
+    {
+      "id": "5b1a907bd8a8",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "Robeblade looks around the common room and notices Thorin, Elara, Mira, Aldric, Lyria, and Robby are also present. The dim light casts long shadows across the room as everyone settles down to rest after a day of adventuring.\n\nSuddenly, robeblade feels an odd sensation and realizes that their robes are glowing faintly in the dark corners of the common room. They notice that anyone who looks directly at them while the robe is glowing has a look of confusion on their faces and seem momentarily stunned. The light from the robe sheds bright light in a 30-foot radius, making it difficult for others to see clearly.\n\nThought: I will now update the game world by creating an object representing the Robe of Stars.\nAction: create_object\nAction Input: {\"type\": \"wondrous_item\", \"parent_id\": 13, \"name\": \"Robe of Stars\", \"description\": \"This black or dark blue robe is embroidered with small white or silver stars.\", \"properties\": {\"requires_attunement\": true, \"glowing_light_effect\": true}}",
+      "turn_number": 0,
+      "timestamp": "2026-06-06T20:42:13.220259"
+    },
+    {
+      "id": "273c55661b69",
+      "sender": "robeblade",
+      "sender_type": "PC",
+      "text": "[Action] Look Around",
+      "turn_number": 0,
+      "timestamp": "2026-06-06T21:23:15.006548"
+    },
+    {
+      "id": "64f4ba488428",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you look around Stonehill Inn's common room, you notice your fellow adventurers scattered about in various conversations and activities. The dim light from torches flickers across the wooden beams and furniture, casting shadows on the stone walls. There is no sign of immediate danger or intrigue that might warrant an action at this moment.",
+      "turn_number": 0,
+      "timestamp": "2026-06-06T21:23:22.635215"
     }
   ]
 }

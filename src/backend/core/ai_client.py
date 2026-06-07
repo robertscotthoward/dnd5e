@@ -1,8 +1,10 @@
 """AI client using Ollama via LlamaIndex for agent interactions."""
 
 import asyncio
-from typing import Optional
-from llama_index.core.agent import ReActAgent
+import inspect
+import json
+import re
+from typing import Any, Callable, Optional
 from llama_index.core.tools import FunctionTool
 from llama_index.llms.ollama import Ollama
 from rich.console import Console
@@ -14,6 +16,22 @@ from ..models.game import Campaign
 from ..models.user import CampaignMeta
 
 console = Console()
+
+_REACT_TOOL_PROMPT = (
+    "\n\nYou have access to the following tools:\n{tool_descriptions}\n\n"
+    "Use this exact format for EVERY tool call:\n"
+    "Thought: <your reasoning>\n"
+    "Action: <tool_name>\n"
+    "Action Input: <json object with tool arguments>\n"
+    "Observation: <tool result will be inserted here>\n\n"
+    "When you have enough information and all necessary tool calls are done, respond with:\n"
+    "Thought: I now have all the information I need.\n"
+    "Final Answer: <your narrative response to the player — no tool syntax>\n\n"
+    "IMPORTANT: The Final Answer must be plain prose only. "
+    "Never include Thought/Action/Action Input in the Final Answer.\n"
+)
+
+_MAX_REACT_ITERATIONS = 10
 
 _DM_SYSTEM_PROMPT = (
     "You are the Dungeon Master for a D&D 5e campaign. You orchestrate events, enforce "
@@ -273,38 +291,128 @@ class AIClient:
 
         return "\n\n---\n\n".join(context_parts)
 
+    def _build_tool_map(self, tools: list[FunctionTool]) -> dict[str, Callable]:
+        """Return name→callable for every tool in the list."""
+        return {t.metadata.name: t.fn for t in tools}
+
+    def _build_tool_descriptions(self, tools: list[FunctionTool]) -> str:
+        lines = []
+        for t in tools:
+            sig = inspect.signature(t.fn)
+            params = ", ".join(
+                f"{n}: {p.annotation.__name__ if p.annotation != inspect.Parameter.empty else 'any'}"
+                for n, p in sig.parameters.items()
+                if n != "self"
+            )
+            lines.append(f"- {t.metadata.name}({params}): {t.metadata.description}")
+        return "\n".join(lines)
+
+    def _parse_action(self, text: str) -> tuple[str, dict] | None:
+        """Extract (action_name, args_dict) from ReAct output, or None."""
+        action_match = re.search(r"Action\s*:\s*(\w+)", text)
+        input_match = re.search(r"Action\s+Input\s*:\s*(\{.*?\})", text, re.DOTALL)
+        if not action_match:
+            return None
+        action_name = action_match.group(1).strip()
+        args: dict[str, Any] = {}
+        if input_match:
+            try:
+                args = json.loads(input_match.group(1))
+            except json.JSONDecodeError:
+                pass
+        return action_name, args
+
+    def _extract_final_answer(self, text: str) -> str | None:
+        """Return the Final Answer prose if present, else None."""
+        match = re.search(r"Final\s+Answer\s*:\s*(.*)", text, re.DOTALL | re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+        return None
+
+    def _clean_narration(self, text: str) -> str:
+        """Strip any ReAct boilerplate that leaked into the final text."""
+        lines = []
+        skip_prefixes = ("thought:", "action:", "action input:", "observation:", "final answer:")
+        for line in text.splitlines():
+            if line.strip().lower().startswith(skip_prefixes):
+                continue
+            lines.append(line)
+        return "\n".join(lines).strip()
+
+    async def _run_react_loop(
+        self,
+        system_prompt: str,
+        user_message: str,
+        tools: list[FunctionTool],
+        max_iterations: int = _MAX_REACT_ITERATIONS,
+    ) -> str:
+        """
+        Manual ReAct loop:
+        1. Prompt the LLM with accumulated history.
+        2. Parse Action/Action Input from response.
+        3. Execute the tool and append Observation.
+        4. Repeat until Final Answer or max_iterations.
+        Returns only the final narrative text.
+        """
+        tool_map = self._build_tool_map(tools)
+        tool_descriptions = self._build_tool_descriptions(tools)
+
+        tool_section = _REACT_TOOL_PROMPT.format(tool_descriptions=tool_descriptions)
+        full_system = system_prompt + tool_section
+
+        history = f"User: {user_message}\n"
+        last_narration = ""
+
+        loop = asyncio.get_running_loop()
+
+        for _ in range(max_iterations):
+            prompt = full_system + "\n\n" + history + "Assistant:"
+            response_obj = await loop.run_in_executor(
+                None, lambda p=prompt: self.llm.complete(p)
+            )
+            response_text = response_obj.text.strip()
+
+            # Check for final answer first
+            final = self._extract_final_answer(response_text)
+            if final:
+                return self._clean_narration(final)
+
+            # Try to parse and execute a tool call
+            parsed = self._parse_action(response_text)
+            if parsed:
+                action_name, args = parsed
+                fn = tool_map.get(action_name)
+                if fn:
+                    try:
+                        result = fn(**args)
+                        observation = str(result)
+                    except Exception as exc:
+                        observation = f"Error calling {action_name}: {exc}"
+                else:
+                    observation = f"Unknown tool: {action_name}"
+
+                # Append this exchange to history
+                history += f"Assistant: {response_text}\nObservation: {observation}\n"
+                last_narration = self._clean_narration(response_text)
+                continue
+
+            # No action and no Final Answer — treat the whole response as the answer
+            cleaned = self._clean_narration(response_text)
+            if cleaned:
+                return cleaned
+            break
+
+        return last_narration or "[The DM considers the situation...]"
+
     async def _run_dm_agent(self, user_message: str, tools: list[FunctionTool]) -> str:
-        """Run the DM ReAct agent asynchronously and return the narrative text."""
-        agent = ReActAgent(
-            tools=tools,
-            llm=self.llm,
-            system_prompt=_DM_SYSTEM_PROMPT,
-            verbose=True,
-            streaming=False,
-            max_iterations=10,
-            early_stopping_method="generate",
-        )
-        handler = agent.run(user_msg=user_message)
-        result = await handler
-        # result is AgentOutput; result.response is a ChatMessage
-        return result.response.content or ""
+        """Run the DM ReAct loop and return only the final narrative."""
+        return await self._run_react_loop(_DM_SYSTEM_PROMPT, user_message, tools, max_iterations=10)
 
     async def _run_pc_agent(
         self, user_message: str, system_prompt: str, tools: list[FunctionTool]
     ) -> str:
-        """Run a PC ReAct agent asynchronously and return the action text."""
-        agent = ReActAgent(
-            tools=tools,
-            llm=self.llm,
-            system_prompt=system_prompt,
-            verbose=True,
-            streaming=False,
-            max_iterations=6,
-            early_stopping_method="generate",
-        )
-        handler = agent.run(user_msg=user_message)
-        result = await handler
-        return result.response.content or ""
+        """Run a PC ReAct loop and return only the action declaration."""
+        return await self._run_react_loop(system_prompt, user_message, tools, max_iterations=6)
 
     def generate_dm_response(
         self,
@@ -384,7 +492,7 @@ class AIClient:
             tools = self.create_tools(world_tools)
 
         try:
-            return asyncio.get_event_loop().run_until_complete(self._run_dm_agent(user_message, tools))
+            return asyncio.run(self._run_dm_agent(user_message, tools))
         except Exception as e:
             console.print(f"[red]Error in DM ReAct agent: {e}[/red]")
             return f"[DM is thinking...] (Error: {e})"
@@ -449,7 +557,7 @@ class AIClient:
         tools = self.create_pc_tools(world_tools)
 
         try:
-            return asyncio.get_event_loop().run_until_complete(self._run_pc_agent(user_message, system_prompt, tools))
+            return asyncio.run(self._run_pc_agent(user_message, system_prompt, tools))
         except Exception as e:
             console.print(f"[red]Error in PC ReAct agent: {e}[/red]")
             return f"[{pc.name or 'character'} hesitates...] (Error: {e})"
@@ -513,25 +621,14 @@ class AIClient:
         tools = self.create_npc_tools(world_tools)
 
         try:
-            return asyncio.get_event_loop().run_until_complete(self._run_pc_agent(user_message, system_prompt, tools))
+            return asyncio.run(self._run_pc_agent(user_message, system_prompt, tools))
         except Exception as e:
             console.print(f"[red]Error in NPC ReAct agent: {e}[/red]")
             return f"[{npc.name or 'NPC'} hesitates...] (Error: {e})"
 
     async def _run_world_agent(self, user_message: str, tools: list[FunctionTool]) -> str:
-        """Run the World ReAct agent asynchronously and return the narrator summary."""
-        agent = ReActAgent(
-            tools=tools,
-            llm=self.llm,
-            system_prompt=_WORLD_SYSTEM_PROMPT,
-            verbose=True,
-            streaming=False,
-            max_iterations=8,
-            early_stopping_method="generate",
-        )
-        handler = agent.run(user_msg=user_message)
-        result = await handler
-        return result.response.content or ""
+        """Run the World ReAct loop and return only the narrator summary."""
+        return await self._run_react_loop(_WORLD_SYSTEM_PROMPT, user_message, tools, max_iterations=8)
 
     def generate_journal_entry(
         self,
@@ -687,7 +784,7 @@ class AIClient:
         tools = self.create_world_tools(world_tools)
 
         try:
-            return asyncio.get_event_loop().run_until_complete(self._run_world_agent(user_message, tools))
+            return asyncio.run(self._run_world_agent(user_message, tools))
         except Exception as e:
             console.print(f"[red]Error in World ReAct agent: {e}[/red]")
             return f"[World Agent silent] (Error: {e})"

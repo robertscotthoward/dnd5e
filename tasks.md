@@ -178,6 +178,15 @@
   - [x] Frontend — fog-of-war: explored tiles never go dark again; current LOS tiles fully lit; unseen tiles are black (pure black background + destination-out punch-through)
   - [ ] Verify: open map (F4) after movement → tiles display in correct colors; unexplored areas are black; explored-but-not-current-LOS areas are visible (memory)
 
+## Phase 22: DM ReAct Silent Tool Execution
+
+- [ ] Feature: DM ReAct tool execution — silent action loop
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [x] Replace `ReActAgent` in `ai_client.py` with a manual loop: prompt → parse Action/Action Input → dispatch tool → inject Observation → repeat until Final Answer
+  - [x] Strip all Thought/Action/Observation lines; broadcast only the Final Answer text
+  - [x] Apply same fix to PC agent and World agent loops
+  - [ ] Verify: player sends message → DM narrates cleanly → world.yaml mutates (object created, HP changed, etc.)
+
 ## Phase 21: Admin World Reset
 
 - [ ] Feature: Admin world reset (keep players)
