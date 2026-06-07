@@ -2,10 +2,10 @@ name: Daggerfall
 seed: 432
 turn_number: 0
 created_at: '2026-05-04T15:08:38.492042'
-updated_at: '2026-06-05T22:31:37.652310'
+updated_at: '2026-06-06T20:35:50.678278'
 world:
   name: Daggerfall
-  max_id: 18
+  max_id: 15
   delete_ids: []
   objects:
     1:
@@ -48,8 +48,7 @@ world:
       type: inn
       parent: 5
       name: Stonehill Inn
-      description: A modest inn run by Toblen Stonehill and his family. Elara asks
-        Toblen to retrieve her Ancient Tome of Magic.
+      description: A modest inn run by Toblen Stonehill and his family
       is_moveable: false
       is_virtual: true
     7:
@@ -67,7 +66,7 @@ world:
     8:
       id: 8
       type: party
-      parent: 5
+      parent: 7
       name: The Adventurers
       description: A band of adventurers seeking fortune and glory
       is_virtual: true
@@ -132,11 +131,11 @@ world:
     11:
       id: 11
       type: PC
-      parent: 7
+      parent: 8
       name: Mira
       description: Halfling Rogue
       location:
-      - 5.0
+      - 0.0
       - 5.0
       - 0.0
       properties:
@@ -197,6 +196,10 @@ world:
       parent: 8
       name: robeblade
       description: Half-Elf Wizard from The North
+      location:
+      - 0.0
+      - 10.0
+      - 0.0
       properties:
         race: Half-Elf
         classes:
@@ -237,6 +240,10 @@ world:
       type: PC
       parent: 8
       name: Lyria
+      location:
+      - 5.0
+      - 10.0
+      - 0.0
       properties:
         race: Half-Elf
         class_type: Cleric
@@ -246,6 +253,10 @@ world:
       parent: 8
       name: Robby
       description: Human Fighter from Baldur's Gate
+      location:
+      - 0.0
+      - 15.0
+      - 0.0
       properties:
         race: Human
         classes:
@@ -277,57 +288,3 @@ world:
         user_id: 42baedbafbbde9c9
         spell_slots: {}
         searching: true
-    16:
-      id: 16
-      type: container
-      parent: 7
-      name: Small Chest
-      description: A sturdy oak chest with intricate carvings and a lock.
-      location:
-      - 15.0
-      - 2.0
-      - 0.0
-      size:
-      - 1.0
-      - 1.0
-      - 1.0
-      weight: 20.0
-      cost: 10
-      properties:
-        properties:
-          locked: true
-    17:
-      id: 17
-      type: item
-      parent: 16
-      name: Ancient Scroll
-      description: A scroll containing mysterious runes and symbols.
-      location:
-      - 0.5
-      - 0.5
-      - 0.5
-      size:
-      - 0.2
-      - 0.2
-      - 0.05
-      weight: 0.1
-      cost: 50
-      properties:
-        properties:
-          type: scroll
-          spell_level: 4th
-    18:
-      id: 18
-      type: book
-      parent: 10
-      name: Ancient Tome of Magic
-      description: A dusty old tome filled with arcane knowledge.
-      size:
-      - 0.25
-      - 0.25
-      - 0.75
-      weight: 3.0
-      cost: 50
-      properties:
-        properties:
-          pages_count: 400

@@ -6,10 +6,13 @@
         <div class="map-header">
           <span class="map-title">World Map</span>
           <span class="map-legend">
-            <span class="legend-dot dot-location"></span>Location
-            <span class="legend-dot dot-pc"></span>PC
-            <span class="legend-dot dot-npc"></span>NPC
-            <span class="legend-dot dot-item"></span>Item
+            <span class="legend-swatch" style="background:#6b4a20"></span>Ground/Road
+            <span class="legend-swatch" style="background:#c87533"></span>Building
+            <span class="legend-swatch" style="background:#3cb371"></span>Inn/Pub
+            <span class="legend-swatch" style="background:#2d7a2d"></span>Forest
+            <span class="legend-swatch" style="background:#1e6be0"></span>Water
+            <span class="legend-swatch" style="background:#c9a227"></span>You
+            <span class="legend-swatch" style="background:#93c5fd"></span>NPC
           </span>
           <button class="map-close-btn" @click="$emit('close')" title="Close (Esc)">✕</button>
         </div>
@@ -63,268 +66,301 @@ const props = defineProps({
   campaignId: { type: String, required: true },
 })
 const emit = defineEmits(['close'])
-
 const store = useCampaignStore()
 
-function onWindowKeydown(event) {
+function onWindowKeydown(e) {
   if (!props.visible) return
-  if (event.key === 'Escape') {
-    event.preventDefault()
-    event.stopImmediatePropagation()
-    emit('close')
-  }
+  if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); emit('close') }
 }
 
 const canvasEl = ref(null)
-
-// Pan / zoom state
 const pan = ref({ x: 0, y: 0 })
-const zoom = ref(1)
+const zoom = ref(4)
 const dragging = ref(false)
 const dragStart = ref({ x: 0, y: 0, panX: 0, panY: 0 })
-
-// Map data
-const nodes = ref([])
-const playerNode = ref(null)
-
-// Context menu
 const ctxMenu = ref({ visible: false, x: 0, y: 0 })
-
-// Hover tooltip
 const tooltip = ref({ node: null, x: 0, y: 0 })
 
-// Type → render config
-const TYPE_CONFIG = {
-  system:    { color: '#444', radius: 3, show: false },
-  planet:    { color: '#5a4530', radius: 4, show: false },
-  continent: { color: '#5a4530', radius: 4, show: false },
-  region:    { color: '#7a6115', radius: 5, show: true },
-  town:      { color: '#c9a227', radius: 6, show: true },
-  city:      { color: '#c9a227', radius: 7, show: true },
-  inn:       { color: '#e8d5b7', radius: 5, show: true },
-  room:      { color: '#8a7355', radius: 4, show: true },
-  dungeon:   { color: '#8a4530', radius: 6, show: true },
-  party:     { color: '#4ade80', radius: 4, show: false },
-  PC:        { color: '#4ade80', radius: 6, show: true },
-  NPC:       { color: '#93c5fd', radius: 5, show: true },
-  monster:   { color: '#f87171', radius: 5, show: true },
-  item:      { color: '#fde68a', radius: 3, show: true },
-  _default:  { color: '#8a7355', radius: 3, show: true },
+// Data from the server
+const hierarchyNodes = ref([])  // abstract container objects (tree-layouted)
+const tileNodes = ref([])       // concrete tile/entity objects in the local container
+const playerNode = ref(null)
+const localContainerId = ref(null)
+const exploredSet = ref(new Set()) // "wx,wy" strings of explored world coords
+
+// ---------------------------------------------------------------------------
+// Tile color mapping
+// ---------------------------------------------------------------------------
+const TILE_COLORS = {
+  brown:      '#6b4a20',
+  orange:     '#c87533',
+  green:      '#3cb371',
+  dark_green: '#2d7a2d',
+  blue:       '#1e6be0',
 }
 
-function typeConfig(type) {
-  return TYPE_CONFIG[type] || TYPE_CONFIG._default
+const TYPE_TO_TILE_COLOR = {
+  // brown – ground/traversable
+  ground: 'brown', floor: 'brown', road: 'brown', wall: 'brown',
+  door: 'brown', entrance: 'brown', path: 'brown', plaza: 'brown',
+  courtyard: 'brown', forum: 'brown', cobblestone: 'brown',
+  // green – inn/pub
+  inn: 'green', tavern: 'green', pub: 'green',
+  // dark_green – forest/vegetation
+  forest: 'dark_green', park: 'dark_green', tree: 'dark_green', vegetation: 'dark_green',
+  // blue – water
+  water: 'blue', river: 'blue', ocean: 'blue', lake: 'blue', swamp: 'blue', pond: 'blue',
+  // orange – buildings/stores
+  building: 'orange', store: 'orange', general_store: 'orange',
+  magic_shop: 'orange', smithy: 'orange', market: 'orange',
+  black_market: 'orange', festhall: 'orange', temple: 'orange',
+  manor: 'orange', academy: 'orange', prison: 'orange',
+  dungeon: 'orange', cave: 'orange', ruin: 'orange', room: 'orange',
+  container: 'orange', chest: 'orange',
 }
 
-// Spacing radius per type for the tree layout.
-// When all siblings are at [0,0,0] relative to their parent, we spread them
-// in a circle of this radius (world units = feet) around the parent.
+function tileColorHex(node) {
+  const tc = node.tile_color || node.properties?.tile_color || TYPE_TO_TILE_COLOR[node.type]
+  return TILE_COLORS[tc] || '#6b4a20'
+}
+
+// Abstract container types drawn as circles in the hierarchy tree
+const ABSTRACT_TYPES = new Set([
+  'system', 'planet', 'continent', 'region', 'town', 'city',
+  'party', 'dungeon', 'cave', 'library_fortress', 'citadel',
+  'military_outpost', 'forest', 'mountain_range', 'swamp', 'island',
+  'trade_road', 'manor', 'academy', 'festhall', 'tavern', 'general_store',
+  'magic_shop', 'market', 'black_market', 'temple', 'prison', 'smithy',
+  'inn', 'room',
+])
+
+const ABSTRACT_CONFIG = {
+  system:    { color: '#333',    radius: 3,  show: false },
+  planet:    { color: '#5a4530', radius: 4,  show: false },
+  continent: { color: '#5a4530', radius: 4,  show: false },
+  region:    { color: '#7a6115', radius: 5,  show: true  },
+  town:      { color: '#c9a227', radius: 6,  show: true  },
+  city:      { color: '#c9a227', radius: 7,  show: true  },
+  inn:       { color: '#3cb371', radius: 5,  show: true  },
+  tavern:    { color: '#3cb371', radius: 5,  show: true  },
+  dungeon:   { color: '#8a4530', radius: 5,  show: true  },
+  party:     { color: '#4ade80', radius: 4,  show: false },
+  _default:  { color: '#8a7355', radius: 3,  show: true  },
+}
+
+function absCfg(type) { return ABSTRACT_CONFIG[type] || ABSTRACT_CONFIG._default }
+
+// Entity types always drawn on top as circles
+const ENTITY_TYPES = new Set(['PC', 'NPC', 'monster', 'item'])
+const ENTITY_CONFIG = {
+  PC:      { color: '#4ade80', radius: 5 },
+  NPC:     { color: '#93c5fd', radius: 4 },
+  monster: { color: '#f87171', radius: 4 },
+  item:    { color: '#fde68a', radius: 3 },
+  _default:{ color: '#aaa',   radius: 3 },
+}
+function entCfg(type) { return ENTITY_CONFIG[type] || ENTITY_CONFIG._default }
+
+// ---------------------------------------------------------------------------
+// Tree layout for hierarchy nodes
+// ---------------------------------------------------------------------------
 const LAYOUT_RADIUS = {
   system: 2000, planet: 1200, continent: 800, region: 400,
-  town: 200, city: 250, inn: 100, dungeon: 120,
-  room: 50, party: 25, _default: 30,
+  town: 200, city: 250, inn: 100, dungeon: 120, room: 50,
+  party: 25, _default: 30,
 }
 
-function applyTreeLayout(rawNodes) {
+function applyTreeLayout(nodes) {
   const byId = {}
   const childrenOf = {}
-  rawNodes.forEach(n => {
-    byId[n.id] = { ...n }
-    childrenOf[n.id] = []
+  nodes.forEach(n => { byId[n.id] = { ...n }; childrenOf[n.id] = [] })
+  nodes.forEach(n => {
+    if (n.parent != null && childrenOf[n.parent]) childrenOf[n.parent].push(n.id)
   })
-  rawNodes.forEach(n => {
-    if (n.parent != null && childrenOf[n.parent]) {
-      childrenOf[n.parent].push(n.id)
-    }
-  })
-
-  const laid = {}  // id -> { x, y }
-
+  const laid = {}
   function layout(id, px, py) {
     laid[id] = { x: px, y: py }
     const kids = childrenOf[id] || []
-    if (kids.length === 0) return
-
-    const parentType = byId[id]?.type || '_default'
-    const radius = LAYOUT_RADIUS[parentType] || LAYOUT_RADIUS._default
-
-    // If ALL children have zero relative offset, spread in a circle.
-    // If some have real offsets, honour them as-is (relative to parent layout pos).
-    const allZero = kids.every(kidId => {
-      const k = byId[kidId]
-      return k && Math.abs(k.x) < 0.1 && Math.abs(k.y) < 0.1
-    })
-
-    kids.forEach((kidId, i) => {
-      const kid = byId[kidId]
+    if (!kids.length) return
+    const r = LAYOUT_RADIUS[byId[id]?.type] || LAYOUT_RADIUS._default
+    const allZero = kids.every(k => byId[k] && Math.abs(byId[k].x) < 0.1 && Math.abs(byId[k].y) < 0.1)
+    kids.forEach((kid, i) => {
       if (allZero) {
-        const angle = (i / kids.length) * Math.PI * 2 - Math.PI / 2
-        layout(kidId, px + Math.cos(angle) * radius, py + Math.sin(angle) * radius)
+        const a = (i / kids.length) * Math.PI * 2 - Math.PI / 2
+        layout(kid, px + Math.cos(a) * r, py + Math.sin(a) * r)
       } else {
-        layout(kidId, px + kid.x, py + kid.y)
+        layout(kid, px + byId[kid].x, py + byId[kid].y)
       }
     })
   }
-
-  // Find roots: nodes whose parent is absent from the set
-  rawNodes
-    .filter(n => n.parent == null || !byId[n.parent])
-    .forEach(r => layout(r.id, 0, 0))
-
-  // Return nodes with layout coordinates substituted for x/y
-  return rawNodes.map(n => ({
-    ...n,
-    x: laid[n.id]?.x ?? n.x,
-    y: laid[n.id]?.y ?? n.y,
-  }))
+  nodes.filter(n => n.parent == null || !byId[n.parent]).forEach(r => layout(r.id, 0, 0))
+  return nodes.map(n => ({ ...n, x: laid[n.id]?.x ?? n.x, y: laid[n.id]?.y ?? n.y }))
 }
 
+// ---------------------------------------------------------------------------
+// Map loading
+// ---------------------------------------------------------------------------
 async function loadMap() {
   try {
     const res = await fetch(`/api/campaigns/${props.campaignId}/map`, { credentials: 'include' })
     if (!res.ok) return
     const data = await res.json()
-    nodes.value = applyTreeLayout(data.nodes || [])
-    playerNode.value = nodes.value.find(n => n.is_player) || null
-    nextTick(() => {
-      initCanvas()
-      autoFit()
-    })
+
+    // Hierarchy nodes — apply tree layout
+    const rawH = (data.hierarchy || []).filter(n => absCfg(n.type).show)
+    hierarchyNodes.value = applyTreeLayout(rawH)
+
+    // Tile + entity objects in the local container — use their raw local coords
+    tileNodes.value = data.tiles || []
+
+    localContainerId.value = data.local_container_id ?? null
+    playerNode.value = tileNodes.value.find(n => n.is_player) || null
+
+    // Seed explored set from the map endpoint
+    if (Array.isArray(data.explored) && data.explored.length > 0) {
+      const s = new Set()
+      for (const pair of data.explored) s.add(`${pair[0]},${pair[1]}`)
+      exploredSet.value = s
+      // Also sync to the store so WS updates keep working
+      store.exploredCoords = data.explored
+    } else {
+      // No explored coords yet — reveal everything so the player can see something
+      exploredSet.value = new Set()
+    }
+
+    nextTick(() => { initCanvas(); autoFit() })
   } catch (e) {
     // ignore
   }
 }
 
-function worldToCanvas(wx, wy) {
+// ---------------------------------------------------------------------------
+// Coordinate transform  (world → canvas)
+// ---------------------------------------------------------------------------
+function w2c(wx, wy) {
   const canvas = canvasEl.value
   if (!canvas) return { cx: 0, cy: 0 }
-  const cx = canvas.width / 2 + pan.value.x + wx * zoom.value
-  const cy = canvas.height / 2 + pan.value.y - wy * zoom.value  // y flipped: up = +y
-  return { cx, cy }
-}
-
-// Build a fast lookup of explored coords from the store
-function buildExploredSet() {
-  const s = new Set()
-  for (const pair of store.exploredCoords) {
-    s.add(`${pair[0]},${pair[1]}`)
+  return {
+    cx: canvas.width  / 2 + pan.value.x + wx * zoom.value,
+    cy: canvas.height / 2 + pan.value.y - wy * zoom.value,  // y-up
   }
-  return s
 }
 
-function drawFogOfWar(ctx, canvas, exploredSet) {
-  // Fill entire canvas with dark fog first
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.72)'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-  if (exploredSet.size === 0) return
-
-  // For each explored coordinate punch a clear hole
-  const tileSize = Math.max(4, 5 * zoom.value)  // 5 ft tile in canvas pixels
-  ctx.globalCompositeOperation = 'destination-out'
-  for (const key of exploredSet) {
-    const [wx, wy] = key.split(',').map(Number)
-    const { cx, cy } = worldToCanvas(wx, wy)
-    ctx.fillStyle = 'rgba(0, 0, 0, 1)'
-    ctx.fillRect(cx - tileSize / 2, cy - tileSize / 2, tileSize, tileSize)
-  }
-  ctx.globalCompositeOperation = 'source-over'
-}
-
+// ---------------------------------------------------------------------------
+// Drawing
+// ---------------------------------------------------------------------------
 function draw() {
   const canvas = canvasEl.value
   if (!canvas) return
   const ctx = canvas.getContext('2d')
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  // Background
-  ctx.fillStyle = '#0a0806'
+  // Black background — unseen areas
+  ctx.fillStyle = '#000'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  // Grid (50ft = one square)
   drawGrid(ctx, canvas)
 
-  const visibleNodes = nodes.value.filter(n => typeConfig(n.type).show)
+  const noTiles = tileNodes.value.length === 0
+  const noExplored = exploredSet.value.size === 0
 
-  // Draw edges (parent → child) for location types
+  // --- TILE LAYER: concrete floor/wall/door/building objects ---
+  if (tileNodes.value.length > 0) {
+    const ts = Math.max(3, 5 * zoom.value)  // 5 ft tile in pixels
+    for (const n of tileNodes.value) {
+      if (ENTITY_TYPES.has(n.type)) continue   // entities drawn separately
+      const { cx, cy } = w2c(n.x, n.y)
+      if (cx < -ts || cx > canvas.width + ts || cy < -ts || cy > canvas.height + ts) continue
+      ctx.fillStyle = tileColorHex(n)
+      ctx.fillRect(cx - ts / 2, cy - ts / 2, ts, ts)
+    }
+  }
+
+  // --- HIERARCHY LAYER: abstract nodes as circles ---
   ctx.strokeStyle = 'rgba(61,46,16,0.5)'
   ctx.lineWidth = 1
-  for (const n of visibleNodes) {
+  for (const n of hierarchyNodes.value) {
+    const cfg = absCfg(n.type)
+    if (!cfg.show) continue
     if (n.parent == null) continue
-    const parent = visibleNodes.find(p => p.id === n.parent)
-    if (!parent) continue
-    const from = worldToCanvas(parent.x, parent.y)
-    const to = worldToCanvas(n.x, n.y)
-    const dx = to.cx - from.cx
-    const dy = to.cy - from.cy
-    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue
-    ctx.beginPath()
-    ctx.moveTo(from.cx, from.cy)
-    ctx.lineTo(to.cx, to.cy)
-    ctx.stroke()
+    const parent = hierarchyNodes.value.find(p => p.id === n.parent)
+    if (!parent || !absCfg(parent.type).show) continue
+    const from = w2c(parent.x, parent.y)
+    const to   = w2c(n.x, n.y)
+    if (Math.abs(to.cx - from.cx) < 0.5 && Math.abs(to.cy - from.cy) < 0.5) continue
+    ctx.beginPath(); ctx.moveTo(from.cx, from.cy); ctx.lineTo(to.cx, to.cy); ctx.stroke()
   }
-
-  // Draw nodes
-  for (const n of visibleNodes) {
-    const cfg = typeConfig(n.type)
-    const { cx, cy } = worldToCanvas(n.x, n.y)
+  for (const n of hierarchyNodes.value) {
+    const cfg = absCfg(n.type)
+    if (!cfg.show) continue
+    const { cx, cy } = w2c(n.x, n.y)
     const r = Math.max(2, cfg.radius * Math.sqrt(zoom.value))
-
-    if (n.is_player) {
-      // Glow ring for the player
-      ctx.beginPath()
-      ctx.arc(cx, cy, r + 4, 0, Math.PI * 2)
-      ctx.strokeStyle = 'rgba(201,162,39,0.5)'
-      ctx.lineWidth = 2
-      ctx.stroke()
-    }
-
-    ctx.beginPath()
-    ctx.arc(cx, cy, r, 0, Math.PI * 2)
-    ctx.fillStyle = n.is_player ? '#c9a227' : cfg.color
-    ctx.fill()
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2)
+    ctx.fillStyle = cfg.color; ctx.fill()
   }
 
-  // Fog-of-war layer: dark except explored tiles
-  drawFogOfWar(ctx, canvas, buildExploredSet())
+  // --- ENTITY LAYER: PC / NPC / item circles on top ---
+  for (const n of tileNodes.value) {
+    if (!ENTITY_TYPES.has(n.type)) continue
+    const cfg = entCfg(n.type)
+    const { cx, cy } = w2c(n.x, n.y)
+    const r = Math.max(3, cfg.radius * Math.sqrt(zoom.value))
+    if (n.is_player) {
+      ctx.beginPath(); ctx.arc(cx, cy, r + 5, 0, Math.PI * 2)
+      ctx.strokeStyle = 'rgba(201,162,39,0.6)'; ctx.lineWidth = 2; ctx.stroke()
+    }
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2)
+    ctx.fillStyle = n.is_player ? '#c9a227' : cfg.color; ctx.fill()
+  }
+
+  // --- FOG OF WAR ---
+  // Only apply fog when we have actual tile data AND explored data.
+  // If either is empty (new game, no movement yet), skip fog so the
+  // player can at least see the hierarchy tree.
+  if (!noTiles && !noExplored) {
+    drawFog(ctx, canvas)
+  } else if (!noTiles && noExplored) {
+    // Have tiles but no explored record yet — draw a light dim overlay
+    // but punch through everything so the local area is still visible
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+  }
+}
+
+function drawFog(ctx, canvas) {
+  // Cover with opaque black fog, then punch holes for explored tiles
+  ctx.fillStyle = 'rgba(0,0,0,0.88)'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  const ts = Math.max(4, 5 * zoom.value)
+  ctx.globalCompositeOperation = 'destination-out'
+  for (const key of exploredSet.value) {
+    const [wx, wy] = key.split(',').map(Number)
+    const { cx, cy } = w2c(wx, wy)
+    ctx.fillStyle = 'rgba(0,0,0,1)'
+    ctx.fillRect(cx - ts / 2, cy - ts / 2, ts, ts)
+  }
+  ctx.globalCompositeOperation = 'source-over'
 }
 
 function drawGrid(ctx, canvas) {
-  const gridFeet = 50  // 1 square = 50 feet
-  const step = gridFeet * zoom.value
-  if (step < 8) return  // skip grid when too zoomed out
-
-  ctx.strokeStyle = 'rgba(61,46,16,0.25)'
+  const step = 50 * zoom.value
+  if (step < 8) return
+  ctx.strokeStyle = 'rgba(61,46,16,0.18)'
   ctx.lineWidth = 0.5
-
-  const originX = canvas.width / 2 + pan.value.x
-  const originY = canvas.height / 2 + pan.value.y
-
-  // Vertical lines
-  const startX = ((originX % step) + step) % step
-  for (let x = startX; x < canvas.width; x += step) {
-    ctx.beginPath()
-    ctx.moveTo(x, 0)
-    ctx.lineTo(x, canvas.height)
-    ctx.stroke()
-  }
-
-  // Horizontal lines
-  const startY = ((originY % step) + step) % step
-  for (let y = startY; y < canvas.height; y += step) {
-    ctx.beginPath()
-    ctx.moveTo(0, y)
-    ctx.lineTo(canvas.width, y)
-    ctx.stroke()
-  }
+  const ox = canvas.width  / 2 + pan.value.x
+  const oy = canvas.height / 2 + pan.value.y
+  const sx = ((ox % step) + step) % step
+  for (let x = sx; x < canvas.width;  x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke() }
+  const sy = ((oy % step) + step) % step
+  for (let y = sy; y < canvas.height; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke() }
 }
 
 function initCanvas() {
   const canvas = canvasEl.value
   if (!canvas) return
-  // Use the canvas's own CSS layout size (it fills flex parent)
   const rect = canvas.getBoundingClientRect()
-  canvas.width = rect.width || canvas.offsetWidth || 800
+  canvas.width  = rect.width  || canvas.offsetWidth  || 800
   canvas.height = rect.height || canvas.offsetHeight || 500
   draw()
 }
@@ -332,40 +368,42 @@ function initCanvas() {
 function autoFit() {
   const canvas = canvasEl.value
   if (!canvas) return
-  const visible = nodes.value.filter(n => typeConfig(n.type).show)
-  if (visible.length === 0) {
-    pan.value = { x: 0, y: 0 }
-    zoom.value = 10
+
+  // If we have tile objects, center on the player tile / origin
+  if (tileNodes.value.length > 0) {
+    zoom.value = 12   // 12 px per foot → each 5-ft tile is 60 px
+    const p = playerNode.value
+    if (p) {
+      pan.value.x = -(p.x * zoom.value)
+      pan.value.y =  (p.y * zoom.value)
+    } else {
+      pan.value = { x: 0, y: 0 }
+    }
     draw()
     return
   }
-  // Compute world bounding box of visible nodes
+
+  // Fallback: fit the hierarchy tree
+  const visible = hierarchyNodes.value
+  if (!visible.length) { pan.value = { x: 0, y: 0 }; zoom.value = 10; draw(); return }
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
   for (const n of visible) {
-    if (n.x < minX) minX = n.x
-    if (n.x > maxX) maxX = n.x
-    if (n.y < minY) minY = n.y
-    if (n.y > maxY) maxY = n.y
+    if (n.x < minX) minX = n.x; if (n.x > maxX) maxX = n.x
+    if (n.y < minY) minY = n.y; if (n.y > maxY) maxY = n.y
   }
-  const worldW = maxX - minX || 1
-  const worldH = maxY - minY || 1
-  const padding = 80 // pixels
-  const fitZoom = Math.min(
-    (canvas.width - padding * 2) / worldW,
-    (canvas.height - padding * 2) / worldH,
-    80   // cap zoom so small worlds don't become 1 giant blob
-  )
-  zoom.value = Math.max(0.05, fitZoom)
-  // Center the bounding box
-  const cx = (minX + maxX) / 2
-  const cy = (minY + maxY) / 2
-  pan.value.x = -cx * zoom.value
-  pan.value.y = cy * zoom.value
+  const ww = maxX - minX || 1, wh = maxY - minY || 1
+  const pad = 80
+  zoom.value = Math.max(0.05, Math.min(80,
+    Math.min((canvas.width - pad * 2) / ww, (canvas.height - pad * 2) / wh)
+  ))
+  pan.value.x = -((minX + maxX) / 2) * zoom.value
+  pan.value.y =  ((minY + maxY) / 2) * zoom.value
   draw()
 }
 
-// --- Interaction ---
-
+// ---------------------------------------------------------------------------
+// Interaction
+// ---------------------------------------------------------------------------
 function onMouseDown(e) {
   if (e.button !== 0) return
   ctxMenu.value.visible = false
@@ -378,158 +416,102 @@ function onMouseMove(e) {
     pan.value.x = dragStart.value.panX + (e.clientX - dragStart.value.x)
     pan.value.y = dragStart.value.panY + (e.clientY - dragStart.value.y)
     tooltip.value.node = null
-    draw()
-    return
+    draw(); return
   }
-
-  // Hover: find nearest visible node within hit radius
-  const canvas = canvasEl.value
-  if (!canvas) return
+  const canvas = canvasEl.value; if (!canvas) return
   const rect = canvas.getBoundingClientRect()
-  const mx = e.clientX - rect.left
-  const my = e.clientY - rect.top
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top
 
-  const HIT_RADIUS = 14  // px
-  let closest = null
-  let closestDist = Infinity
-
-  for (const n of nodes.value) {
-    if (!typeConfig(n.type).show) continue
-    const { cx, cy } = worldToCanvas(n.x, n.y)
-    const d = Math.hypot(cx - mx, cy - my)
-    if (d < HIT_RADIUS && d < closestDist) {
-      closestDist = d
-      closest = n
+  // Hit-test tiles first (pixel-perfect bounding box)
+  const ts = Math.max(4, 5 * zoom.value)
+  let hit = null
+  for (const n of [...tileNodes.value].reverse()) {
+    const { cx, cy } = w2c(n.x, n.y)
+    if (mx >= cx - ts/2 && mx <= cx + ts/2 && my >= cy - ts/2 && my <= cy + ts/2) { hit = n; break }
+  }
+  // Then hierarchy circles
+  if (!hit) {
+    for (const n of hierarchyNodes.value) {
+      if (!absCfg(n.type).show) continue
+      const { cx, cy } = w2c(n.x, n.y)
+      if (Math.hypot(cx - mx, cy - my) < 14) { hit = n; break }
     }
   }
-
-  if (closest) {
-    // Offset tooltip so it doesn't sit under the cursor
-    tooltip.value = { node: closest, x: mx + 14, y: my - 10 }
-  } else {
-    tooltip.value.node = null
-  }
+  tooltip.value = hit ? { node: hit, x: mx + 14, y: my - 10 } : { node: null, x: 0, y: 0 }
 }
 
-function onMouseUp() {
-  dragging.value = false
-}
-
-function onMouseLeave() {
-  dragging.value = false
-  tooltip.value.node = null
-}
+function onMouseUp()    { dragging.value = false }
+function onMouseLeave() { dragging.value = false; tooltip.value.node = null }
 
 function onWheel(e) {
-  const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12
-  const canvas = canvasEl.value
-  if (!canvas) return
-
-  // Zoom toward mouse cursor
+  const f = e.deltaY < 0 ? 1.12 : 1 / 1.12
+  const canvas = canvasEl.value; if (!canvas) return
   const rect = canvas.getBoundingClientRect()
-  const mx = e.clientX - rect.left - canvas.width / 2
-  const my = e.clientY - rect.top - canvas.height / 2
-
-  pan.value.x = mx + (pan.value.x - mx) * factor
-  pan.value.y = my + (pan.value.y - my) * factor
-  zoom.value = Math.min(20, Math.max(0.05, zoom.value * factor))
+  const mx = e.clientX - rect.left - canvas.width  / 2
+  const my = e.clientY - rect.top  - canvas.height / 2
+  pan.value.x = mx + (pan.value.x - mx) * f
+  pan.value.y = my + (pan.value.y - my) * f
+  zoom.value  = Math.min(40, Math.max(0.05, zoom.value * f))
   draw()
 }
 
 function onRightClick(e) {
-  const rect = canvasEl.value?.getBoundingClientRect()
-  if (!rect) return
-  ctxMenu.value = {
-    visible: true,
-    x: e.clientX - rect.left,
-    y: e.clientY - rect.top,
-  }
+  const rect = canvasEl.value?.getBoundingClientRect(); if (!rect) return
+  ctxMenu.value = { visible: true, x: e.clientX - rect.left, y: e.clientY - rect.top }
 }
-
-// --- Controls ---
 
 function centerOnPlayer() {
   ctxMenu.value.visible = false
-  const p = playerNode.value
-  if (!p) return
-  // Keep current zoom but re-center on player world coords
-  pan.value.x = -p.x * zoom.value
-  pan.value.y = p.y * zoom.value
-  draw()
+  const p = playerNode.value; if (!p) return
+  pan.value.x = -(p.x * zoom.value); pan.value.y = (p.y * zoom.value); draw()
 }
+function resetView()  { ctxMenu.value.visible = false; autoFit() }
+function zoomIn()     { ctxMenu.value.visible = false; zoom.value = Math.min(40, zoom.value * 1.5); draw() }
+function zoomOut()    { ctxMenu.value.visible = false; zoom.value = Math.max(0.05, zoom.value / 1.5); draw() }
+function onResize()   { initCanvas() }
 
-function resetView() {
-  ctxMenu.value.visible = false
-  autoFit()
-}
+// ---------------------------------------------------------------------------
+// Reactivity
+// ---------------------------------------------------------------------------
+watch(() => props.visible, v => { if (v) nextTick(() => loadMap()) })
 
-function zoomIn() {
-  ctxMenu.value.visible = false
-  zoom.value = Math.min(20, zoom.value * 1.5)
-  draw()
-}
-
-function zoomOut() {
-  ctxMenu.value.visible = false
-  zoom.value = Math.max(0.05, zoom.value / 1.5)
-  draw()
-}
-
-function onResize() {
-  const canvas = canvasEl.value
-  if (!canvas) return
-  const rect = canvas.getBoundingClientRect()
-  canvas.width = rect.width || canvas.offsetWidth || 800
-  canvas.height = rect.height || canvas.offsetHeight || 500
-  draw()
-}
-
-watch(() => props.visible, (val) => {
-  if (val) {
-    nextTick(() => {
-      loadMap()
-    })
-  }
-})
-
-// Redraw when fog-of-war explored set changes
-watch(() => store.exploredCoords, () => {
-  if (props.visible) nextTick(() => draw())
+// WS explored update
+watch(() => store.exploredCoords, coords => {
+  if (!props.visible) return
+  const s = new Set()
+  for (const p of coords) s.add(`${p[0]},${p[1]}`)
+  exploredSet.value = s
+  nextTick(() => draw())
 }, { deep: true })
 
-// When new tiles arrive via WebSocket, merge them into the node list and redraw.
-// New objects arrive as raw world Object dicts; we normalise them into the same
-// shape used by nodes (id, parent, type, name, x, y from location).
-watch(() => store.worldTileObjects, (tileObjs) => {
-  if (!props.visible || !tileObjs || tileObjs.length === 0) return
-  const existingIds = new Set(nodes.value.map(n => n.id))
+// WS new tile objects — merge into tileNodes (use raw local coords)
+watch(() => store.worldTileObjects, objs => {
+  if (!props.visible || !objs?.length) return
+  const ids = new Set(tileNodes.value.map(n => n.id))
   const toAdd = []
-  for (const obj of tileObjs) {
-    if (existingIds.has(obj.id)) continue
+  for (const obj of objs) {
+    if (ids.has(obj.id)) continue
     const loc = obj.location || {}
+    const pr  = obj.properties || {}
     toAdd.push({
-      id: obj.id,
-      parent: obj.parent ?? null,
+      id: obj.id, parent: obj.parent ?? null,
       type: obj.type || 'ground',
       name: obj.name || obj.type || 'Ground',
       description: obj.description || null,
-      x: loc.x ?? 0,
-      y: loc.y ?? 0,
+      x: loc.x ?? 0, y: loc.y ?? 0,
+      tile_color: pr.tile_color || null,
+      properties: pr,
       is_player: false,
     })
-    existingIds.add(obj.id)
+    ids.add(obj.id)
   }
-  if (toAdd.length > 0) {
-    nodes.value = nodes.value.concat(toAdd)
-    nextTick(() => draw())
-  }
+  if (toAdd.length) { tileNodes.value = tileNodes.value.concat(toAdd); nextTick(() => draw()) }
 }, { deep: true })
 
 onMounted(() => {
   window.addEventListener('resize', onResize)
   window.addEventListener('keydown', onWindowKeydown)
 })
-
 onUnmounted(() => {
   window.removeEventListener('resize', onResize)
   window.removeEventListener('keydown', onWindowKeydown)
@@ -538,166 +520,70 @@ onUnmounted(() => {
 
 <style scoped>
 .map-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex; align-items: center; justify-content: center;
   z-index: 300;
 }
-
 .map-dialog {
   position: relative;
-  width: min(90vw, 1100px);
-  height: min(85vh, 700px);
-  display: flex;
-  flex-direction: column;
-  background: #0a0806;
-  border: 1px solid #3d2e10;
-  border-radius: 6px;
+  width: min(90vw, 1100px); height: min(85vh, 700px);
+  display: flex; flex-direction: column;
+  background: #000;
+  border: 1px solid #3d2e10; border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 60px rgba(0,0,0,0.8);
 }
-
 .map-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 1rem;
-  background: #110d05;
-  border-bottom: 1px solid #3d2e10;
-  flex-shrink: 0;
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.45rem 1rem;
+  background: #110d05; border-bottom: 1px solid #3d2e10;
+  flex-shrink: 0; flex-wrap: wrap;
 }
-
 .map-title {
-  font-family: 'Cinzel', serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #c9a227;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-family: 'Cinzel', serif; font-size: 0.9rem; font-weight: 600;
+  color: #c9a227; letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0;
 }
-
 .map-legend {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: 'Crimson Text', serif;
-  font-size: 0.78rem;
-  color: #8a7355;
-  margin-left: 0.5rem;
+  display: flex; align-items: center; gap: 0.35rem;
+  font-family: 'Crimson Text', serif; font-size: 0.73rem; color: #8a7355;
+  flex-wrap: wrap;
 }
-
-.legend-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-left: 0.5rem;
+.legend-swatch {
+  display: inline-block; width: 10px; height: 10px;
+  border-radius: 2px; margin-left: 0.35rem; flex-shrink: 0;
 }
-.dot-location { background: #c9a227; }
-.dot-pc       { background: #4ade80; }
-.dot-npc      { background: #93c5fd; }
-.dot-item     { background: #fde68a; }
-
 .map-close-btn {
-  margin-left: auto;
-  background: transparent;
-  border: 1px solid #3d2e10;
-  color: #8a7355;
-  cursor: pointer;
-  font-size: 0.75rem;
-  width: 24px;
-  height: 24px;
-  border-radius: 3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin-left: auto; background: transparent;
+  border: 1px solid #3d2e10; color: #8a7355; cursor: pointer;
+  font-size: 0.75rem; width: 24px; height: 24px; border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
   transition: color 0.15s, border-color 0.15s;
 }
-.map-close-btn:hover {
-  color: #c9a227;
-  border-color: #c9a227;
-}
-
-.map-canvas {
-  flex: 1;
-  display: block;
-  cursor: grab;
-  min-height: 0;
-}
-.map-canvas:active {
-  cursor: grabbing;
-}
-
-/* Right-click context menu */
+.map-close-btn:hover { color: #c9a227; border-color: #c9a227; }
+.map-canvas { flex: 1; display: block; cursor: grab; min-height: 0; }
+.map-canvas:active { cursor: grabbing; }
 .ctx-menu {
-  position: absolute;
-  background: #110d05;
-  border: 1px solid #3d2e10;
-  border-radius: 4px;
-  padding: 0.25rem 0;
-  min-width: 160px;
-  z-index: 10;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  position: absolute; background: #110d05;
+  border: 1px solid #3d2e10; border-radius: 4px;
+  padding: 0.25rem 0; min-width: 160px; z-index: 10;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
 }
-
 .ctx-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: transparent;
-  border: none;
-  padding: 0.4rem 0.9rem;
-  font-family: 'Crimson Text', serif;
-  font-size: 0.9rem;
-  color: #e8d5b7;
-  cursor: pointer;
-  transition: background 0.1s;
+  display: block; width: 100%; text-align: left;
+  background: transparent; border: none; padding: 0.4rem 0.9rem;
+  font-family: 'Crimson Text', serif; font-size: 0.9rem; color: #e8d5b7;
+  cursor: pointer; transition: background 0.1s;
 }
-.ctx-item:hover {
-  background: rgba(201, 162, 39, 0.12);
-  color: #c9a227;
-}
-
-/* Hover tooltip */
+.ctx-item:hover { background: rgba(201,162,39,0.12); color: #c9a227; }
 .map-tooltip {
-  position: absolute;
-  pointer-events: none;
-  background: #110d05;
-  border: 1px solid #3d2e10;
-  border-radius: 4px;
-  padding: 0.35rem 0.6rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  max-width: 220px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  z-index: 20;
+  position: absolute; pointer-events: none;
+  background: #110d05; border: 1px solid #3d2e10; border-radius: 4px;
+  padding: 0.35rem 0.6rem; display: flex; flex-direction: column;
+  gap: 0.15rem; max-width: 220px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6); z-index: 20;
 }
-
-.tt-name {
-  font-family: 'Cinzel', serif;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #c9a227;
-  white-space: nowrap;
-}
-
-.tt-type {
-  font-family: 'Crimson Text', serif;
-  font-size: 0.72rem;
-  color: #8a7355;
-  text-transform: capitalize;
-  font-style: italic;
-}
-
-.tt-desc {
-  font-family: 'Crimson Text', serif;
-  font-size: 0.8rem;
-  color: #e8d5b7;
-  line-height: 1.35;
-  white-space: normal;
-}
+.tt-name { font-family: 'Cinzel', serif; font-size: 0.78rem; font-weight: 600; color: #c9a227; white-space: nowrap; }
+.tt-type { font-family: 'Crimson Text', serif; font-size: 0.72rem; color: #8a7355; text-transform: capitalize; font-style: italic; }
+.tt-desc { font-family: 'Crimson Text', serif; font-size: 0.8rem; color: #e8d5b7; line-height: 1.35; white-space: normal; }
 </style>

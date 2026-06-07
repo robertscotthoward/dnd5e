@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from src.backend.core.auth import get_current_admin
+from src.backend.core.campaign_io import create_default_world
 from src.backend.core.campaign_manager import (
     delete_campaign,
     get_players,
@@ -14,7 +15,7 @@ from src.backend.core.campaign_manager import (
     remove_player,
     save_campaign_world,
 )
-from src.backend.models.world import Object
+from src.backend.models.world import Object, Location
 
 
 VIRTUAL_TYPES = {
@@ -124,6 +125,70 @@ def admin_create_world_object(
         "name": obj.name,
         "description": obj.description,
         "properties": obj.properties,
+    }
+
+
+@router.post("/campaigns/{campaign_id}/reset-world")
+def admin_reset_world(campaign_id: str, request: Request):
+    """Regenerate the world hierarchy while preserving all PC objects."""
+    get_current_admin(request)
+    campaign = load_campaign_world(campaign_id)
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign world not found")
+
+    # Extract all PC objects with full data
+    pcs = [
+        obj for obj in campaign.world.objects.values()
+        if obj.type == "PC"
+    ]
+
+    # Build a fresh world hierarchy
+    new_world = create_default_world(campaign.name)
+
+    # Find the common room (last object in the fresh hierarchy, type "room")
+    common_room = next(
+        (obj for obj in reversed(list(new_world.objects.values())) if obj.type == "room"),
+        None,
+    )
+    if common_room is None:
+        raise HTTPException(status_code=500, detail="Fresh world has no room for party placement")
+
+    # Create a new party in the common room
+    party = Object(
+        id=new_world.next_id(),
+        parent=common_room.id,
+        type="party",
+        name="The Adventurers",
+        description="A band of adventurers seeking fortune and glory",
+        is_virtual=True,
+    )
+    new_world.add_object(party)
+
+    # Re-insert PCs under the new party; reset their IDs to avoid collisions
+    for i, pc in enumerate(pcs):
+        new_pc = Object(
+            id=new_world.next_id(),
+            parent=party.id,
+            type="PC",
+            name=pc.name,
+            description=pc.description,
+            location=Location(x=5 * (i % 2), y=5 * (i // 2), z=0),
+            size=pc.size,
+            weight=pc.weight,
+            cost=pc.cost,
+            is_moveable=pc.is_moveable,
+            is_virtual=pc.is_virtual,
+            properties=pc.properties,
+        )
+        new_world.add_object(new_pc)
+
+    campaign.world = new_world
+    save_campaign_world(campaign_id, campaign)
+
+    return {
+        "reset": campaign_id,
+        "world_object_count": len(new_world.objects),
+        "players_preserved": len(pcs),
     }
 
 

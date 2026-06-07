@@ -167,6 +167,25 @@
   - [ ] Frontend: style tooltip to match the dark navbar theme
   - [ ] Verify functionality
 
+## Phase 20: BSP World Partitioning and Map Coloring
+
+- [ ] Feature: BSP-driven child placement and colored tile map
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [x] Implement `src/backend/world/bsp.py` — `BspPartitioner` class with `partition(parent, player_pos, radius, world)` returning a list of placement rects; respects parent boundaries and radius limit
+  - [x] Integrate BSP into `WorldGenerator.fill_children` — replace naive perimeter-wall loop with BSP-placed building shells (inns, taverns, stores, roads, parks) appropriate to parent type; added `fill_children_bsp(parent_id, player_pos, radius)` for on-demand radius-limited expansion
+  - [x] Add `tile_color` property to generated objects: brown=road/ground/door, orange=building/store, green=inn/pub, dark_green=forest, blue=water
+  - [x] Frontend `WorldMap.vue` — switch node rendering from circle-dot to filled tile squares sized by zoom; apply color from `tile_color` property (or type-based lookup) instead of static TYPE_CONFIG colors
+  - [x] Frontend — fog-of-war: explored tiles never go dark again; current LOS tiles fully lit; unseen tiles are black (pure black background + destination-out punch-through)
+  - [ ] Verify: open map (F4) after movement → tiles display in correct colors; unexplored areas are black; explored-but-not-current-LOS areas are visible (memory)
+
+## Phase 21: Admin World Reset
+
+- [ ] Feature: Admin world reset (keep players)
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [x] Backend: `POST /api/admin/campaigns/{campaign_id}/reset-world` — extract all PC objects, rebuild hierarchy via `create_default_world()`, re-insert PCs under a new party, save
+  - [x] Frontend: "Reset World" button per campaign card in `AdminView.vue` using existing `dialog` confirm pattern
+  - [ ] Verify: reset triggers dialog → confirm → world hierarchy rebuilt → players preserved
+
 ## Phase 13: Quality & Deployment
 
 * [x] **`dev.bat` Typer CLI mode** — Update `dev.bat` to also support running `python -m src.backend.main` CLI commands alongside the Vite/FastAPI servers.

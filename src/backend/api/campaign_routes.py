@@ -864,12 +864,16 @@ def get_npcs(campaign_id: str, request: Request):
 @router.get("/campaigns/{campaign_id}/map")
 def get_map(campaign_id: str, request: Request):
     """
-    Return all world objects with their computed absolute [x, y, z] positions.
+    Return world objects for map rendering.
 
-    Absolute position = recursive sum of location offsets up the parent chain.
-    Objects with no location (or location [0,0,0]) are placed at their parent's
-    absolute position.  The player character for the authenticated user is flagged
-    with is_player=True so the frontend can highlight and auto-center on them.
+    Returns two slices:
+    - `hierarchy`: abstract container nodes (system→region) for the tree overview,
+      positioned by the frontend's tree-layout algorithm.
+    - `tiles`: concrete objects (ground, floor, wall, door, PC, NPC, item, etc.)
+      in the player's immediate container at their local (x, y) coordinates.
+
+    Also generates floor tiles for the player's container on demand (lazy fill),
+    and returns the player's current explored set to bootstrap fog-of-war.
     """
     session = get_current_user(request)
     meta = get_campaign_meta(campaign_id)
@@ -879,45 +883,113 @@ def get_map(campaign_id: str, request: Request):
     if not campaign:
         raise HTTPException(status_code=500, detail="Could not load world")
 
-    # Compute absolute positions via memoised DFS
-    abs_pos: dict[int, tuple[float, float, float]] = {}
-
-    def get_abs(obj_id: int) -> tuple[float, float, float]:
-        if obj_id in abs_pos:
-            return abs_pos[obj_id]
-        obj = campaign.world.get_object(obj_id)
-        if obj is None:
-            abs_pos[obj_id] = (0.0, 0.0, 0.0)
-            return abs_pos[obj_id]
-        lx, ly, lz = obj.location.x, obj.location.y, obj.location.z
-        if obj.parent is None:
-            abs_pos[obj_id] = (lx, ly, lz)
-        else:
-            px, py, pz = get_abs(obj.parent)
-            abs_pos[obj_id] = (px + lx, py + ly, pz + lz)
-        return abs_pos[obj_id]
-
+    # --- Find player's PC and their current container ---
     player = find_player(campaign_id, session.user_id)
     player_char_id = player.get("character_object_id") if player else None
+    player_obj = campaign.world.get_object(player_char_id) if player_char_id else None
 
-    nodes = []
+    # Walk up the ancestry to find the deepest non-virtual location the PC is in
+    # (party is virtual, so look past it to the actual place)
+    local_container_id: Optional[int] = None
+    if player_obj:
+        # Start from PC's parent; if that parent is virtual/party, go up one more
+        pid = player_obj.parent
+        while pid is not None:
+            p = campaign.world.get_object(pid)
+            if p is None:
+                break
+            if p.type not in ("party",) or not p.is_virtual:
+                local_container_id = pid
+                break
+            pid = p.parent
+
+    # --- Generate floor tiles for the local container on demand ---
+    tiles_changed = False
+    if local_container_id is not None:
+        container = campaign.world.get_object(local_container_id)
+        if container and not container.properties.get("generated", False):
+            seed = meta.seed if hasattr(meta, "seed") else 0
+            gen = WorldGenerator(campaign.world, seed=seed)
+            gen.fill_children(local_container_id)
+            tiles_changed = True
+        # Also generate any direct children tiles the player can currently see
+        if player_obj and player_char_id:
+            seed = meta.seed if hasattr(meta, "seed") else 0
+            gen = WorldGenerator(campaign.world, seed=seed)
+            visible = campaign.world.get_visible_world(player_char_id)
+            visible_coords = [
+                (obj.location.x, obj.location.y)
+                for obj in visible.objects.values()
+                if obj.parent == local_container_id and obj.id != player_char_id
+            ]
+            for coord in visible_coords:
+                new_obj = gen.fill_coordinate(coord, local_container_id)
+                if new_obj:
+                    tiles_changed = True
+
+    if tiles_changed:
+        save_campaign_world(campaign_id, campaign)
+
+    # --- Abstract container types that get tree-layout in the frontend ---
+    ABSTRACT = {"system", "planet", "continent", "region", "town", "city", "inn",
+                "room", "party", "dungeon", "cave", "library_fortress", "citadel",
+                "military_outpost", "forest", "mountain_range", "swamp", "island",
+                "trade_road", "manor", "academy", "festhall", "tavern", "general_store",
+                "magic_shop", "market", "black_market", "temple", "prison", "smithy"}
+
+    hierarchy: list[dict] = []
+    tiles: list[dict] = []
+
     for obj in campaign.world.objects.values():
-        ax, ay, az = get_abs(obj.id)
-        nodes.append({
+        # Derive tile_color: property first, then type lookup
+        from src.backend.world.generator import TILE_COLOR_BY_TYPE
+        tile_color = obj.properties.get("tile_color") or TILE_COLOR_BY_TYPE.get(obj.type, "")
+
+        node = {
             "id": obj.id,
             "parent": obj.parent,
             "type": obj.type,
             "name": obj.name or obj.type,
             "description": obj.description or "",
-            "x": ax,
-            "y": ay,
-            "z": az,
+            # local coords (relative to parent) — tree layout overrides these for hierarchy nodes
+            "x": obj.location.x,
+            "y": obj.location.y,
+            "z": obj.location.z,
             "is_moveable": obj.is_moveable,
             "is_virtual": obj.is_virtual,
             "is_player": obj.id == player_char_id,
-        })
+            "tile_color": tile_color,
+            "properties": dict(obj.properties),
+        }
 
-    return {"nodes": nodes}
+        if obj.type in ABSTRACT:
+            hierarchy.append(node)
+        else:
+            tiles.append(node)
+
+    # --- Seed explored set from player's current visible area ---
+    explored: list[list[float]] = []
+    if player_char_id and local_container_id:
+        from src.backend.api.ws_routes import _update_explored
+        visible = campaign.world.get_visible_world(player_char_id)
+        visible_coords: list[tuple[float, float]] = [
+            (obj.location.x, obj.location.y)
+            for obj in visible.objects.values()
+            if obj.parent == local_container_id and obj.id != player_char_id
+        ]
+        if visible_coords:
+            explored = _update_explored(campaign_id, session.user_id, visible_coords)
+        else:
+            from src.backend.api.ws_routes import _get_explored
+            explored = _get_explored(campaign_id, session.user_id)
+
+    return {
+        "nodes": hierarchy + tiles,   # keep backwards compat field
+        "hierarchy": hierarchy,
+        "tiles": tiles,
+        "local_container_id": local_container_id,
+        "explored": explored,
+    }
 
 
 @router.post("/campaigns/{campaign_id}/snapshots/{snapshot_id}/restore")

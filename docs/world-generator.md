@@ -23,18 +23,22 @@ Else use a range "cost": {"min": NUMBER, "max": NUMBER} where NUMBER is the numb
 
 There are cases where we are given a parent object P, like a town, in which we find ourself. We are typically at some location relative to the P, e.g. we are at [0,0,0].
 The we are given a radius distance R, like 50 units, and we want to generate child items in P without exceeding the P's boundaries, or going beyond R from us
-
 Create a binary space partitioning algorithm in some library python module.
+The input will be a parent object P and a radius R.
+These items will be added to the world.yaml
 
-
-
-Colors:
+When populating the map, show these colors:
 - Black - not seen yet, not generated
 - Brown - road, ground, door, entrance
 - Orange - building or store
 - Green - pub or inn
 - Dark Green - forest
 - Blue - water, river, ocean
+
+ACCEPTANCE CRITERIA: The map (F4) shows visible items on the map. All area around the player that is line of sight (LOS) or has been seen before (memory) is not black.
+
+
+
 
 
 

@@ -74,11 +74,18 @@
                 </span>
               </div>
             </div>
-            <button
-              class="delete-btn"
-              title="Delete campaign"
-              @click="confirmDeleteCampaign(entry.meta)"
-            >✕</button>
+            <div class="campaign-actions">
+              <button
+                class="reset-btn"
+                title="Reset world (keeps players)"
+                @click="confirmResetWorld(entry.meta)"
+              >↺ Reset World</button>
+              <button
+                class="delete-btn"
+                title="Delete campaign"
+                @click="confirmDeleteCampaign(entry.meta)"
+              >✕</button>
+            </div>
           </div>
 
           <!-- Players sub-list -->
@@ -208,6 +215,17 @@ function confirmRemovePlayer(campaignId, player) {
   }
 }
 
+function confirmResetWorld(meta) {
+  dialog.value = {
+    visible: true,
+    title: 'Reset World',
+    message: `Reset world for "${meta.name}"? All generated terrain, items, and locations will be erased.`,
+    note: 'Player characters will be preserved.',
+    confirmLabel: 'Reset World',
+    action: () => resetWorld(meta.id),
+  }
+}
+
 function closeDialog() {
   dialog.value.visible = false
 }
@@ -231,6 +249,22 @@ async function deleteCampaign(campaignId) {
       throw new Error(d.detail || 'Delete failed')
     }
     campaigns.value = campaigns.value.filter(e => e.meta.id !== campaignId)
+  } catch (e) {
+    error.value = e.message
+  }
+}
+
+async function resetWorld(campaignId) {
+  try {
+    const res = await fetch(`/api/admin/campaigns/${campaignId}/reset-world`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}))
+      throw new Error(d.detail || 'Reset failed')
+    }
+    await loadData()
   } catch (e) {
     error.value = e.message
   }
@@ -569,6 +603,39 @@ function formatDate(iso) {
 .hp-critical { color: #f87171; border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.08); }
 .hp-dead     { color: #6b7280; border-color: rgba(107,114,128,0.4); background: rgba(107,114,128,0.08); }
 .hp-unknown  { color: #5a4530; border-color: #3d2e10; background: transparent; }
+
+/* Campaign action buttons row */
+.campaign-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Reset World button */
+.reset-btn {
+  flex-shrink: 0;
+  height: 28px;
+  padding: 0 0.6rem;
+  border-radius: 4px;
+  border: 1px solid #7a5a10;
+  background: rgba(122, 90, 16, 0.15);
+  color: #c9a227;
+  font-family: 'Cinzel', serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.reset-btn:hover {
+  background: rgba(122, 90, 16, 0.4);
+  border-color: #c9a227;
+  box-shadow: 0 0 8px rgba(201, 162, 39, 0.25);
+}
 
 /* Delete buttons */
 .delete-btn {
