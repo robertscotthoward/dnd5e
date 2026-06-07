@@ -457,5 +457,265 @@
         ]
       }
     ]
+  },
+  "items": {
+    "weapons": {
+      "simple_melee": [
+        { "type": "club", "description": "A heavy wooden stick used as a bludgeoning weapon.", "named": false, "size": { "min": [0.2, 0.1, 0.1], "max": [0.4, 0.1, 0.1] }, "cost": { "min": 10, "max": 10 } },
+        { "type": "dagger", "description": "A short double-edged blade suitable for thrusting and throwing.", "named": false, "size": { "min": [0.1, 0.04, 0.02], "max": [0.2, 0.06, 0.03] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "greatclub", "description": "A large, heavy two-handed club.", "named": false, "size": { "min": [0.4, 0.1, 0.1], "max": [0.6, 0.15, 0.15] }, "cost": { "min": 20, "max": 20 } },
+        { "type": "handaxe", "description": "A light one-handed axe that can also be thrown.", "named": false, "size": { "min": [0.1, 0.1, 0.04], "max": [0.3, 0.15, 0.05] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "javelin", "description": "A light throwing spear.", "named": false, "size": { "min": [0.8, 0.04, 0.04], "max": [1.2, 0.05, 0.05] }, "cost": { "min": 50, "max": 50 } },
+        { "type": "light_hammer", "description": "A small hammer balanced for throwing as well as striking.", "named": false, "size": { "min": [0.2, 0.06, 0.06], "max": [0.3, 0.08, 0.08] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "mace", "description": "A flanged metal-headed bludgeoning weapon on a short haft.", "named": false, "size": { "min": [0.2, 0.08, 0.08], "max": [0.5, 0.12, 0.12] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "quarterstaff", "description": "A six-foot hardwood pole used as a two-handed or versatile weapon.", "named": false, "size": { "min": [1.0, 0.05, 0.05], "max": [1.4, 0.07, 0.07] }, "cost": { "min": 20, "max": 20 } },
+        { "type": "sickle", "description": "A curved blade on a short handle, originally an agricultural tool.", "named": false, "size": { "min": [0.1, 0.1, 0.03], "max": [0.2, 0.15, 0.04] }, "cost": { "min": 100, "max": 100 } },
+        { "type": "spear", "description": "A long-shafted thrusting weapon with an iron tip; can also be thrown.", "named": false, "size": { "min": [1.0, 0.04, 0.04], "max": [1.8, 0.06, 0.06] }, "cost": { "min": 100, "max": 100 } }
+      ],
+      "simple_ranged": [
+        { "type": "crossbow_light", "description": "A mechanical bow mounted on a stock; easier to use than a longbow.", "named": false, "size": { "min": [0.4, 0.4, 0.1], "max": [0.7, 0.5, 0.15] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "dart", "description": "A small weighted throwing spike.", "named": false, "size": { "min": [0.04, 0.02, 0.02], "max": [0.1, 0.03, 0.03] }, "cost": { "min": 5, "max": 5 } },
+        { "type": "shortbow", "description": "A small recurve bow suitable for mounted or close-quarters use.", "named": false, "size": { "min": [0.5, 0.4, 0.04], "max": [0.8, 0.6, 0.05] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "sling", "description": "A simple leather strap used to hurl lead bullets or stones.", "named": false, "size": { "min": [0.3, 0.05, 0.01], "max": [0.6, 0.1, 0.02] }, "cost": { "min": 1, "max": 1 } }
+      ],
+      "martial_melee": [
+        { "type": "battleaxe", "description": "A single or double-headed axe designed for combat.", "named": false, "size": { "min": [0.3, 0.2, 0.05], "max": [0.5, 0.3, 0.08] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "flail", "description": "A spiked metal ball on a chain attached to a handle.", "named": false, "size": { "min": [0.3, 0.1, 0.1], "max": [0.6, 0.15, 0.15] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "glaive", "description": "A curved blade mounted on a long pole; reach weapon.", "named": false, "size": { "min": [1.4, 0.2, 0.04], "max": [1.8, 0.3, 0.06] }, "cost": { "min": 2000, "max": 2000 } },
+        { "type": "greataxe", "description": "A massive two-handed axe with a broad heavy head.", "named": false, "size": { "min": [0.5, 0.4, 0.06], "max": [0.8, 0.6, 0.1] }, "cost": { "min": 3000, "max": 3000 } },
+        { "type": "greatsword", "description": "A large two-handed sword with a long blade.", "named": false, "size": { "min": [1.0, 0.1, 0.04], "max": [1.4, 0.15, 0.06] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "halberd", "description": "A pole weapon combining an axe blade with a spike; reach weapon.", "named": false, "size": { "min": [1.4, 0.2, 0.05], "max": [1.8, 0.3, 0.08] }, "cost": { "min": 2000, "max": 2000 } },
+        { "type": "lance", "description": "A long cavalry weapon designed for mounted charges.", "named": false, "size": { "min": [2.0, 0.06, 0.06], "max": [3.0, 0.1, 0.1] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "longsword", "description": "A versatile double-edged sword usable one- or two-handed.", "named": false, "size": { "min": [0.8, 0.08, 0.03], "max": [1.1, 0.12, 0.05] }, "cost": { "min": 1500, "max": 1500 } },
+        { "type": "maul", "description": "A massive two-handed warhammer.", "named": false, "size": { "min": [0.6, 0.2, 0.2], "max": [1.0, 0.3, 0.3] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "morningstar", "description": "A spiked metal ball atop a haft; combines crushing and piercing.", "named": false, "size": { "min": [0.3, 0.1, 0.1], "max": [0.5, 0.15, 0.15] }, "cost": { "min": 1500, "max": 1500 } },
+        { "type": "pike", "description": "An extremely long thrusting spear; reach weapon.", "named": false, "size": { "min": [2.0, 0.05, 0.05], "max": [3.0, 0.08, 0.08] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "rapier", "description": "A slender, sharply pointed sword optimised for thrusting.", "named": false, "size": { "min": [0.8, 0.05, 0.03], "max": [1.0, 0.08, 0.04] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "scimitar", "description": "A curved single-edged blade favoured by cavalry and desert warriors.", "named": false, "size": { "min": [0.5, 0.1, 0.03], "max": [0.8, 0.15, 0.05] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "shortsword", "description": "A light double-edged sword suitable for close quarters.", "named": false, "size": { "min": [0.4, 0.06, 0.03], "max": [0.7, 0.1, 0.04] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "trident", "description": "A three-pronged spear; can be thrown.", "named": false, "size": { "min": [1.0, 0.2, 0.05], "max": [1.6, 0.3, 0.08] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "war_pick", "description": "A pick-shaped weapon designed to pierce armour.", "named": false, "size": { "min": [0.3, 0.15, 0.08], "max": [0.5, 0.2, 0.12] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "warhammer", "description": "A one-handed hammer with a heavy iron head.", "named": false, "size": { "min": [0.3, 0.12, 0.12], "max": [0.5, 0.18, 0.18] }, "cost": { "min": 1500, "max": 1500 } },
+        { "type": "whip", "description": "A braided leather lash; reach weapon with finesse.", "named": false, "size": { "min": [0.8, 0.02, 0.02], "max": [2.0, 0.03, 0.03] }, "cost": { "min": 200, "max": 200 } }
+      ],
+      "martial_ranged": [
+        { "type": "blowgun", "description": "A long tube through which needles are blown; silent ranged weapon.", "named": false, "size": { "min": [0.6, 0.03, 0.03], "max": [1.0, 0.04, 0.04] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "crossbow_hand", "description": "A small one-handed crossbow; can be used in the off-hand.", "named": false, "size": { "min": [0.2, 0.2, 0.1], "max": [0.4, 0.3, 0.15] }, "cost": { "min": 7500, "max": 7500 } },
+        { "type": "crossbow_heavy", "description": "A powerful crossbow requiring two hands and a winch.", "named": false, "size": { "min": [0.6, 0.6, 0.15], "max": [0.9, 0.8, 0.2] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "longbow", "description": "A tall recurve bow requiring great strength; long range.", "named": false, "size": { "min": [1.2, 0.6, 0.04], "max": [1.6, 0.9, 0.06] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "net", "description": "A weighted mesh thrown to restrain a target.", "named": false, "size": { "min": [0.4, 0.4, 0.1], "max": [0.6, 0.6, 0.2] }, "cost": { "min": 100, "max": 100 } }
+      ],
+      "ammunition": [
+        { "type": "arrows", "description": "Wooden shafts with iron tips for shortbows and longbows. Sold in bundles of 20.", "named": false, "size": { "min": [0.3, 0.08, 0.08], "max": [0.5, 0.1, 0.1] }, "cost": { "min": 100, "max": 100, "_note": "1 gp per 20" } },
+        { "type": "crossbow_bolts", "description": "Short iron-tipped quarrels for crossbows. Sold in bundles of 20.", "named": false, "size": { "min": [0.2, 0.08, 0.08], "max": [0.35, 0.1, 0.1] }, "cost": { "min": 100, "max": 100, "_note": "1 gp per 20" } },
+        { "type": "sling_bullets", "description": "Lead or stone projectiles for slings. Sold in bundles of 20.", "named": false, "size": { "min": [0.1, 0.05, 0.05], "max": [0.2, 0.08, 0.08] }, "cost": { "min": 4, "max": 4, "_note": "4 cp per 20" } },
+        { "type": "blowgun_needles", "description": "Thin metal needles for blowguns. Sold in bundles of 50.", "named": false, "size": { "min": [0.1, 0.02, 0.02], "max": [0.2, 0.02, 0.02] }, "cost": { "min": 100, "max": 100, "_note": "1 gp per 50" } }
+      ]
+    },
+    "armor": {
+      "light": [
+        { "type": "padded_armor", "description": "Quilted layers of cloth and batting providing minimal protection.", "named": false, "size": { "min": [0.3, 0.3, 0.1], "max": [0.6, 0.5, 0.2] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "leather_armor", "description": "Boiled and hardened leather breastplate and pauldrons.", "named": false, "size": { "min": [0.3, 0.3, 0.05], "max": [0.6, 0.5, 0.1] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "studded_leather_armor", "description": "Leather armor reinforced with close-set rivets of hard metal.", "named": false, "size": { "min": [0.3, 0.3, 0.06], "max": [0.6, 0.5, 0.12] }, "cost": { "min": 4500, "max": 4500 } }
+      ],
+      "medium": [
+        { "type": "hide_armor", "description": "Crude armor made from thick animal hides.", "named": false, "size": { "min": [0.35, 0.35, 0.08], "max": [0.65, 0.55, 0.15] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "chain_shirt", "description": "A shirt of interlocking metal rings worn under outer garments.", "named": false, "size": { "min": [0.3, 0.3, 0.05], "max": [0.6, 0.5, 0.1] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "scale_mail", "description": "Coat of overlapping metal scales on a leather backing.", "named": false, "size": { "min": [0.35, 0.35, 0.08], "max": [0.65, 0.55, 0.15] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "breastplate", "description": "A fitted metal chest plate with flexible leather backing.", "named": false, "size": { "min": [0.3, 0.3, 0.06], "max": [0.55, 0.45, 0.1] }, "cost": { "min": 40000, "max": 40000 } },
+        { "type": "half_plate_armor", "description": "Shaped metal plates covering most of the body; gaps filled with chain.", "named": false, "size": { "min": [0.35, 0.35, 0.08], "max": [0.65, 0.55, 0.15] }, "cost": { "min": 75000, "max": 75000 } }
+      ],
+      "heavy": [
+        { "type": "ring_mail", "description": "Leather armor with heavy rings sewn onto it.", "named": false, "size": { "min": [0.35, 0.35, 0.08], "max": [0.65, 0.55, 0.15] }, "cost": { "min": 3000, "max": 3000 } },
+        { "type": "chain_mail", "description": "A full suit of interlocking metal rings with padded undergarment.", "named": false, "size": { "min": [0.35, 0.35, 0.1], "max": [0.65, 0.55, 0.2] }, "cost": { "min": 7500, "max": 7500 } },
+        { "type": "splint_armor", "description": "Narrow vertical strips of metal riveted to a backing of chain and leather.", "named": false, "size": { "min": [0.35, 0.35, 0.1], "max": [0.65, 0.55, 0.2] }, "cost": { "min": 20000, "max": 20000 } },
+        { "type": "plate_armor", "description": "Full-body suit of shaped, interlocking metal plates; the pinnacle of non-magical protection.", "named": false, "size": { "min": [0.35, 0.35, 0.12], "max": [0.65, 0.55, 0.25] }, "cost": { "min": 150000, "max": 150000 } }
+      ],
+      "shields": [
+        { "type": "shield", "description": "A round or kite-shaped wooden or metal defense carried in the off-hand.", "named": false, "size": { "min": [0.3, 0.3, 0.04], "max": [0.6, 0.8, 0.08] }, "cost": { "min": 1000, "max": 1000 } }
+      ],
+      "helmets": [
+        { "type": "helm", "description": "A metal head covering offering protection against blows; does not confer a separate AC bonus.", "named": false, "size": { "min": [0.2, 0.2, 0.2], "max": [0.35, 0.35, 0.35] }, "cost": { "min": 1000, "max": 5000 } }
+      ]
+    },
+    "adventuring_gear": {
+      "containers": [
+        { "type": "backpack", "description": "A leather or canvas pack with straps for carrying gear.", "named": false, "size": { "min": [0.2, 0.3, 0.4], "max": [0.4, 0.5, 0.7] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "pouch", "description": "A small cloth or leather bag worn on the belt.", "named": false, "size": { "min": [0.1, 0.08, 0.05], "max": [0.2, 0.15, 0.1] }, "cost": { "min": 50, "max": 50 } },
+        { "type": "sack", "description": "A large cloth bag for bulk transport of goods.", "named": false, "size": { "min": [0.3, 0.3, 0.5], "max": [0.6, 0.6, 1.0] }, "cost": { "min": 1, "max": 1 } },
+        { "type": "barrel", "description": "A large wooden cask for liquids or dry goods.", "named": false, "size": { "min": [0.4, 0.4, 0.6], "max": [0.7, 0.7, 1.0] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "crate", "description": "A wooden box for transporting trade goods or equipment.", "named": false, "size": { "min": [0.4, 0.4, 0.4], "max": [0.8, 0.8, 0.8] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "chest_small", "description": "A small lockable wooden chest for personal valuables.", "named": false, "size": { "min": [0.2, 0.1, 0.1], "max": [0.5, 0.3, 0.25] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "vial", "description": "A small glass container with a stopper; holds 4 ounces.", "named": false, "size": { "min": [0.02, 0.02, 0.08], "max": [0.03, 0.03, 0.12] }, "cost": { "min": 100, "max": 100 } },
+        { "type": "flask", "description": "A metal or glass vessel holding one pint of liquid.", "named": false, "size": { "min": [0.06, 0.04, 0.12], "max": [0.1, 0.08, 0.2] }, "cost": { "min": 2, "max": 2 } },
+        { "type": "bottle_glass", "description": "A glass bottle holding one and a half pints.", "named": false, "size": { "min": [0.06, 0.06, 0.2], "max": [0.1, 0.1, 0.3] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "jug", "description": "A clay or ceramic jug holding one gallon.", "named": false, "size": { "min": [0.1, 0.1, 0.2], "max": [0.2, 0.2, 0.4] }, "cost": { "min": 2, "max": 2 } },
+        { "type": "waterskin", "description": "A hide container for two gallons of water or other liquid.", "named": false, "size": { "min": [0.1, 0.05, 0.2], "max": [0.2, 0.1, 0.35] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "quiver", "description": "A leather or wooden tube worn on the back for carrying arrows or bolts.", "named": false, "size": { "min": [0.08, 0.08, 0.5], "max": [0.12, 0.12, 0.7] }, "cost": { "min": 100, "max": 100 } },
+        { "type": "map_case", "description": "A leather cylinder for protecting maps and scrolls.", "named": false, "size": { "min": [0.05, 0.05, 0.3], "max": [0.08, 0.08, 0.5] }, "cost": { "min": 100, "max": 100 } },
+        { "type": "coin_purse", "description": "A small drawstring bag specifically for carrying coins.", "named": false, "size": { "min": [0.06, 0.04, 0.08], "max": [0.12, 0.08, 0.15] }, "cost": { "min": 5, "max": 20 } }
+      ],
+      "light_sources": [
+        { "type": "candle", "description": "A wax taper that burns for one hour, illuminating a 5-foot radius.", "named": false, "size": { "min": [0.02, 0.02, 0.08], "max": [0.04, 0.04, 0.25] }, "cost": { "min": 1, "max": 1 } },
+        { "type": "torch", "description": "A wooden staff tipped with oil-soaked cloth; burns one hour, 20-foot radius.", "named": false, "size": { "min": [0.04, 0.04, 0.4], "max": [0.06, 0.06, 0.6] }, "cost": { "min": 1, "max": 1 } },
+        { "type": "lantern_bullseye", "description": "A hooded lantern projecting a 60-foot cone of light; burns 6 hours per pint of oil.", "named": false, "size": { "min": [0.1, 0.1, 0.2], "max": [0.15, 0.15, 0.3] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "lantern_hooded", "description": "A shuttered lantern that can dim its light; burns 6 hours per pint of oil.", "named": false, "size": { "min": [0.1, 0.1, 0.2], "max": [0.15, 0.15, 0.3] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "oil_flask", "description": "A pint of lamp oil; fuels a lantern for 6 hours or can be used as a thrown weapon.", "named": false, "size": { "min": [0.06, 0.06, 0.15], "max": [0.1, 0.1, 0.25] }, "cost": { "min": 10, "max": 10 } }
+      ],
+      "rope_and_climbing": [
+        { "type": "rope_hempen", "description": "Fifty feet of hempen rope; holds up to 1,000 pounds.", "named": false, "size": { "min": [0.1, 0.1, 0.1], "max": [0.2, 0.2, 0.2] }, "cost": { "min": 100, "max": 100 } },
+        { "type": "rope_silk", "description": "Fifty feet of fine silk rope; lighter and more supple than hempen.", "named": false, "size": { "min": [0.08, 0.08, 0.08], "max": [0.15, 0.15, 0.15] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "grappling_hook", "description": "A four-pronged iron hook for securing a rope to a ledge or window.", "named": false, "size": { "min": [0.1, 0.1, 0.15], "max": [0.2, 0.2, 0.25] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "ladder", "description": "A ten-foot wooden ladder for scaling walls or descending pits.", "named": false, "size": { "min": [0.4, 0.06, 2.0], "max": [0.5, 0.08, 2.0] }, "cost": { "min": 10, "max": 10 } },
+        { "type": "pole", "description": "A ten-foot wooden pole for probing, vaulting, or bridging gaps.", "named": false, "size": { "min": [0.03, 0.03, 2.0], "max": [0.05, 0.05, 2.0] }, "cost": { "min": 5, "max": 5 } },
+        { "type": "piton", "description": "An iron spike hammered into rock faces to anchor a rope. Sold individually.", "named": false, "size": { "min": [0.02, 0.01, 0.08], "max": [0.03, 0.02, 0.12] }, "cost": { "min": 5, "max": 5 } }
+      ],
+      "tools_and_kits": [
+        { "type": "thieves_tools", "description": "A small case of picks, files, and tension wrenches for disabling locks and traps.", "named": false, "size": { "min": [0.1, 0.08, 0.02], "max": [0.2, 0.15, 0.04] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "healers_kit", "description": "Bandages, salves, and splints for stabilising the dying; 10 uses.", "named": false, "size": { "min": [0.1, 0.1, 0.05], "max": [0.2, 0.2, 0.1] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "poisoners_kit", "description": "Vials, measuring tools, and alchemical compounds for harvesting and applying poisons.", "named": false, "size": { "min": [0.15, 0.1, 0.05], "max": [0.25, 0.2, 0.1] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "disguise_kit", "description": "Cosmetics, hair dye, props, and small costumes for altering appearance.", "named": false, "size": { "min": [0.2, 0.15, 0.08], "max": [0.35, 0.3, 0.15] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "forgery_kit", "description": "Inks, parchment, wax seals, and scribing tools for creating false documents.", "named": false, "size": { "min": [0.15, 0.1, 0.05], "max": [0.3, 0.2, 0.1] }, "cost": { "min": 1500, "max": 1500 } },
+        { "type": "herbalism_kit", "description": "Pouches, jars, and a mortar and pestle for identifying and preparing herbal remedies.", "named": false, "size": { "min": [0.2, 0.15, 0.1], "max": [0.35, 0.3, 0.2] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "alchemist_supplies", "description": "Glass vessels, burners, and reagents for basic alchemical work.", "named": false, "size": { "min": [0.2, 0.2, 0.2], "max": [0.5, 0.4, 0.4] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "artisan_tools", "description": "A set of trade tools specific to a craft (carpenter, cobbler, potter, weaver, etc.).", "named": false, "size": { "min": [0.2, 0.1, 0.05], "max": [0.5, 0.4, 0.3] }, "cost": { "min": 100, "max": 2800, "_note": "1–28 gp depending on craft" } },
+        { "type": "navigators_tools", "description": "Charts, compass, sextant, and parallel rules for navigation at sea or overland.", "named": false, "size": { "min": [0.3, 0.2, 0.05], "max": [0.5, 0.4, 0.1] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "cartographers_tools", "description": "Ink, quills, measuring cord, and blank vellum for mapmaking.", "named": false, "size": { "min": [0.3, 0.2, 0.05], "max": [0.5, 0.4, 0.1] }, "cost": { "min": 1500, "max": 1500 } },
+        { "type": "tinkers_tools", "description": "Small files, pliers, solder, and miscellaneous metal stock for repairing mechanical devices.", "named": false, "size": { "min": [0.15, 0.1, 0.05], "max": [0.3, 0.2, 0.1] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "smiths_tools", "description": "Hammer, tongs, bellows, and files for metalworking. Requires access to a forge.", "named": false, "size": { "min": [0.3, 0.2, 0.1], "max": [0.6, 0.4, 0.3] }, "cost": { "min": 2000, "max": 2000 } },
+        { "type": "gaming_set", "description": "Dice, cards, or a board game set. Specific type varies by region.", "named": false, "size": { "min": [0.1, 0.1, 0.03], "max": [0.3, 0.3, 0.1] }, "cost": { "min": 10, "max": 100 } },
+        { "type": "crowbar", "description": "An iron pry bar for forcing open doors, crates, and hatches.", "named": false, "size": { "min": [0.04, 0.03, 0.4], "max": [0.06, 0.04, 0.7] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "hammer", "description": "A common iron hammer for driving pitons and nails.", "named": false, "size": { "min": [0.04, 0.04, 0.25], "max": [0.08, 0.08, 0.4] }, "cost": { "min": 100, "max": 100 } },
+        { "type": "shovel", "description": "An iron-bladed digging tool with a long wooden handle.", "named": false, "size": { "min": [0.2, 0.1, 1.0], "max": [0.3, 0.15, 1.4] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "hunting_trap", "description": "A spring-loaded iron jaw trap for capturing animals.", "named": false, "size": { "min": [0.2, 0.2, 0.04], "max": [0.4, 0.4, 0.08] }, "cost": { "min": 500, "max": 500 } }
+      ],
+      "survival_and_camping": [
+        { "type": "bedroll", "description": "A roll of blankets and padding for sleeping outdoors.", "named": false, "size": { "min": [0.1, 0.1, 0.6], "max": [0.2, 0.2, 0.8] }, "cost": { "min": 100, "max": 100 } },
+        { "type": "tent_two_person", "description": "A simple canvas shelter for two people.", "named": false, "size": { "min": [0.2, 0.2, 0.4], "max": [0.4, 0.4, 0.7] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "rations", "description": "One day's worth of dried food (hardtack, jerky, dried fruit) for a single person.", "named": false, "size": { "min": [0.05, 0.05, 0.05], "max": [0.1, 0.1, 0.1] }, "cost": { "min": 50, "max": 50 } },
+        { "type": "mess_kit", "description": "A tin cup, small pot, and utensils for cooking and eating while travelling.", "named": false, "size": { "min": [0.1, 0.1, 0.1], "max": [0.2, 0.2, 0.15] }, "cost": { "min": 20, "max": 20 } },
+        { "type": "tinderbox", "description": "A small metal box with flint, fire-steel, and tinder for lighting fires.", "named": false, "size": { "min": [0.06, 0.04, 0.03], "max": [0.1, 0.08, 0.05] }, "cost": { "min": 50, "max": 50 } },
+        { "type": "blanket", "description": "A wool blanket for warmth while sleeping.", "named": false, "size": { "min": [0.1, 0.1, 0.4], "max": [0.2, 0.15, 0.6] }, "cost": { "min": 50, "max": 50 } }
+      ],
+      "arcane_and_divine": [
+        { "type": "component_pouch", "description": "A small leather belt pouch holding material spell components.", "named": false, "size": { "min": [0.1, 0.08, 0.05], "max": [0.2, 0.15, 0.1] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "spellbook", "description": "A leather-bound tome in which a wizard records spells; 100 pages of vellum.", "named": false, "size": { "min": [0.15, 0.2, 0.03], "max": [0.25, 0.3, 0.06] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "arcane_focus_crystal", "description": "A crystal orb used as an arcane spellcasting focus.", "named": false, "size": { "min": [0.04, 0.04, 0.04], "max": [0.1, 0.1, 0.1] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "arcane_focus_orb", "description": "A smooth glass sphere used as an arcane spellcasting focus.", "named": false, "size": { "min": [0.06, 0.06, 0.06], "max": [0.15, 0.15, 0.15] }, "cost": { "min": 2000, "max": 2000 } },
+        { "type": "arcane_focus_rod", "description": "A short metal rod etched with arcane runes; used as a spellcasting focus.", "named": false, "size": { "min": [0.02, 0.02, 0.2], "max": [0.03, 0.03, 0.35] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "arcane_focus_staff", "description": "A wooden staff used as an arcane spellcasting focus.", "named": false, "size": { "min": [0.04, 0.04, 1.2], "max": [0.06, 0.06, 1.8] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "arcane_focus_wand", "description": "A slender carved wand used as an arcane spellcasting focus.", "named": false, "size": { "min": [0.01, 0.01, 0.25], "max": [0.02, 0.02, 0.4] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "holy_symbol_amulet", "description": "A divine symbol worn as a necklace; used as a spellcasting focus.", "named": false, "size": { "min": [0.04, 0.04, 0.02], "max": [0.08, 0.08, 0.04] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "holy_symbol_emblem", "description": "A deity's symbol embossed on a shield or tabard.", "named": false, "size": { "min": [0.06, 0.06, 0.01], "max": [0.15, 0.15, 0.02] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "druidic_focus_sprig", "description": "A sprig of mistletoe used as a druidic spellcasting focus.", "named": false, "size": { "min": [0.02, 0.02, 0.1], "max": [0.05, 0.05, 0.2] }, "cost": { "min": 1, "max": 1 } },
+        { "type": "druidic_focus_totem", "description": "A carved animal totem used as a druidic spellcasting focus.", "named": false, "size": { "min": [0.04, 0.04, 0.1], "max": [0.1, 0.1, 0.3] }, "cost": { "min": 100, "max": 500 } },
+        { "type": "druidic_focus_staff", "description": "A wooden staff carved with natural motifs; used as a druidic spellcasting focus.", "named": false, "size": { "min": [0.04, 0.04, 1.2], "max": [0.06, 0.06, 1.8] }, "cost": { "min": 500, "max": 500 } }
+      ],
+      "writing_and_documents": [
+        { "type": "ink", "description": "A one-ounce bottle of black or coloured writing ink.", "named": false, "size": { "min": [0.03, 0.03, 0.08], "max": [0.05, 0.05, 0.12] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "ink_pen", "description": "A quill or reed pen for writing.", "named": false, "size": { "min": [0.01, 0.01, 0.3], "max": [0.02, 0.02, 0.4] }, "cost": { "min": 2, "max": 2 } },
+        { "type": "parchment", "description": "A single sheet of prepared animal skin for writing.", "named": false, "size": { "min": [0.01, 0.3, 0.4], "max": [0.01, 0.5, 0.7] }, "cost": { "min": 10, "max": 10 } },
+        { "type": "paper_sheet", "description": "A single sheet of manufactured paper for writing.", "named": false, "size": { "min": [0.003, 0.3, 0.4], "max": [0.003, 0.5, 0.7] }, "cost": { "min": 20, "max": 20 } },
+        { "type": "sealing_wax", "description": "A stick of wax for sealing letters with a signet impression.", "named": false, "size": { "min": [0.02, 0.02, 0.08], "max": [0.03, 0.03, 0.12] }, "cost": { "min": 50, "max": 50 } },
+        { "type": "book", "description": "A bound volume of blank or written pages; 300 pages vellum.", "named": false, "size": { "min": [0.15, 0.2, 0.03], "max": [0.25, 0.3, 0.06] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "scroll_case", "description": "A leather or bone case protecting one or more scrolls.", "named": false, "size": { "min": [0.05, 0.05, 0.25], "max": [0.08, 0.08, 0.5] }, "cost": { "min": 100, "max": 100 } }
+      ],
+      "miscellaneous": [
+        { "type": "caltrops", "description": "A bag of iron spikes that scatter on the floor to impede movement; covers a 5-foot square.", "named": false, "size": { "min": [0.08, 0.08, 0.08], "max": [0.15, 0.15, 0.15] }, "cost": { "min": 100, "max": 100 } },
+        { "type": "ball_bearings", "description": "A bag of 1,000 small steel balls; scattered to create a slippery surface.", "named": false, "size": { "min": [0.1, 0.08, 0.06], "max": [0.18, 0.14, 0.1] }, "cost": { "min": 100, "max": 100 } },
+        { "type": "mirror_steel", "description": "A small polished steel mirror for signalling or checking around corners.", "named": false, "size": { "min": [0.06, 0.04, 0.01], "max": [0.12, 0.08, 0.02] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "spyglass", "description": "A brass-and-glass telescoping lens magnifying distant objects.", "named": false, "size": { "min": [0.04, 0.04, 0.3], "max": [0.06, 0.06, 0.5] }, "cost": { "min": 100000, "max": 100000 } },
+        { "type": "manacles", "description": "Iron wrist shackles with a key; holds one medium creature.", "named": false, "size": { "min": [0.15, 0.08, 0.04], "max": [0.25, 0.12, 0.06] }, "cost": { "min": 200, "max": 200 } },
+        { "type": "whistle", "description": "A small metal whistle audible at long range.", "named": false, "size": { "min": [0.02, 0.01, 0.06], "max": [0.04, 0.02, 0.1] }, "cost": { "min": 5, "max": 20 } },
+        { "type": "horn", "description": "A large animal horn or brass instrument for signalling over distances.", "named": false, "size": { "min": [0.06, 0.06, 0.2], "max": [0.12, 0.12, 0.5] }, "cost": { "min": 300, "max": 300 } },
+        { "type": "hourglass", "description": "A sand-filled glass timer measuring exactly one hour.", "named": false, "size": { "min": [0.06, 0.06, 0.15], "max": [0.1, 0.1, 0.25] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "magnifying_glass", "description": "A lens in a frame for examining fine detail; also useful for starting fires.", "named": false, "size": { "min": [0.04, 0.04, 0.08], "max": [0.08, 0.08, 0.15] }, "cost": { "min": 10000, "max": 10000 } },
+        { "type": "soap", "description": "A bar of tallow soap.", "named": false, "size": { "min": [0.04, 0.03, 0.02], "max": [0.08, 0.06, 0.04] }, "cost": { "min": 2, "max": 2 } },
+        { "type": "perfume", "description": "A small vial of scented oil or liquid.", "named": false, "size": { "min": [0.02, 0.02, 0.06], "max": [0.04, 0.04, 0.1] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "acid_vial", "description": "A sealed flask of corrosive acid; can be thrown as an improvised weapon.", "named": false, "size": { "min": [0.04, 0.04, 0.1], "max": [0.06, 0.06, 0.15] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "alchemist_fire", "description": "A sticky, flammable paste in a sealed flask; explodes on impact.", "named": false, "size": { "min": [0.04, 0.04, 0.1], "max": [0.06, 0.06, 0.15] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "antitoxin", "description": "A vial of herbal extract granting advantage against poison for one hour.", "named": false, "size": { "min": [0.02, 0.02, 0.08], "max": [ 0.03, 0.03, 0.12] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "healer_potion", "description": "A red liquid that restores hit points when consumed.", "named": false, "size": { "min": [0.03, 0.03, 0.1], "max": [0.05, 0.05, 0.15] }, "cost": { "min": 5000, "max": 5000 } }
+      ]
+    },
+    "clothing": [
+      { "type": "common_clothes", "description": "Plain linen shirt, trousers, and simple leather boots; typical peasant dress.", "named": false, "size": { "min": [0.2, 0.1, 0.3], "max": [0.4, 0.2, 0.5] }, "cost": { "min": 50, "max": 50 } },
+      { "type": "traveler_clothes", "description": "Sturdy wool coat, thick trousers, boots, and a cloak; suited for long journeys.", "named": false, "size": { "min": [0.25, 0.15, 0.4], "max": [0.5, 0.25, 0.7] }, "cost": { "min": 200, "max": 200 } },
+      { "type": "fine_clothes", "description": "Embroidered silk or velvet garments with fashionable cut; expected at noble gatherings.", "named": false, "size": { "min": [0.2, 0.1, 0.3], "max": [0.4, 0.2, 0.5] }, "cost": { "min": 1500, "max": 1500 } },
+      { "type": "costume", "description": "An elaborate outfit designed to convincingly portray a specific character or occupation.", "named": false, "size": { "min": [0.25, 0.15, 0.4], "max": [0.5, 0.25, 0.8] }, "cost": { "min": 500, "max": 500 } },
+      { "type": "robe", "description": "A full-length garment common among scholars, priests, and mages.", "named": false, "size": { "min": [0.2, 0.1, 0.5], "max": [0.4, 0.2, 0.8] }, "cost": { "min": 100, "max": 100 } },
+      { "type": "cloak", "description": "A full-length outer garment worn over armour or clothing for warmth or disguise.", "named": false, "size": { "min": [0.2, 0.1, 0.4], "max": [0.4, 0.2, 0.6] }, "cost": { "min": 50, "max": 5000, "_note": "0.5–50 gp; rough wool to fine wool lined with fur" } },
+      { "type": "boots", "description": "Leather footwear; common, riding, or heavy-soled varieties.", "named": false, "size": { "min": [0.08, 0.15, 0.3], "max": [0.15, 0.25, 0.5] }, "cost": { "min": 100, "max": 2500, "_note": "1–25 gp" } },
+      { "type": "gloves", "description": "Leather or cloth hand coverings.", "named": false, "size": { "min": [0.1, 0.06, 0.02], "max": [0.2, 0.12, 0.04] }, "cost": { "min": 20, "max": 500 } },
+      { "type": "belt", "description": "A leather strap worn at the waist; holds scabbards, pouches, and tools.", "named": false, "size": { "min": [0.04, 0.8, 0.01], "max": [0.06, 1.4, 0.02] }, "cost": { "min": 10, "max": 500 } }
+    ],
+    "food_and_drink": [
+      { "type": "ale_mug", "description": "A standard mug of common ale.", "named": false, "size": { "min": [0.08, 0.08, 0.12], "max": [0.12, 0.12, 0.18] }, "cost": { "min": 4, "max": 4 } },
+      { "type": "ale_gallon", "description": "A gallon jug of common ale.", "named": false, "size": { "min": [0.15, 0.15, 0.25], "max": [0.2, 0.2, 0.35] }, "cost": { "min": 20, "max": 20 } },
+      { "type": "wine_common", "description": "A pitcher of common table wine.", "named": false, "size": { "min": [0.1, 0.1, 0.2], "max": [0.15, 0.15, 0.3] }, "cost": { "min": 20, "max": 20 } },
+      { "type": "wine_fine", "description": "A bottle of fine vintage wine.", "named": false, "size": { "min": [0.06, 0.06, 0.2], "max": [0.1, 0.1, 0.3] }, "cost": { "min": 1000, "max": 1000 } },
+      { "type": "meal_poor", "description": "A simple meal of bread, porridge, and water.", "named": false, "size": { "min": [0.1, 0.1, 0.05], "max": [0.2, 0.2, 0.1] }, "cost": { "min": 3, "max": 3 } },
+      { "type": "meal_modest", "description": "A solid meal of stew, bread, cheese, and ale.", "named": false, "size": { "min": [0.15, 0.15, 0.1], "max": [0.25, 0.25, 0.15] }, "cost": { "min": 30, "max": 30 } },
+      { "type": "meal_comfortable", "description": "A good meal of roasted meat, vegetables, bread, and wine.", "named": false, "size": { "min": [0.2, 0.2, 0.1], "max": [0.3, 0.3, 0.2] }, "cost": { "min": 50, "max": 50 } },
+      { "type": "meal_wealthy", "description": "A multi-course feast with fine wines.", "named": false, "size": { "min": [0.3, 0.3, 0.2], "max": [0.5, 0.5, 0.3] }, "cost": { "min": 800, "max": 800 } },
+      { "type": "cheese_block", "description": "A wheel or block of pressed cheese.", "named": false, "size": { "min": [0.1, 0.1, 0.05], "max": [0.3, 0.3, 0.15] }, "cost": { "min": 10, "max": 50 } },
+      { "type": "spices", "description": "A small pouch of exotic spices (pepper, saffron, cloves); a luxury trade good.", "named": false, "size": { "min": [0.05, 0.04, 0.05], "max": [0.1, 0.08, 0.1] }, "cost": { "min": 50, "max": 50000, "_note": "0.5–500 gp depending on rarity" } }
+    ],
+    "mounts_and_vehicles": {
+      "mounts": [
+        { "type": "draft_horse", "description": "A large, strong horse bred for pulling carts and heavy loads.", "named": false, "size": { "min": [1.6, 0.8, 1.4], "max": [1.8, 1.0, 1.7] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "riding_horse", "description": "A medium horse trained for speed and distance travel.", "named": false, "size": { "min": [1.4, 0.7, 1.3], "max": [1.7, 0.9, 1.6] }, "cost": { "min": 7500, "max": 7500 } },
+        { "type": "warhorse", "description": "A large trained combat mount that does not shy from battle.", "named": false, "size": { "min": [1.6, 0.9, 1.5], "max": [1.9, 1.1, 1.8] }, "cost": { "min": 40000, "max": 40000 } },
+        { "type": "pony", "description": "A small horse suitable for lighter riders and rough terrain.", "named": false, "size": { "min": [1.0, 0.6, 1.0], "max": [1.3, 0.8, 1.2] }, "cost": { "min": 3000, "max": 3000 } },
+        { "type": "mule", "description": "A sure-footed pack animal; strong and steady on mountain roads.", "named": false, "size": { "min": [1.0, 0.5, 1.0], "max": [1.4, 0.7, 1.3] }, "cost": { "min": 800, "max": 800 } },
+        { "type": "camel", "description": "A desert mount capable of long travel without water.", "named": false, "size": { "min": [1.8, 0.8, 1.8], "max": [2.2, 1.0, 2.2] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "mastiff", "description": "A large, loyal dog trained as a mount for small creatures or as a fighting companion.", "named": false, "size": { "min": [0.6, 0.3, 0.6], "max": [0.9, 0.5, 0.8] }, "cost": { "min": 2500, "max": 2500 } },
+        { "type": "elephant", "description": "A massive working and war animal capable of carrying great loads.", "named": false, "size": { "min": [3.0, 2.0, 2.5], "max": [4.0, 2.5, 3.5] }, "cost": { "min": 200000, "max": 200000 } }
+      ],
+      "tack_and_gear": [
+        { "type": "saddle_riding", "description": "A standard leather saddle for riding a horse.", "named": false, "size": { "min": [0.4, 0.3, 0.2], "max": [0.6, 0.45, 0.35] }, "cost": { "min": 1000, "max": 1000 } },
+        { "type": "saddle_military", "description": "A reinforced saddle with stirrups and a pommel for lance combat.", "named": false, "size": { "min": [0.4, 0.3, 0.25], "max": [0.6, 0.45, 0.4] }, "cost": { "min": 2000, "max": 2000 } },
+        { "type": "saddle_pack", "description": "A frame saddle for securing pack bags on a mount.", "named": false, "size": { "min": [0.4, 0.3, 0.2], "max": [0.6, 0.45, 0.35] }, "cost": { "min": 500, "max": 500 } },
+        { "type": "saddlebags", "description": "A pair of leather bags that hang across a saddle.", "named": false, "size": { "min": [0.2, 0.4, 0.2], "max": [0.35, 0.7, 0.35] }, "cost": { "min": 400, "max": 400 } },
+        { "type": "feed_per_day", "description": "One day's grain and fodder for a single horse or similar mount.", "named": false, "size": { "min": [0.2, 0.2, 0.2], "max": [0.3, 0.3, 0.3] }, "cost": { "min": 5, "max": 5 } },
+        { "type": "horseshoes_set", "description": "A set of four iron horseshoes with nails.", "named": false, "size": { "min": [0.1, 0.1, 0.1], "max": [0.2, 0.2, 0.15] }, "cost": { "min": 100, "max": 100 } }
+      ],
+      "land_vehicles": [
+        { "type": "cart", "description": "A two-wheeled open vehicle pulled by a single draft animal.", "named": false, "size": { "min": [1.0, 2.0, 1.0], "max": [1.5, 3.0, 1.5] }, "cost": { "min": 1500, "max": 1500 } },
+        { "type": "wagon", "description": "A four-wheeled covered or open transport wagon pulled by two draft animals.", "named": false, "size": { "min": [1.5, 3.0, 1.5], "max": [2.0, 5.0, 2.5] }, "cost": { "min": 3500, "max": 3500 } },
+        { "type": "carriage", "description": "An enclosed passenger coach with cushioned seating; pulled by two to four horses.", "named": false, "size": { "min": [1.8, 3.5, 2.0], "max": [2.2, 5.0, 2.8] }, "cost": { "min": 10000, "max": 10000 } },
+        { "type": "chariot", "description": "A light open two-wheeled combat vehicle; pulled by one or two warhorses.", "named": false, "size": { "min": [1.0, 2.0, 1.2], "max": [1.5, 2.5, 1.8] }, "cost": { "min": 25000, "max": 25000 } }
+      ],
+      "water_vehicles": [
+        { "type": "rowboat", "description": "A small open boat propelled by oars; fits two to three people.", "named": false, "size": { "min": [1.0, 4.0, 1.0], "max": [1.5, 6.0, 1.5] }, "cost": { "min": 5000, "max": 5000 } },
+        { "type": "keelboat", "description": "A shallow-draft cargo or patrol vessel with oars and a single sail.", "named": false, "size": { "min": [3.0, 12.0, 2.0], "max": [5.0, 18.0, 3.0] }, "cost": { "min": 300000, "max": 300000 } },
+        { "type": "sailing_ship", "description": "A large wind-powered merchant or naval vessel with multiple masts.", "named": false, "size": { "min": [8.0, 30.0, 6.0], "max": [14.0, 60.0, 14.0] }, "cost": { "min": 1000000, "max": 1000000 } },
+        { "type": "galley", "description": "A long warship propelled by banks of oars with a ram; also carries a sail.", "named": false, "size": { "min": [6.0, 30.0, 4.0], "max": [8.0, 50.0, 6.0] }, "cost": { "min": 3000000, "max": 3000000 } }
+      ]
+    },
+    "musical_instruments": [
+      { "type": "bagpipes", "description": "A reed instrument with a bag reservoir; loud and distinctive.", "named": false, "size": { "min": [0.2, 0.3, 0.4], "max": [0.35, 0.5, 0.6] }, "cost": { "min": 3000, "max": 3000 } },
+      { "type": "drum", "description": "A cylindrical percussion instrument struck with a beater.", "named": false, "size": { "min": [0.2, 0.2, 0.2], "max": [0.5, 0.5, 0.5] }, "cost": { "min": 600, "max": 600 } },
+      { "type": "dulcimer", "description": "A trapezoidal stringed instrument played by striking strings with small hammers.", "named": false, "size": { "min": [0.1, 0.5, 0.6], "max": [0.15, 0.8, 1.0] }, "cost": { "min": 2500, "max": 2500 } },
+      { "type": "flute", "description": "A small end-blown or transverse wooden or bone flute.", "named": false, "size": { "min": [0.02, 0.02, 0.3], "max": [0.04, 0.04, 0.5] }, "cost": { "min": 200, "max": 200 } },
+      { "type": "hand_drum", "description": "A small frame drum held in one hand and struck with the other.", "named": false, "size": { "min": [0.04, 0.2, 0.2], "max": [0.08, 0.4, 0.4] }, "cost": { "min": 600, "max": 600 } },
+      { "type": "lute", "description": "A plucked string instrument with a rounded body; common in taverns.", "named": false, "size": { "min": [0.1, 0.3, 0.7], "max": [0.18, 0.45, 1.0] }, "cost": { "min": 3500, "max": 3500 } },
+      { "type": "lyre", "description": "A U-shaped plucked string instrument associated with bards and scholars.", "named": false, "size": { "min": [0.06, 0.3, 0.4], "max": [0.1, 0.5, 0.6] }, "cost": { "min": 3000, "max": 3000 } },
+      { "type": "pan_flute", "description": "Graduated tubes bound together; each tube plays a single pitch.", "named": false, "size": { "min": [0.04, 0.15, 0.2], "max": [0.06, 0.3, 0.35] }, "cost": { "min": 1200, "max": 1200 } },
+      { "type": "shawm", "description": "A loud double-reed woodwind instrument; forerunner of the oboe.", "named": false, "size": { "min": [0.03, 0.03, 0.4], "max": [0.06, 0.06, 0.7] }, "cost": { "min": 200, "max": 200 } },
+      { "type": "viol", "description": "A bowed string instrument with a fretted neck; mellower than later fiddles.", "named": false, "size": { "min": [0.1, 0.2, 0.5], "max": [0.15, 0.35, 0.7] }, "cost": { "min": 3000, "max": 3000 } }
+    ],
+    "trade_goods": [
+      { "type": "cloth_linen", "description": "One square yard of undyed linen fabric.", "named": false, "size": { "min": [0.01, 0.9, 0.9], "max": [0.02, 1.0, 1.0] }, "cost": { "min": 50, "max": 50 } },
+      { "type": "cloth_silk", "description": "One square yard of fine silk fabric.", "named": false, "size": { "min": [0.005, 0.9, 0.9], "max": [0.01, 1.0, 1.0] }, "cost": { "min": 1000, "max": 1000 } },
+      { "type": "copper_ingot", "description": "A one-pound bar of refined copper; raw material for smithing.", "named": false, "size": { "min": [0.04, 0.06, 0.15], "max": [0.05, 0.08, 0.2] }, "cost": { "min": 5, "max": 5 } },
+      { "type": "silver_ingot", "description": "A one-pound bar of refined silver.", "named": false, "size": { "min": [0.04, 0.06, 0.15], "max": [0.05, 0.08, 0.2] }, "cost": { "min": 500, "max": 500 } },
+      { "type": "gold_ingot", "description": "A one-pound bar of refined gold.", "named": false, "size": { "min": [0.04, 0.06, 0.15], "max": [0.05, 0.08, 0.2] }, "cost": { "min": 5000, "max": 5000 } },
+      { "type": "gemstone_common", "description": "An uncut semi-precious gemstone (quartz, jasper, turquoise).", "named": false, "size": { "min": [0.01, 0.01, 0.01], "max": [0.04, 0.04, 0.04] }, "cost": { "min": 1000, "max": 5000, "_note": "10–50 gp" } },
+      { "type": "gemstone_uncommon", "description": "A polished semi-precious stone (amethyst, jade, tourmaline).", "named": false, "size": { "min": [0.01, 0.01, 0.01], "max": [0.04, 0.04, 0.04] }, "cost": { "min": 10000, "max": 50000, "_note": "100–500 gp" } },
+      { "type": "gemstone_precious", "description": "A cut precious stone (sapphire, ruby, diamond).", "named": false, "size": { "min": [0.005, 0.005, 0.005], "max": [0.02, 0.02, 0.02] }, "cost": { "min": 100000, "max": 1000000, "_note": "1,000–10,000 gp" } },
+      { "type": "salt_pound", "description": "One pound of common salt; a trade staple and food preservative.", "named": false, "size": { "min": [0.08, 0.08, 0.06], "max": [0.12, 0.12, 0.1] }, "cost": { "min": 5, "max": 5 } },
+      { "type": "lamp_oil_barrel", "description": "A small barrel of lamp oil; refills roughly 60 lantern tanks.", "named": false, "size": { "min": [0.3, 0.3, 0.4], "max": [0.4, 0.4, 0.6] }, "cost": { "min": 100, "max": 100 } }
+    ]
   }
 }

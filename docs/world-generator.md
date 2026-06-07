@@ -28,6 +28,14 @@ Create a binary space partitioning algorithm in some library python module.
 
 
 
+Colors:
+- Black - not seen yet, not generated
+- Brown - road, ground, door, entrance
+- Orange - building or store
+- Green - pub or inn
+- Dark Green - forest
+- Blue - water, river, ocean
+
 
 
 The parent-child hierarchy:
