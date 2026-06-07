@@ -74,6 +74,7 @@ class CampaignPlayer(BaseModel):
     encumbrance_max: float = 150.0  # default STR 10 * 15
     conditions: list[str] = Field(default_factory=list)  # active D&D 5e conditions
     death_saves: DeathSaves = Field(default_factory=DeathSaves)
+    location_ancestry: list[dict] = Field(default_factory=list)  # [{name, type}, ...] nearest first
     joined_at: str
     last_seen: Optional[str] = None
 

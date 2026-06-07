@@ -149,10 +149,20 @@ The world is a YAML file with `name`, `max_id`, `delete_ids`, and `objects` (dic
 - **Purpose / What**: A single admin action in `/admin` regenerates the campaign's world hierarchy from scratch (system → planet → continent → region → town → inn → common room), then re-attaches all existing PC objects under a new party in the common room. The original seed, turn number, and campaign metadata are preserved. Existing players.json entries are untouched.
 - **Usage / How**: In the Admin Console, each campaign card has a "Reset World" button (amber/orange, distinct from the red delete button). Clicking it opens a confirmation dialog: "Reset world for '{name}'? All generated terrain, items, and locations will be erased. Player characters will be preserved." Confirming POSTs to `/api/admin/campaigns/{id}/reset-world`, which performs the rebuild server-side and returns the new world object count. The UI refreshes the campaign list after success.
 
+### Player Card Location Ancestry (Added: 2026-06-07)
+- **Context / Why**: Player cards in the game sidebar show name, HP, and conditions but give no indication of where a character physically is in the world. Without location context, players can't tell if party members are in the same room, a different building, or on a different continent.
+- **Purpose / What**: Each player card shows a compact ancestry chain beneath the character name — e.g. "Common Room (room) → Stonehill Inn (inn) → Phandalin (town)" — built by walking the PC's parent chain in the world hierarchy. The chain is populated server-side in `get_players()` and flows through `CampaignPlayer` to the frontend with no extra API round-trip.
+- **Usage / How**: Visible automatically on every player card in the game sidebar. Updates whenever the player list refreshes (state poll, WS `players_update` broadcast).
+
 ### Map Z-Order and Tooltip Ancestry (Added: 2026-06-07)
 - **Context / Why**: The canvas draws all tiles in the order they appear in the server response array. Floors and ground tiles end up on top of walls, walls on top of furniture, and entities underneath ground tiles. The hover hit-test finds the last-painted (topmost-in-array) object — which is the floor — rather than the player circle or furniture that visually appears on top. Additionally, the tooltip shows only `name` and `type`, with no spatial context, making it impossible to tell where in the world hierarchy an object lives.
 - **Purpose / What**: Sort the tile draw pass by a defined z-order (ground < floor < wall/door < furniture/NPC/item < player) so top-down rendering matches visual intuition. Reverse the hit-test iteration so the frontmost drawn object wins. Extend the tooltip to walk the parent chain from the full node list and display it as "Common Room (room) → Stonehill Inn (inn) → Phandalin (town)".
 - **Usage / How**: Transparent — hovering any tile shows the enriched tooltip automatically. No controls or settings needed.
+
+### Player Icon Map Tooltip Ancestry (Added: 2026-06-07)
+- **Context / Why**: Player icons on the world map show no ancestry chain when hovered, while every terrain tile already shows a full location path. The gap exists because the `party` container is stripped from `hierarchyNodes` (it has `show: false`) so the ancestry walk stops immediately when it hits the PC's parent. Players cannot tell from the tooltip where in the world hierarchy their character stands.
+- **Purpose / What**: Retain an unfiltered `allHierarchyNodes` lookup in `WorldMap.vue` alongside the display-filtered `hierarchyNodes`. The ancestry chain walk at hover time uses the unfiltered map, so virtual containers (party, system, planet) contribute to the chain without ever being drawn on the canvas.
+- **Usage / How**: Hover a player icon (gold circle) on the world map. The tooltip shows the character name and type plus the full ancestry chain — e.g. "Common Room (room) → Stonehill Inn (inn) → Phandalin (town)" — identical to the chain shown for terrain tiles.
 
 ## 5. Success Criteria
 

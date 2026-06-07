@@ -185,7 +185,16 @@
   - [x] Add `TILE_Z` priority map in `WorldMap.vue`; sort tileNodes by z before draw pass
   - [x] Reverse hit-test iteration so frontmost (highest-z) object wins tooltip
   - [x] Build parent ancestry chain in tooltip from allNodes (hierarchy + tiles)
-  - [ ] Verify: hovering player shows player tooltip; hovering floor shows floor + ancestry
+  - [x] Add `location_ancestry` field to `CampaignPlayer` model (user.py)
+  - [x] Populate `location_ancestry` in `get_players()` by walking world parent chain
+  - [x] Display ancestry chain on each `PlayerCard.vue` beneath character name
+  - [ ] Verify: hovering player shows player tooltip; hovering floor shows floor + ancestry; player cards show ancestry chain
+
+- [ ] Feature: Player icon map tooltip ancestry
+  - [x] Integrate into PRD.md (Why/What/How)
+  - [x] Keep unfiltered `allHierarchyNodes` ref in `WorldMap.vue` for ancestry lookups
+  - [x] Use unfiltered map when building tooltip ancestry chain so virtual parents (party, planet, etc.) resolve correctly
+  - [ ] Verify: hovering player circle shows full ancestry chain on map tooltip
 
 ## Phase 22: DM ReAct Silent Tool Execution
 

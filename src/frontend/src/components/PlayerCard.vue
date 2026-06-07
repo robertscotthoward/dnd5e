@@ -14,6 +14,15 @@
       </div>
     </div>
 
+    <!-- Location ancestry -->
+    <div v-if="locationAncestry.length > 0" class="location-ancestry">
+      <span
+        v-for="(anc, i) in locationAncestry"
+        :key="i"
+        class="anc-item"
+      >{{ anc.name }} <em class="anc-type">({{ anc.type }})</em><span v-if="i < locationAncestry.length - 1" class="anc-sep"> → </span></span>
+    </div>
+
     <div class="gold-divider-plain"></div>
 
     <!-- HP Section -->
@@ -111,6 +120,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+})
+
+const locationAncestry = computed(() => {
+  return Array.isArray(props.player.location_ancestry) ? props.player.location_ancestry : []
 })
 
 const hpPercent = computed(() => {
@@ -437,4 +450,32 @@ const statusClass = computed(() => {
 .cond-invisible  { color: #e2e8f0; border-color: #475569; background: rgba(71,85,105,0.15); }
 .cond-debuff     { color: #f87171; border-color: #7f1d1d; background: rgba(139,26,26,0.2); }
 .cond-neutral    { color: #8a7355; border-color: #3d2e10; background: rgba(61,46,16,0.2); }
+
+/* Location ancestry */
+.location-ancestry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin-top: 0.25rem;
+  margin-bottom: 0.1rem;
+  line-height: 1.4;
+}
+
+.anc-item {
+  font-family: 'Crimson Text', serif;
+  font-size: 0.72rem;
+  color: #7a6540;
+  white-space: nowrap;
+}
+
+.anc-type {
+  color: #5a4a30;
+  font-style: italic;
+}
+
+.anc-sep {
+  color: #4a3a22;
+  margin: 0 0.1rem;
+}
 </style>

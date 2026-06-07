@@ -131,6 +131,17 @@ def get_players(campaign_id: str) -> list[CampaignPlayer]:
                         successes=ds.get("successes", 0),
                         failures=ds.get("failures", 0),
                     )
+                # Location ancestry: walk parent chain, skip virtual party container
+                ancestry = []
+                pid = obj.parent
+                while pid is not None and len(ancestry) < 8:
+                    p = campaign.world.get_object(pid)
+                    if p is None:
+                        break
+                    if p.type not in ("party",):
+                        ancestry.append({"name": p.name or p.type, "type": p.type})
+                    pid = p.parent
+                cp.location_ancestry = ancestry
         result.append(cp)
     return result
 

@@ -89,8 +89,9 @@ const ctxMenu = ref({ visible: false, x: 0, y: 0 })
 const tooltip = ref({ node: null, ancestry: [], x: 0, y: 0 })
 
 // Data from the server
-const hierarchyNodes = ref([])  // abstract container objects (tree-layouted)
-const tileNodes = ref([])       // concrete tile/entity objects in the local container
+const hierarchyNodes = ref([])       // abstract container objects (tree-layouted, display-filtered)
+const allHierarchyNodes = ref([])    // all hierarchy nodes including hidden ones — used for ancestry lookups
+const tileNodes = ref([])            // concrete tile/entity objects in the local container
 const playerNode = ref(null)
 const localContainerId = ref(null)
 const exploredSet = ref(new Set()) // "wx,wy" strings of explored world coords
@@ -234,9 +235,10 @@ async function loadMap() {
     if (!res.ok) return
     const data = await res.json()
 
-    // Hierarchy nodes — apply tree layout
-    const rawH = (data.hierarchy || []).filter(n => absCfg(n.type).show)
-    hierarchyNodes.value = applyTreeLayout(rawH)
+    // Hierarchy nodes — keep full set for ancestry lookups; filter for display
+    const rawH = data.hierarchy || []
+    allHierarchyNodes.value = rawH
+    hierarchyNodes.value = applyTreeLayout(rawH.filter(n => absCfg(n.type).show))
 
     // Tile + entity objects in the local container — use their raw local coords
     tileNodes.value = data.tiles || []
@@ -476,10 +478,10 @@ function onMouseMove(e) {
   }
 
   if (hit) {
-    // Build ancestry chain: walk parent IDs through the combined node list
+    // Build ancestry chain: use unfiltered hierarchy + tiles so virtual nodes (party, etc.) resolve
     const allById = {}
-    for (const n of hierarchyNodes.value) allById[n.id] = n
-    for (const n of tileNodes.value)     allById[n.id] = n
+    for (const n of allHierarchyNodes.value) allById[n.id] = n
+    for (const n of tileNodes.value)         allById[n.id] = n
     const ancestry = []
     let pid = hit.parent
     while (pid != null && ancestry.length < 8) {
