@@ -178,3 +178,15 @@ In the Common Room of the Stonehill Inn, Roblade and Lyria engaged in quiet conv
 
 ---
 
+## Turn 0 — 2026-06-08 19:14
+
+In the Common Room of Stonehill Inn, Robby wandered near the entrance, his mind lost in contemplation as he scanned the bustling crowd for any sign of intrigue or danger. Nearby, Thorin was meticulously polishing his weapons by the fireplace, while Elara sat engrossed in ancient tomes at a nearby table, her brow furrowed with concentration. Across the room, Mira stood watchfully against the wall, her keen eyes never resting as she kept an eye on all who entered and left the inn. Lyria, meanwhile, observed everyone's activities silently from a corner, her presence unassuming yet ever vigilant.
+
+---
+
+## Turn 0 — 2026-06-08 19:15
+
+As the party emerged into Daggerfall City Square, they were immediately enveloped by the vibrant energy of the bustling market. Roblade approached Thorin near the fountain, while Robby scanned the square for any signs of danger, his keen eyes darting from one end to the other. The morning sun cast a golden glow over the grand Temple of Lathander to their east, and the air was filled with the enticing aroma of fresh bread wafting from nearby bakeries. With party members scattered around the square—Elara eyeing stalls filled with wares, Mira chatting enthusiastically with locals, Aldric staring intently at the temple’s golden statue, and Lyria offering healing blessings to passersby—the scene was set for an eventful day in Daggerfall.
+
+---
+

@@ -503,6 +503,38 @@
       "text": "You find yourselves gathered in the Common Room of the Stonehill Inn, a modest establishment run by Toblen Stonehill and his family. The room is bustling with activity, filled with patrons chatting over meals or drinks at various tables. A large fireplace dominates one end of the room, casting a warm glow across the space. The air is thick with the scent of roasted meats and freshly baked bread.\n\nThorin stands near the entrance, leaning against the wooden doorframe as he surveys his surroundings with a gruff expression. Elara sits by a table in the corner, her eyes flicking through an ancient tome she has pulled from her bag. Mira is moving about, her keen senses alert for any signs of potential danger or opportunities for mischief. Aldric stands near the fireplace, offering prayers to Lathander as he watches over his companions.\n\nRoblade and Lyria are seated at a table together, engaged in quiet conversation. Robby patrols the edges of the room, his sharp eyes scanning for threats with a seasoned fighter\u2019s intuition.",
       "turn_number": 0,
       "timestamp": "2026-06-08T19:06:41.478805"
+    },
+    {
+      "id": "c1ca07fb2f7d",
+      "sender": "Roblade",
+      "sender_type": "PC",
+      "text": "[Action] Look Around",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:13:53.434250"
+    },
+    {
+      "id": "1e61b08e5d54",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "You are standing in the Common Room of Stonehill Inn, observing your fellow adventurers around you. The room is bustling with activity as various members of your party engage in conversation or prepare for their next journey. Thorin stands near the fireplace, polishing his weapons; Elara sits at a table pouring over ancient tomes; Mira leans against the wall nearby, her eyes scanning the crowd; Aldric tends to a small group who have come seeking healing and guidance from him; Lyria is quietly observing everyone's activities; Robby appears deep in thought near one of the room's exits.",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:14:15.478566"
+    },
+    {
+      "id": "36eb5c6ee58e",
+      "sender": "Roblade",
+      "sender_type": "PC",
+      "text": "Go outside. Then look around",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:15:01.964556"
+    },
+    {
+      "id": "74367144cfde",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you step outside into the heart of Daggerfall City Square, the bustling atmosphere surrounds you. The square is a lively hub where vendors at market stalls hawk their goods, attracting a steady stream of shoppers and curious onlookers. To your east stands the grand Temple of Lathander, with its golden statue gleaming in the morning sun and columns lining its facade. The air carries the scent of fresh bread from nearby bakeries and the distant sounds of horse hooves clattering against cobblestone streets.\n\nYour party members are already outside, milling about and taking in their surroundings. Thorin stands near a fountain spouting clear water, while Elara is eyeing the stalls with interest. Mira is chatting animatedly with some locals, Aldric has his eyes fixed on the Temple of Lathander, Roblade seems deep in thought, Lyria is offering healing blessings to those who need them, and Robby is scanning the area for potential threats.\n\nWhat would you like to do next?",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:15:23.502066"
     }
   ]
 }

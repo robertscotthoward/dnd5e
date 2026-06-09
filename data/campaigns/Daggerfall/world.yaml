@@ -2,7 +2,7 @@ name: Daggerfall
 seed: 432
 turn_number: 0
 created_at: '2026-05-04T15:08:38.492042'
-updated_at: '2026-06-08T19:06:41.129270'
+updated_at: '2026-06-08T19:15:23.158158'
 world:
   name: Daggerfall
   max_id: 456
@@ -68,7 +68,7 @@ world:
     8:
       id: 8
       type: party
-      parent: 7
+      parent: 3
       name: The Adventurers
       description: A band of adventurers seeking fortune and glory
       is_virtual: true
