@@ -138,20 +138,74 @@ _OUTSIDE_WORDS = re.compile(r"\b(outside|out|exterior|street|town|square)\b", re
 _INSIDE_WORDS  = re.compile(r"\b(inside|in|interior|inn|room|building|tavern|dungeon)\b", re.IGNORECASE)
 
 
+def _exit_location(world, former_container, new_parent) -> list[float]:
+    """
+    Return coordinates in new_parent's space that place the mover just outside
+    former_container's bounding box.
+
+    Strategy:
+      1. If former_container has a door child, use the door's location in
+         former_container coords, convert to new_parent coords, then step 5 ft
+         outward (away from the centre of the box).
+      2. Otherwise step 5 ft outside the nearest face of former_container's
+         bounding box, using its declared size (or a 10×10 ft default).
+
+    All coordinates are in the new_parent's frame.  former_container's own
+    location within new_parent is the origin of its bounding box.
+    """
+    STEP = 5.0  # one grid cell outward
+
+    # former_container's position in new_parent coords
+    fc_loc = former_container.location
+    ox = fc_loc.x if fc_loc else 0.0
+    oy = fc_loc.y if fc_loc else 0.0
+
+    sz = former_container.size
+    w = sz.width  if sz and sz.width  > 0 else 10.0
+    l = sz.length if sz and sz.length > 0 else 10.0
+
+    # Look for a door child; use its position to determine which face to exit from
+    door = next(
+        (c for c in world.get_children(former_container.id) if c.type == "door"),
+        None,
+    )
+    if door:
+        dx = door.location.x if door.location else 0.0
+        dy = door.location.y if door.location else 0.0
+        # Determine which face the door is closest to and step outward from there
+        dist_left   = dx
+        dist_right  = w - dx
+        dist_bottom = dy
+        dist_top    = l - dy
+        face = min(
+            ("left",   dist_left,   ox - STEP,       oy + dy),
+            ("right",  dist_right,  ox + w + STEP,   oy + dy),
+            ("bottom", dist_bottom, ox + dx,          oy - STEP),
+            ("top",    dist_top,    ox + dx,          oy + l + STEP),
+            key=lambda t: t[1],
+        )
+        return [face[2], face[3], 0.0]
+
+    # No door — step 5 ft outside the south face (y = oy - STEP)
+    return [ox + w / 2.0, oy - STEP, 0.0]
+
+
 def _resolve_movement(world, char_obj, player_text: str):
     """
-    Detect movement intent in player_text and return the destination Object (the new
-    parent for the character and their party), or None if no movement is detected.
+    Detect movement intent in player_text and return (destination_obj, location) or None.
 
-    The character may be a direct child of a location OR inside a party that is
-    inside a location.  We resolve the *effective location container* by skipping
-    through any virtual party wrapper.
+    destination_obj — the new parent Object for the mover
+    location        — [x, y, z] in destination_obj's coordinate space, placed just
+                      outside the former container's bounding box when moving outward
+
+    The character may be inside a virtual party wrapper; we skip past it to find the
+    real location container.
 
     Rules:
-      - "outside / out / street / town / square" → parent of effective container
-        (room→inn, inn→town, …)
-      - "inside / in / <name>" → first child of effective container whose name or
-        type matches a word in the player text
+      - "outside / out / street / town / square" → parent of effective container;
+        location is computed via _exit_location so the mover is outside the box
+      - "inside / in / <name>" → first matching child of effective container;
+        location is [0, 0, 0] (centre of new parent, i.e. "inside")
     """
     if not _MOVEMENT_KEYWORDS.search(player_text):
         return None
@@ -166,7 +220,8 @@ def _resolve_movement(world, char_obj, player_text: str):
     if _OUTSIDE_WORDS.search(player_text):
         destination = world.get_object(container.parent)
         if destination is not None:
-            return destination
+            loc = _exit_location(world, container, destination)
+            return (destination, loc)
         return None
 
     if _INSIDE_WORDS.search(player_text):
@@ -176,9 +231,9 @@ def _resolve_movement(world, char_obj, player_text: str):
             if child.type in ("PC", "NPC", "item", "party"):
                 continue
             if child.name and child.name.lower() in lower:
-                return child
+                return (child, [0.0, 0.0, 0.0])
             if child.type.lower() in lower:
-                return child
+                return (child, [0.0, 0.0, 0.0])
         return None
 
     return None
@@ -215,14 +270,15 @@ async def _run_dm_response(
             if obj.type == "PC" and obj.name == char_name]
     if _pcs:
         _pc = _pcs[0]
-        _destination = _resolve_movement(campaign.world, _pc, situation)
-        if _destination is not None:
+        _move = _resolve_movement(campaign.world, _pc, situation)
+        if _move is not None:
+            _destination, _exit_loc = _move
             # If the PC is inside a party, move the party so all members travel together
             _direct_parent = campaign.world.get_object(_pc.parent)
             if _direct_parent and _direct_parent.is_virtual and _direct_parent.type == "party":
-                tools.move_object(_direct_parent.id, _destination.id)
+                tools.move_object(_direct_parent.id, _destination.id, _exit_loc)
             else:
-                tools.move_object(_pc.id, _destination.id)
+                tools.move_object(_pc.id, _destination.id, _exit_loc)
             save_campaign_world(campaign_id, campaign)
 
     try:
