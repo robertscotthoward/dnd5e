@@ -1,7 +1,16 @@
 <template>
   <Teleport to="body">
     <div v-if="visible" class="map-overlay" @click.self="$emit('close')">
-      <div class="map-dialog" @contextmenu.prevent>
+      <div class="map-dialog" :style="dialogStyle" @contextmenu.prevent>
+        <!-- Resize handles — one per edge/corner -->
+        <div class="rs rs-n"  @mousedown.stop="startResize($event,'n')"></div>
+        <div class="rs rs-s"  @mousedown.stop="startResize($event,'s')"></div>
+        <div class="rs rs-e"  @mousedown.stop="startResize($event,'e')"></div>
+        <div class="rs rs-w"  @mousedown.stop="startResize($event,'w')"></div>
+        <div class="rs rs-ne" @mousedown.stop="startResize($event,'ne')"></div>
+        <div class="rs rs-nw" @mousedown.stop="startResize($event,'nw')"></div>
+        <div class="rs rs-se" @mousedown.stop="startResize($event,'se')"></div>
+        <div class="rs rs-sw" @mousedown.stop="startResize($event,'sw')"></div>
         <!-- Header -->
         <div class="map-header">
           <span class="map-title">World Map</span>
@@ -69,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useCampaignStore } from '../stores/campaign'
 
 const props = defineProps({
@@ -91,6 +100,66 @@ const dragging = ref(false)
 const dragStart = ref({ x: 0, y: 0, panX: 0, panY: 0 })
 const ctxMenu = ref({ visible: false, x: 0, y: 0 })
 const tooltip = ref({ node: null, ancestry: [], x: 0, y: 0 })
+
+// ---------------------------------------------------------------------------
+// Resizable dialog
+// ---------------------------------------------------------------------------
+const LS_KEY = 'worldmap-size'
+const MIN_W = 400, MIN_H = 300
+
+function _loadSize() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null')
+    if (s && s.w > MIN_W && s.h > MIN_H) return s
+  } catch {}
+  return null
+}
+
+const dialogSize = ref(_loadSize())
+
+const dialogStyle = computed(() => {
+  if (!dialogSize.value) return {}
+  return { width: dialogSize.value.w + 'px', height: dialogSize.value.h + 'px' }
+})
+
+const resizing = ref(null) // { dir, startX, startY, startW, startH, origRect }
+
+function startResize(e, dir) {
+  if (e.button !== 0) return
+  const dialog = e.currentTarget.closest('.map-dialog')
+  const rect = dialog.getBoundingClientRect()
+  resizing.value = { dir, startX: e.clientX, startY: e.clientY,
+                     startW: rect.width, startH: rect.height }
+  document.addEventListener('mousemove', onResizeMove)
+  document.addEventListener('mouseup',   onResizeUp)
+}
+
+function onResizeMove(e) {
+  if (!resizing.value) return
+  const { dir, startX, startY, startW, startH } = resizing.value
+  const dx = e.clientX - startX
+  const dy = e.clientY - startY
+  const maxW = window.innerWidth  * 0.95
+  const maxH = window.innerHeight * 0.95
+
+  let w = startW, h = startH
+  if (dir.includes('e'))  w = Math.min(maxW, Math.max(MIN_W, startW + dx))
+  if (dir.includes('w'))  w = Math.min(maxW, Math.max(MIN_W, startW - dx))
+  if (dir.includes('s'))  h = Math.min(maxH, Math.max(MIN_H, startH + dy))
+  if (dir.includes('n'))  h = Math.min(maxH, Math.max(MIN_H, startH - dy))
+
+  dialogSize.value = { w, h }
+}
+
+function onResizeUp() {
+  if (dialogSize.value) {
+    localStorage.setItem(LS_KEY, JSON.stringify(dialogSize.value))
+  }
+  resizing.value = null
+  document.removeEventListener('mousemove', onResizeMove)
+  document.removeEventListener('mouseup',   onResizeUp)
+  nextTick(() => initCanvas())
+}
 
 // Data from the server
 const hierarchyNodes = ref([])       // abstract container objects (tree-layouted, display-filtered)
@@ -648,13 +717,27 @@ onUnmounted(() => {
 }
 .map-dialog {
   position: relative;
-  width: min(90vw, 1100px); height: min(85vh, 700px);
+  width: min(90vw, 1100px); height: min(85vh, 700px); /* overridden by inline style when resized */
   display: flex; flex-direction: column;
   background: #000;
   border: 1px solid #3d2e10; border-radius: 6px;
   overflow: hidden;
   box-shadow: 0 0 60px rgba(0,0,0,0.8);
+  user-select: none;
 }
+
+/* Resize handles */
+.rs {
+  position: absolute; z-index: 50;
+}
+.rs-n  { top: 0;    left: 6px;  right: 6px;  height: 6px; cursor: n-resize; }
+.rs-s  { bottom: 0; left: 6px;  right: 6px;  height: 6px; cursor: s-resize; }
+.rs-e  { right: 0;  top: 6px;   bottom: 6px; width: 6px;  cursor: e-resize; }
+.rs-w  { left: 0;   top: 6px;   bottom: 6px; width: 6px;  cursor: w-resize; }
+.rs-ne { top: 0;    right: 0;   width: 10px; height: 10px; cursor: ne-resize; }
+.rs-nw { top: 0;    left: 0;    width: 10px; height: 10px; cursor: nw-resize; }
+.rs-se { bottom: 0; right: 0;   width: 10px; height: 10px; cursor: se-resize; }
+.rs-sw { bottom: 0; left: 0;    width: 10px; height: 10px; cursor: sw-resize; }
 .map-header {
   display: flex; align-items: center; gap: 0.6rem;
   padding: 0.45rem 1rem;

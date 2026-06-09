@@ -310,6 +310,11 @@ When a character is created, be sure to roll for the attributes.
 
 ## Ad-hoc & Experimental Features
 
+### Resizable World Map Dialog (Added: 2026-06-08)
+* **Context / Why**: The fixed-size map dialog wastes screen space on large monitors and is cramped on small ones. Players want to tune it once and have it stay that way.
+* **Purpose / What**: Drag any edge or corner of the world map dialog to resize it. The chosen width and height are saved to `localStorage` and restored every time the map is opened.
+* **Usage / How**: Open the map (F4). Drag any edge or corner to resize. Close and reopen — the map opens at the same size.
+
 ### World Map Tooltip Dimensions (Added: 2026-06-08)
 * **Context / Why**: When hovering over a tile or object on the world map, the player has no spatial sense of how large that object or its containing regions are. A dungeon room and a continent look identically labeled.
 * **Purpose / What**: Display the object's dimensions (length × width × height in feet) in the tooltip, and repeat the same dimension annotation for each ancestor in the ancestry chain. Zero-dimension objects (items with no size set) show nothing.

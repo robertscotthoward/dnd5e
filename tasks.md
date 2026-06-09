@@ -167,6 +167,16 @@
   - [ ] Frontend: style tooltip to match the dark navbar theme
   - [ ] Verify functionality
 
+## Phase 26: Resizable World Map Dialog
+
+- [ ] Feature: Resizable world map dialog with localStorage persistence
+  - [x] Integrate into requirements.md (Why/What/How)
+  - [ ] Add resize handles (8-direction: N, S, E, W, NE, NW, SE, SW) as absolutely-positioned divs around the map-dialog
+  - [ ] Implement mousedown/mousemove/mouseup resize logic in WorldMap.vue; clamp to min 400×300 and max 95vw×95vh
+  - [ ] On resize end, save `{width, height}` to `localStorage` under key `worldmap-size`
+  - [ ] On dialog open, read `worldmap-size` from localStorage and apply to map-dialog dimensions
+  - [ ] Verify: resize each edge and corner → size persists after close/reopen; respects min/max clamps
+
 ## Phase 20: BSP World Partitioning and Map Coloring
 
 - [ ] Feature: BSP-driven child placement and colored tile map

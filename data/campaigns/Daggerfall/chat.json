@@ -583,6 +583,38 @@
       "text": "As you look around, you notice your companions gathered in a clearing nearby. Thorin stands guard with an alert expression on his face, while Elara consults her spellbook and seems engrossed in some arcane studies. Mira is examining something closely on the ground to your left, likely searching for clues or traps. Aldric appears deep in thought as he prays quietly, perhaps communicating with a deity for guidance. Lyria, who you know to be a cleric but haven't interacted much with yet, seems to be observing her surroundings with keen interest. Robby stands watch at the edge of the clearing, his eyes scanning the area for any signs of danger or potential threats.",
       "turn_number": 0,
       "timestamp": "2026-06-08T19:42:10.711016"
+    },
+    {
+      "id": "8203e66f9eec",
+      "sender": "Roblade",
+      "sender_type": "PC",
+      "text": "[Action] Look Around",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:53:59.787277"
+    },
+    {
+      "id": "04bc6bd71db1",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you survey your surroundings, you notice Thorin leaning against a corner table, engaged in conversation with Elara and Mira who sit nearby at another table. Aldric stands near the fireplace, casting a healing spell over his hands as if practicing for future use. Robby is searching through some crates near the entrance of the common room, his keen eyes scanning every inch meticulously.\n\nThe space around you feels familiar yet comfortable, with patrons moving about and engaging in their own activities. No immediate danger or unusual occurrences are apparent at this moment.",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:54:22.701415"
+    },
+    {
+      "id": "801e4e882666",
+      "sender": "Roblade",
+      "sender_type": "PC",
+      "text": "Go outside and look around",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:55:40.910429"
+    },
+    {
+      "id": "d9288f06f932",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you exit the building and step outside into the fresh air of Daggerfall Fields, a lush green expanse stretches before you. The sun casts a warm glow over the grassy plain dotted with scattered trees, while in the distance, you can see a small river meandering to the north. The crisp scent of nature fills your lungs as you take in your surroundings and prepare for whatever adventures lie ahead on this open terrain.",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:55:50.820758"
     }
   ]
 }
