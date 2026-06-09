@@ -220,6 +220,15 @@
   - [x] Frontend: "Reset World" button per campaign card in `AdminView.vue` using existing `dialog` confirm pattern
   - [ ] Verify: reset triggers dialog → confirm → world hierarchy rebuilt → players preserved
 
+## Phase 25: World Map Tooltip Dimensions
+
+- [ ] Feature: Dimension display in world map tooltip
+  - [x] Integrate into requirements.md (Why/What/How)
+  - [x] Backend: include `size` (as `[l, w, h]`) in map node serialization in `campaign_routes.py` `get_map`
+  - [x] Frontend: parse `size` from each node in `WorldMap.vue`; render `LxWxH ft` beneath the type label; skip if all dimensions are zero
+  - [x] Frontend: include `size` when building ancestry chain; annotate each ancestor line with its dimensions when non-zero
+  - [ ] Verify: hover a wall tile → dimensions shown; hover player → player has no size → no dimension line; ancestry chain shows room size above, building size above that
+
 ## Phase 24: /requirement Slash Command
 
 - [ ] Feature: /requirement slash command in chat

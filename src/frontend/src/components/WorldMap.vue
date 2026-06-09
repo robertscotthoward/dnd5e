@@ -40,13 +40,14 @@
         >
           <span class="tt-name">{{ tooltip.node.name }}</span>
           <span class="tt-type">{{ tooltip.node.type }}</span>
+          <span v-if="dimsLabel(tooltip.node)" class="tt-dims">{{ dimsLabel(tooltip.node) }}</span>
           <span v-if="tooltip.node.description" class="tt-desc">{{ tooltip.node.description }}</span>
           <div v-if="tooltip.ancestry && tooltip.ancestry.length" class="tt-ancestry">
             <span
               v-for="(anc, i) in tooltip.ancestry"
               :key="i"
               class="tt-anc-item"
-            >{{ anc.name }} <em>({{ anc.type }})</em></span>
+            >{{ anc.name }} <em>({{ anc.type }})</em><span v-if="anc.dims" class="tt-anc-dims"> {{ anc.dims }}</span></span>
           </div>
         </div>
 
@@ -165,6 +166,25 @@ const TYPE_COLOR = {
   ruin:          '#706858',  // ashy rubble
   container:     '#c8a020',  // treasure gold
   chest:         '#c8a020',
+}
+
+const TILE_TYPES = new Set([
+  'ground', 'floor', 'cobblestone', 'road', 'path', 'plaza', 'courtyard', 'forum',
+  'wall', 'door', 'entrance',
+])
+const ENTITY_DIM_TYPES = new Set(['PC', 'NPC', 'monster', 'item'])
+
+function dimsLabel(node) {
+  if (ENTITY_DIM_TYPES.has(node.type)) return ''
+  // Individual tiles are always one 5-ft grid cell
+  if (TILE_TYPES.has(node.type)) return '5×5 ft'
+  // Container/structure objects — use explicit size when set
+  const s = node.size
+  if (!s) return ''
+  const [l, w, h] = Array.isArray(s) ? s : [s.length || 0, s.width || 0, s.height || 0]
+  if (!l && !w && !h) return ''
+  if (!h) return `${l}×${w} ft`
+  return `${l}×${w}×${h} ft`
 }
 
 function tileColorHex(node) {
@@ -531,7 +551,7 @@ function onMouseMove(e) {
     while (pid != null && ancestry.length < 8) {
       const p = allById[pid]
       if (!p) break
-      ancestry.push({ name: p.name || p.type, type: p.type })
+      ancestry.push({ name: p.name || p.type, type: p.type, dims: dimsLabel(p) })
       pid = p.parent
     }
     tooltip.value = { node: hit, ancestry, x: mx + 14, y: my - 10 }
@@ -599,6 +619,7 @@ watch(() => store.worldTileObjects, objs => {
       name: obj.name || obj.type || 'Ground',
       description: obj.description || null,
       x: loc.x ?? 0, y: loc.y ?? 0,
+      size: obj.size ?? [0, 0, 0],
       tile_color: pr.tile_color || null,
       properties: pr,
       is_player: false,
@@ -685,6 +706,7 @@ onUnmounted(() => {
 }
 .tt-name { font-family: 'Cinzel', serif; font-size: 0.78rem; font-weight: 600; color: #c9a227; white-space: nowrap; }
 .tt-type { font-family: 'Crimson Text', serif; font-size: 0.72rem; color: #8a7355; text-transform: capitalize; font-style: italic; }
+.tt-dims { font-family: 'Crimson Text', serif; font-size: 0.7rem; color: #7a6848; letter-spacing: 0.04em; }
 .tt-desc { font-family: 'Crimson Text', serif; font-size: 0.8rem; color: #e8d5b7; line-height: 1.35; white-space: normal; }
 .tt-ancestry {
   display: flex; flex-direction: column; gap: 0.1rem;
@@ -695,4 +717,5 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 .tt-anc-item em { font-style: italic; color: #4a3820; }
+.tt-anc-dims { color: #5a4830; font-size: 0.68rem; margin-left: 0.25rem; }
 </style>

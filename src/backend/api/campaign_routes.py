@@ -962,6 +962,15 @@ def get_map(campaign_id: str, request: Request):
             "x": obj.location.x,
             "y": obj.location.y,
             "z": obj.location.z,
+            "size": (
+                [obj.size.length, obj.size.width, obj.size.height]
+                if obj.size.length or obj.size.width or obj.size.height
+                else [
+                    obj.properties.get("size_w", 0),
+                    obj.properties.get("size_h", 0),
+                    0,
+                ]
+            ),
             "is_moveable": obj.is_moveable,
             "is_virtual": obj.is_virtual,
             "is_player": obj.id == player_char_id,

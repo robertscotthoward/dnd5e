@@ -310,6 +310,11 @@ When a character is created, be sure to roll for the attributes.
 
 ## Ad-hoc & Experimental Features
 
+### World Map Tooltip Dimensions (Added: 2026-06-08)
+* **Context / Why**: When hovering over a tile or object on the world map, the player has no spatial sense of how large that object or its containing regions are. A dungeon room and a continent look identically labeled.
+* **Purpose / What**: Display the object's dimensions (length × width × height in feet) in the tooltip, and repeat the same dimension annotation for each ancestor in the ancestry chain. Zero-dimension objects (items with no size set) show nothing.
+* **Usage / How**: Hover any tile or hierarchy node on the F4 world map. The tooltip shows `50×40×8 ft` beneath the type label for the hovered object, and each ancestor line gains the same annotation when its size is non-zero.
+
 ### /requirement Slash Command (Added: 2026-06-08)
 * **Context / Why**: Players and the DM need a live, in-session way to surface new requirements or feature requests without leaving the game. Currently, changes must be made out-of-band.
 * **Purpose / What**: A `/requirement <text>` slash command in the game chat box appends the requirement text to `docs/requirements.md` and `tasks.md` as a pending task, then broadcasts a notification to all connected players via WebSocket.
