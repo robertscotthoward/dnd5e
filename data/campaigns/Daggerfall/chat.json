@@ -567,6 +567,22 @@
       "text": "As Roblade looks around, he finds himself standing amidst his fellow adventurers in a familiar campsite near Daggerfall. The terrain appears rugged with rocky outcrops and sparse vegetation, typical of the northern regions he hails from. Thorin the Dwarf Fighter is sharpening his axe nearby, Elara the Elf Wizard poring over her spellbook, Mira the Halfling Rogue checking traps on a recently explored ruin's perimeter, and Aldric the Human Cleric tending to his holy symbols. Robby the Human Fighter is engaged in some form of weapon practice, swinging his sword against an imaginary opponent. The air is crisp with the scent of pine and earth after a recent rain, reminding him of home.",
       "turn_number": 0,
       "timestamp": "2026-06-08T19:26:22.003894"
+    },
+    {
+      "id": "13468c81f933",
+      "sender": "Roblade",
+      "sender_type": "PC",
+      "text": "[Action] Look Around",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:41:39.211268"
+    },
+    {
+      "id": "dba7cf023229",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you look around, you notice your companions gathered in a clearing nearby. Thorin stands guard with an alert expression on his face, while Elara consults her spellbook and seems engrossed in some arcane studies. Mira is examining something closely on the ground to your left, likely searching for clues or traps. Aldric appears deep in thought as he prays quietly, perhaps communicating with a deity for guidance. Lyria, who you know to be a cleric but haven't interacted much with yet, seems to be observing her surroundings with keen interest. Robby stands watch at the edge of the clearing, his eyes scanning the area for any signs of danger or potential threats.",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:42:10.711016"
     }
   ]
 }
