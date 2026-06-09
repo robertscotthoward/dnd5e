@@ -535,6 +535,38 @@
       "text": "As you step outside into the heart of Daggerfall City Square, the bustling atmosphere surrounds you. The square is a lively hub where vendors at market stalls hawk their goods, attracting a steady stream of shoppers and curious onlookers. To your east stands the grand Temple of Lathander, with its golden statue gleaming in the morning sun and columns lining its facade. The air carries the scent of fresh bread from nearby bakeries and the distant sounds of horse hooves clattering against cobblestone streets.\n\nYour party members are already outside, milling about and taking in their surroundings. Thorin stands near a fountain spouting clear water, while Elara is eyeing the stalls with interest. Mira is chatting animatedly with some locals, Aldric has his eyes fixed on the Temple of Lathander, Roblade seems deep in thought, Lyria is offering healing blessings to those who need them, and Robby is scanning the area for potential threats.\n\nWhat would you like to do next?",
       "turn_number": 0,
       "timestamp": "2026-06-08T19:15:23.502066"
+    },
+    {
+      "id": "56fffa03e6d4",
+      "sender": "Roblade",
+      "sender_type": "PC",
+      "text": "[Action] Look Around",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:26:11.577330"
+    },
+    {
+      "id": "4a97dba997d8",
+      "sender": "Roblade",
+      "sender_type": "PC",
+      "text": "[Action] Look Around",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:26:11.909234"
+    },
+    {
+      "id": "247be01f06e6",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As Roblade looks around, he finds himself standing at the edge of a bustling marketplace. The air is filled with the sounds of vendors calling out their wares and the chatter of passerby. To his left, there's a group of travelers gathered around an old storyteller who regales them with tales of distant lands and ancient heroes. Ahead of him, colorful tents and stalls line the streets, each one more inviting than the last. A strong wind picks up, sending papers fluttering through the air, and Roblade can see his companions scattered across the marketplace, each engrossed in their own activities.",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:26:20.085007"
+    },
+    {
+      "id": "90f1ae1bc4ca",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As Roblade looks around, he finds himself standing amidst his fellow adventurers in a familiar campsite near Daggerfall. The terrain appears rugged with rocky outcrops and sparse vegetation, typical of the northern regions he hails from. Thorin the Dwarf Fighter is sharpening his axe nearby, Elara the Elf Wizard poring over her spellbook, Mira the Halfling Rogue checking traps on a recently explored ruin's perimeter, and Aldric the Human Cleric tending to his holy symbols. Robby the Human Fighter is engaged in some form of weapon practice, swinging his sword against an imaginary opponent. The air is crisp with the scent of pine and earth after a recent rain, reminding him of home.",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:26:22.003894"
     }
   ]
 }
