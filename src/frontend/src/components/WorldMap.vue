@@ -168,10 +168,12 @@ const TYPE_COLOR = {
 }
 
 function tileColorHex(node) {
-  // Honour an explicit tile_color property first (legacy generator override)
+  // TYPE_COLOR wins — prevents legacy "tile_color: brown" on walls/floors from masking type-specific hues
+  if (TYPE_COLOR[node.type]) return TYPE_COLOR[node.type]
+  // Fallback: honour an explicit tile_color property for unknown types
   const override = node.tile_color || node.properties?.tile_color
   if (override && TILE_COLORS[override]) return TILE_COLORS[override]
-  return TYPE_COLOR[node.type] || '#6b4a20'
+  return '#6b4a20'
 }
 
 // Abstract container types drawn as circles in the hierarchy tree

@@ -220,6 +220,16 @@
   - [x] Frontend: "Reset World" button per campaign card in `AdminView.vue` using existing `dialog` confirm pattern
   - [ ] Verify: reset triggers dialog → confirm → world hierarchy rebuilt → players preserved
 
+## Phase 24: /requirement Slash Command
+
+- [ ] Feature: /requirement slash command in chat
+  - [x] Integrate into requirements.md (Why/What/How)
+  - [ ] Backend: `POST /api/requirements` — appends requirement text to `docs/requirements.md` under `## Ad-hoc & Experimental Features` and appends a `- [ ] **Requirement**: <text>` entry to `tasks.md`; broadcasts `{type: "requirement_added", text: <text>}` to all WS sessions
+  - [ ] Frontend: intercept `/requirement <text>` in `ChatWindow.vue` before sending to DM — call `POST /api/requirements` with the text, suppress normal chat submission
+  - [ ] Frontend: handle `requirement_added` WS message in `ChatWindow.vue` — display a system notification line (e.g. `[Requirement added: <text>]`) visible to all players
+  - [ ] Add robust error handling & tests
+  - [ ] Verify: player types `/requirement fix the fog` → requirement appended to docs → all players see system notification in chat
+
 ## Phase 13: Quality & Deployment
 
 * [x] **`dev.bat` Typer CLI mode** — Update `dev.bat` to also support running `python -m src.backend.main` CLI commands alongside the Vite/FastAPI servers.

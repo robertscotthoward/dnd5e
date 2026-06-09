@@ -518,7 +518,6 @@ class WorldGenerator:
                         x=x,
                         y=y,
                         is_moveable=True,
-                        properties={"tile_color": "brown"},
                     )
                 elif is_perimeter:
                     obj = self._make_object(
@@ -527,7 +526,6 @@ class WorldGenerator:
                         parent_id=parent.id,
                         x=x,
                         y=y,
-                        properties={"tile_color": "brown"},
                     )
                 else:
                     obj = self._make_object(
