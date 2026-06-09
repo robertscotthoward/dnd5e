@@ -319,3 +319,4 @@ When a character is created, be sure to roll for the attributes.
 * **Context / Why**: Players and the DM need a live, in-session way to surface new requirements or feature requests without leaving the game. Currently, changes must be made out-of-band.
 * **Purpose / What**: A `/requirement <text>` slash command in the game chat box appends the requirement text to `docs/requirements.md` and `tasks.md` as a pending task, then broadcasts a notification to all connected players via WebSocket.
 * **Usage / How**: Any player types `/requirement <description>` in the chat input. The frontend intercepts the slash command before sending it to the DM, posts it to `POST /api/requirements`, and the backend appends to both docs and broadcasts a `{type: "requirement_added", text: <description>}` WS message to all sessions.
+* we need an Inn to be much large than is shown.

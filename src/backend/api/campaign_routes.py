@@ -1092,3 +1092,48 @@ def generate_tiles(campaign_id: str, req: GenerateTilesRequest, request: Request
         save_campaign_world(campaign_id, campaign)
 
     return {"generated": [obj.model_dump(mode="json") for obj in new_objects]}
+
+
+class AddRequirementRequest(BaseModel):
+    text: str
+
+
+@router.post("/campaigns/{campaign_id}/requirements")
+async def add_requirement(campaign_id: str, req: AddRequirementRequest, request: Request):
+    """
+    Append a player-submitted requirement to docs/requirements.md and tasks.md,
+    then broadcast a system notification to all players in the campaign.
+    """
+    import asyncio
+    from pathlib import Path
+
+    get_current_user(request)  # auth check
+
+    text = req.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Requirement text is empty")
+
+    repo_root = Path(__file__).resolve().parents[3]
+
+    # Append to requirements.md
+    req_path = repo_root / "docs" / "requirements.md"
+    with req_path.open("a", encoding="utf-8") as f:
+        f.write(f"\n* {text}\n")
+
+    # Append to tasks.md as a pending item
+    tasks_path = repo_root / "tasks.md"
+    with tasks_path.open("a", encoding="utf-8") as f:
+        f.write(f"\n- [ ] **Requirement (player-submitted)**: {text}\n")
+
+    # Broadcast to all players in the campaign
+    from src.backend.api.ws_routes import manager
+    await manager.broadcast(campaign_id, {
+        "type": "requirement_added",
+        "text": text,
+        "message": {
+            "sender_type": "SYSTEM",
+            "text": f"[New requirement added: {text}]",
+        },
+    })
+
+    return {"ok": True}

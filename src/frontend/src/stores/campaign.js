@@ -406,6 +406,9 @@ export const useCampaignStore = defineStore('campaign', () => {
           currentMeta.value.is_night = msg.is_night
         }
         break
+      case 'requirement_added':
+        if (msg.message) chat.value.push(msg.message)
+        break
     }
   }
 

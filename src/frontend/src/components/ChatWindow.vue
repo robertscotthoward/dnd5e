@@ -109,18 +109,29 @@ const inputText = ref('')
 const slashIndex = ref(0)
 
 // --- Slash commands registry ---
-// Add new commands here; the dropdown and dispatch both read from this list.
+// Commands with hasArg:true are autocompleted with a trailing space so the user
+// can keep typing the argument before hitting Enter.
 const SLASH_COMMANDS = [
   {
     name: '/clear',
     description: 'Clear the local chat history',
+    hasArg: false,
     action: () => { campaignStore.clearChat() },
+  },
+  {
+    name: '/requirement',
+    description: 'Add a requirement — /requirement <text>',
+    hasArg: true,
+    action: null, // handled in sendMessage
   },
 ]
 
-const slashMenuOpen = computed(() =>
-  inputText.value.startsWith('/') && inputText.value === inputText.value.trimEnd()
-)
+// Only show the dropdown when the user is still typing the command name itself
+// (no space yet after the slash), so /requirement <text> doesn't re-open it.
+const slashMenuOpen = computed(() => {
+  const t = inputText.value
+  return t.startsWith('/') && !t.includes(' ')
+})
 
 const filteredCommands = computed(() => {
   const q = inputText.value.toLowerCase()
@@ -181,16 +192,45 @@ function onKeydown(e) {
 
 function selectCommand(cmd) {
   if (!cmd) return
+  if (cmd.hasArg) {
+    // Autocomplete to "/command " and let the user type the argument
+    inputText.value = cmd.name + ' '
+    nextTick(() => inputEl.value?.focus())
+    return
+  }
   cmd.action()
   inputText.value = ''
   nextTick(() => inputEl.value?.focus())
 }
 
-function sendMessage() {
+async function sendMessage() {
   const text = inputText.value.trim()
   if (!text) return
-  // Ignore bare slash with no match
+
+  // Handle /requirement <text>
+  if (text.startsWith('/requirement ')) {
+    const reqText = text.slice('/requirement '.length).trim()
+    if (!reqText) return
+    inputText.value = ''
+    try {
+      await fetch(`/api/campaigns/${campaignStore.currentMeta?.id}/requirements`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: reqText }),
+      })
+    } catch (e) {
+      campaignStore.chat.push({
+        sender_type: 'SYSTEM',
+        text: '[Failed to submit requirement — server unreachable]',
+      })
+    }
+    return
+  }
+
+  // Ignore bare slash commands that weren't dispatched
   if (text.startsWith('/')) return
+
   campaignStore.sendChat(text)
   inputText.value = ''
 }
