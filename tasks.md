@@ -167,6 +167,16 @@
   - [ ] Frontend: style tooltip to match the dark navbar theme
   - [ ] Verify functionality
 
+## Phase 27: Draggable World Map with Full Persistent State
+
+- [ ] Feature: Draggable map dialog with position, size, and zoom persistence
+  - [x] Integrate into requirements.md (Why/What/How)
+  - [ ] Switch map-overlay from flex-center to position:fixed so dialog can be freely placed; store dialog position as {x,y} in localStorage key `worldmap-pos`
+  - [ ] Add mousedown on map-header to start dialog drag; update position on mousemove; clamp to viewport; save on mouseup
+  - [ ] Save zoom level to localStorage key `worldmap-zoom`; restore on open
+  - [ ] Add "Reset Map" to right-click context menu; clears `worldmap-size`, `worldmap-pos`, `worldmap-zoom` and restores defaults
+  - [ ] Verify: drag title bar → dialog moves; resize edge → size changes; zoom → scroll zoom; close+reopen → same state; Reset Map → defaults
+
 ## Phase 26: Resizable World Map Dialog
 
 - [ ] Feature: Resizable world map dialog with localStorage persistence

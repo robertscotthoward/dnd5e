@@ -310,6 +310,11 @@ When a character is created, be sure to roll for the attributes.
 
 ## Ad-hoc & Experimental Features
 
+### Draggable World Map Dialog with Persistent State (Added: 2026-06-08)
+* **Context / Why**: The map dialog is centered and fixed; players want to park it anywhere on screen and have it stay there across sessions along with size and zoom level.
+* **Purpose / What**: Drag the title bar to reposition the map dialog anywhere on screen. Position, size, and zoom are all saved to `localStorage` and restored on next open. A "Reset Map" context-menu item clears all saved state and returns to defaults.
+* **Usage / How**: Drag the title bar to move. Drag edges/corners to resize. Scroll to zoom. Right-click → "Reset Map" to return to defaults. All state persists across page reloads.
+
 ### Resizable World Map Dialog (Added: 2026-06-08)
 * **Context / Why**: The fixed-size map dialog wastes screen space on large monitors and is cramped on small ones. Players want to tune it once and have it stay that way.
 * **Purpose / What**: Drag any edge or corner of the world map dialog to resize it. The chosen width and height are saved to `localStorage` and restored every time the map is opened.

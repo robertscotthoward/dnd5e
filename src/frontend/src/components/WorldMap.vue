@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div v-if="visible" class="map-overlay" @click.self="$emit('close')">
+    <div v-if="visible" class="map-overlay" @mousedown.self="$emit('close')">
       <div class="map-dialog" :style="dialogStyle" @contextmenu.prevent>
         <!-- Resize handles — one per edge/corner -->
         <div class="rs rs-n"  @mousedown.stop="startResize($event,'n')"></div>
@@ -11,8 +11,8 @@
         <div class="rs rs-nw" @mousedown.stop="startResize($event,'nw')"></div>
         <div class="rs rs-se" @mousedown.stop="startResize($event,'se')"></div>
         <div class="rs rs-sw" @mousedown.stop="startResize($event,'sw')"></div>
-        <!-- Header -->
-        <div class="map-header">
+        <!-- Header — drag handle for repositioning -->
+        <div class="map-header" @mousedown="startDialogDrag">
           <span class="map-title">World Map</span>
           <span class="map-legend">
             <span class="legend-swatch" style="background:#5a3e18"></span>Ground
@@ -68,6 +68,7 @@
           @mouseleave="ctxMenu.visible = false"
         >
           <button class="ctx-item" @click="centerOnPlayer">Center on Player</button>
+          <button class="ctx-item" @click="resetMap">Reset Map</button>
           <button class="ctx-item" @click="resetView">Reset View</button>
           <button class="ctx-item" @click="zoomIn">Zoom In</button>
           <button class="ctx-item" @click="zoomOut">Zoom Out</button>
@@ -102,63 +103,148 @@ const ctxMenu = ref({ visible: false, x: 0, y: 0 })
 const tooltip = ref({ node: null, ancestry: [], x: 0, y: 0 })
 
 // ---------------------------------------------------------------------------
-// Resizable dialog
+// Persistent dialog state — size, position, zoom
 // ---------------------------------------------------------------------------
-const LS_KEY = 'worldmap-size'
+const LS_SIZE = 'worldmap-size'
+const LS_POS  = 'worldmap-pos'
+const LS_ZOOM = 'worldmap-zoom'
 const MIN_W = 400, MIN_H = 300
+const DEFAULT_W = Math.min(window.innerWidth  * 0.9, 1100)
+const DEFAULT_H = Math.min(window.innerHeight * 0.85, 700)
 
-function _loadSize() {
-  try {
-    const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null')
-    if (s && s.w > MIN_W && s.h > MIN_H) return s
-  } catch {}
-  return null
+function _ls(key) {
+  try { return JSON.parse(localStorage.getItem(key) || 'null') } catch { return null }
 }
 
-const dialogSize = ref(_loadSize())
+// Size
+const dialogSize = ref(_ls(LS_SIZE) || null)
+
+// Position — null means centered (CSS default)
+function _centeredPos(w, h) {
+  return {
+    x: Math.round((window.innerWidth  - w) / 2),
+    y: Math.round((window.innerHeight - h) / 2),
+  }
+}
+const dialogPos = ref(_ls(LS_POS) || null)
 
 const dialogStyle = computed(() => {
-  if (!dialogSize.value) return {}
-  return { width: dialogSize.value.w + 'px', height: dialogSize.value.h + 'px' }
+  const w = dialogSize.value?.w ?? DEFAULT_W
+  const h = dialogSize.value?.h ?? DEFAULT_H
+  const pos = dialogPos.value ?? _centeredPos(w, h)
+  return {
+    position: 'fixed',
+    left: pos.x + 'px',
+    top:  pos.y + 'px',
+    width:  w + 'px',
+    height: h + 'px',
+  }
 })
 
-const resizing = ref(null) // { dir, startX, startY, startW, startH, origRect }
+function _saveState() {
+  if (dialogSize.value) localStorage.setItem(LS_SIZE, JSON.stringify(dialogSize.value))
+  if (dialogPos.value)  localStorage.setItem(LS_POS,  JSON.stringify(dialogPos.value))
+  localStorage.setItem(LS_ZOOM, JSON.stringify(zoom.value))
+}
+
+// ---------------------------------------------------------------------------
+// Dialog drag (title bar)
+// ---------------------------------------------------------------------------
+const dialogDragging = ref(null) // { startX, startY, startPosX, startPosY }
+
+function startDialogDrag(e) {
+  if (e.button !== 0) return
+  // Don't steal clicks on the close button
+  if (e.target.closest('.map-close-btn')) return
+  const w = dialogSize.value?.w ?? DEFAULT_W
+  const h = dialogSize.value?.h ?? DEFAULT_H
+  const pos = dialogPos.value ?? _centeredPos(w, h)
+  dialogDragging.value = { startX: e.clientX, startY: e.clientY, startPosX: pos.x, startPosY: pos.y }
+  document.addEventListener('mousemove', onDialogDragMove)
+  document.addEventListener('mouseup',   onDialogDragUp)
+}
+
+function onDialogDragMove(e) {
+  if (!dialogDragging.value) return
+  const { startX, startY, startPosX, startPosY } = dialogDragging.value
+  const w = dialogSize.value?.w ?? DEFAULT_W
+  const h = dialogSize.value?.h ?? DEFAULT_H
+  const maxX = window.innerWidth  - w
+  const maxY = window.innerHeight - h
+  dialogPos.value = {
+    x: Math.min(maxX, Math.max(0, startPosX + (e.clientX - startX))),
+    y: Math.min(maxY, Math.max(0, startPosY + (e.clientY - startY))),
+  }
+}
+
+function onDialogDragUp() {
+  _saveState()
+  dialogDragging.value = null
+  document.removeEventListener('mousemove', onDialogDragMove)
+  document.removeEventListener('mouseup',   onDialogDragUp)
+}
+
+// ---------------------------------------------------------------------------
+// Resize handles
+// ---------------------------------------------------------------------------
+const resizing = ref(null)
 
 function startResize(e, dir) {
   if (e.button !== 0) return
-  const dialog = e.currentTarget.closest('.map-dialog')
-  const rect = dialog.getBoundingClientRect()
+  const w = dialogSize.value?.w ?? DEFAULT_W
+  const h = dialogSize.value?.h ?? DEFAULT_H
+  const pos = dialogPos.value ?? _centeredPos(w, h)
   resizing.value = { dir, startX: e.clientX, startY: e.clientY,
-                     startW: rect.width, startH: rect.height }
+                     startW: w, startH: h, startPosX: pos.x, startPosY: pos.y }
   document.addEventListener('mousemove', onResizeMove)
   document.addEventListener('mouseup',   onResizeUp)
 }
 
 function onResizeMove(e) {
   if (!resizing.value) return
-  const { dir, startX, startY, startW, startH } = resizing.value
+  const { dir, startX, startY, startW, startH, startPosX, startPosY } = resizing.value
   const dx = e.clientX - startX
   const dy = e.clientY - startY
-  const maxW = window.innerWidth  * 0.95
-  const maxH = window.innerHeight * 0.95
+  const maxW = window.innerWidth  * 0.98
+  const maxH = window.innerHeight * 0.98
 
-  let w = startW, h = startH
-  if (dir.includes('e'))  w = Math.min(maxW, Math.max(MIN_W, startW + dx))
-  if (dir.includes('w'))  w = Math.min(maxW, Math.max(MIN_W, startW - dx))
-  if (dir.includes('s'))  h = Math.min(maxH, Math.max(MIN_H, startH + dy))
-  if (dir.includes('n'))  h = Math.min(maxH, Math.max(MIN_H, startH - dy))
+  let w = startW, h = startH, px = startPosX, py = startPosY
+
+  if (dir.includes('e')) w = Math.min(maxW, Math.max(MIN_W, startW + dx))
+  if (dir.includes('s')) h = Math.min(maxH, Math.max(MIN_H, startH + dy))
+  if (dir.includes('w')) {
+    w  = Math.min(maxW, Math.max(MIN_W, startW - dx))
+    px = startPosX + (startW - w)
+  }
+  if (dir.includes('n')) {
+    h  = Math.min(maxH, Math.max(MIN_H, startH - dy))
+    py = startPosY + (startH - h)
+  }
 
   dialogSize.value = { w, h }
+  dialogPos.value  = { x: px, y: py }
 }
 
 function onResizeUp() {
-  if (dialogSize.value) {
-    localStorage.setItem(LS_KEY, JSON.stringify(dialogSize.value))
-  }
+  _saveState()
   resizing.value = null
   document.removeEventListener('mousemove', onResizeMove)
   document.removeEventListener('mouseup',   onResizeUp)
   nextTick(() => initCanvas())
+}
+
+// ---------------------------------------------------------------------------
+// Reset Map — clear all saved state and return to defaults
+// ---------------------------------------------------------------------------
+function resetMap() {
+  ctxMenu.value.visible = false
+  localStorage.removeItem(LS_SIZE)
+  localStorage.removeItem(LS_POS)
+  localStorage.removeItem(LS_ZOOM)
+  dialogSize.value = null
+  dialogPos.value  = null
+  zoom.value = 4
+  autoFit()
 }
 
 // Data from the server
@@ -641,6 +727,7 @@ function onWheel(e) {
   pan.value.x = mx + (pan.value.x - mx) * f
   pan.value.y = my + (pan.value.y - my) * f
   zoom.value  = Math.min(40, Math.max(0.05, zoom.value * f))
+  localStorage.setItem(LS_ZOOM, JSON.stringify(zoom.value))
   draw()
 }
 
@@ -662,7 +749,14 @@ function onResize()   { initCanvas() }
 // ---------------------------------------------------------------------------
 // Reactivity
 // ---------------------------------------------------------------------------
-watch(() => props.visible, v => { if (v) nextTick(() => loadMap()) })
+watch(() => props.visible, v => {
+  if (v) {
+    // Restore saved zoom before loading map so autoFit can override if needed
+    const savedZoom = _ls(LS_ZOOM)
+    if (savedZoom && savedZoom > 0) zoom.value = savedZoom
+    nextTick(() => loadMap())
+  }
+})
 
 // WS explored update
 watch(() => store.exploredCoords, coords => {
@@ -711,13 +805,11 @@ onUnmounted(() => {
 <style scoped>
 .map-overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.8);
-  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.6);
   z-index: 300;
 }
 .map-dialog {
-  position: relative;
-  width: min(90vw, 1100px); height: min(85vh, 700px); /* overridden by inline style when resized */
+  /* position/size/top/left all set via inline :style */
   display: flex; flex-direction: column;
   background: #000;
   border: 1px solid #3d2e10; border-radius: 6px;
@@ -743,7 +835,9 @@ onUnmounted(() => {
   padding: 0.45rem 1rem;
   background: #110d05; border-bottom: 1px solid #3d2e10;
   flex-shrink: 0; flex-wrap: wrap;
+  cursor: grab;
 }
+.map-header:active { cursor: grabbing; }
 .map-title {
   font-family: 'Cinzel', serif; font-size: 0.9rem; font-weight: 600;
   color: #c9a227; letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0;
