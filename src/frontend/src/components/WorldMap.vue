@@ -244,7 +244,7 @@ function resetMap() {
   dialogSize.value = null
   dialogPos.value  = null
   zoom.value = 4
-  autoFit()
+  autoFit(true)
 }
 
 // Data from the server
@@ -617,13 +617,16 @@ function initCanvas() {
   draw()
 }
 
-function autoFit() {
+function autoFit(forceZoom = false) {
   const canvas = canvasEl.value
   if (!canvas) return
 
+  const savedZoom = _ls(LS_ZOOM)
+  const useZoom = !forceZoom && savedZoom && savedZoom > 0
+
   // If we have tile objects, center on the player tile / origin
   if (tileNodes.value.length > 0) {
-    zoom.value = 12   // 12 px per foot → each 5-ft tile is 60 px
+    if (!useZoom) zoom.value = 12   // 12 px per foot → each 5-ft tile is 60 px
     const p = playerNode.value
     if (p) {
       pan.value.x = -(p.x * zoom.value)
@@ -637,17 +640,24 @@ function autoFit() {
 
   // Fallback: fit the hierarchy tree
   const visible = hierarchyNodes.value
-  if (!visible.length) { pan.value = { x: 0, y: 0 }; zoom.value = 10; draw(); return }
+  if (!visible.length) {
+    pan.value = { x: 0, y: 0 }
+    if (!useZoom) zoom.value = 10
+    draw()
+    return
+  }
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
   for (const n of visible) {
     if (n.x < minX) minX = n.x; if (n.x > maxX) maxX = n.x
     if (n.y < minY) minY = n.y; if (n.y > maxY) maxY = n.y
   }
-  const ww = maxX - minX || 1, wh = maxY - minY || 1
-  const pad = 80
-  zoom.value = Math.max(0.05, Math.min(80,
-    Math.min((canvas.width - pad * 2) / ww, (canvas.height - pad * 2) / wh)
-  ))
+  if (!useZoom) {
+    const ww = maxX - minX || 1, wh = maxY - minY || 1
+    const pad = 80
+    zoom.value = Math.max(0.05, Math.min(80,
+      Math.min((canvas.width - pad * 2) / ww, (canvas.height - pad * 2) / wh)
+    ))
+  }
   pan.value.x = -((minX + maxX) / 2) * zoom.value
   pan.value.y =  ((minY + maxY) / 2) * zoom.value
   draw()
@@ -742,8 +752,8 @@ function centerOnPlayer() {
   pan.value.x = -(p.x * zoom.value); pan.value.y = (p.y * zoom.value); draw()
 }
 function resetView()  { ctxMenu.value.visible = false; autoFit() }
-function zoomIn()     { ctxMenu.value.visible = false; zoom.value = Math.min(40, zoom.value * 1.5); draw() }
-function zoomOut()    { ctxMenu.value.visible = false; zoom.value = Math.max(0.05, zoom.value / 1.5); draw() }
+function zoomIn()  { ctxMenu.value.visible = false; zoom.value = Math.min(40, zoom.value * 1.5); localStorage.setItem(LS_ZOOM, JSON.stringify(zoom.value)); draw() }
+function zoomOut() { ctxMenu.value.visible = false; zoom.value = Math.max(0.05, zoom.value / 1.5); localStorage.setItem(LS_ZOOM, JSON.stringify(zoom.value)); draw() }
 function onResize()   { initCanvas() }
 
 // ---------------------------------------------------------------------------
