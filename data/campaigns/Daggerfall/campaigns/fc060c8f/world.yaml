@@ -194,7 +194,7 @@ world:
       id: 13
       type: PC
       parent: 8
-      name: robeblade
+      name: roblade
       description: Half-Elf Wizard from The North
       properties:
         race: Half-Elf
@@ -213,7 +213,7 @@ world:
         hp:
           max: 7
           current: 7
-        background: Robeblade, a half-elf wizard hailing from the frozen expanse of
+        background: roblade, a half-elf wizard hailing from the frozen expanse of
           The North, was raised in the secluded village of Icemule Trace. From a young
           age, he discovered an affinity for arcane magic, which he honed amidst the
           frigid winds and snow-laden landscapes, learning to weave spells as intricately

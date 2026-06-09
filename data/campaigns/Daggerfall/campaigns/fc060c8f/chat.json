@@ -2,7 +2,7 @@
   "messages": [
     {
       "id": "d42c3db17c22",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "Create a paragraph that describes the current state of my campaign from my perspective?",
       "turn_number": 0,
@@ -18,7 +18,7 @@
     },
     {
       "id": "48224b66cce7",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "look aroujnd",
       "turn_number": 0,

@@ -2,7 +2,7 @@ name: Daggerfall
 seed: 432
 turn_number: 0
 created_at: '2026-05-04T15:08:38.492042'
-updated_at: '2026-06-06T22:55:23.378585'
+updated_at: '2026-06-08T18:40:48.482696'
 world:
   name: Daggerfall
   max_id: 456
@@ -196,7 +196,7 @@ world:
       id: 13
       type: PC
       parent: 8
-      name: robeblade
+      name: Roblade
       description: Half-Elf Wizard from The North
       location:
       - 0.0
@@ -219,7 +219,7 @@ world:
         hp:
           max: 7
           current: 7
-        background: Robeblade, a half-elf wizard hailing from the frozen expanse of
+        background: roblade, a half-elf wizard hailing from the frozen expanse of
           The North, was raised in the secluded village of Icemule Trace. From a young
           age, he discovered an affinity for arcane magic, which he honed amidst the
           frigid winds and snow-laden landscapes, learning to weave spells as intricately

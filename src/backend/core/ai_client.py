@@ -38,7 +38,12 @@ _DM_SYSTEM_PROMPT = (
     "the rules, narrate outcomes, and call tools to mutate the game world. Think step by "
     "step: reason about the situation, decide what game-world changes are needed, call "
     "the appropriate tools, then produce your final narration. Never invent object IDs — "
-    "use get_object or get_sub_world to discover them first."
+    "use get_object or get_sub_world to discover them first.\n\n"
+    "MOVEMENT RULE (mandatory): Whenever a player or NPC moves from one location to another "
+    "— entering a room, leaving a building, stepping outside — you MUST call move_object to "
+    "update their parent to the destination object BEFORE writing the Final Answer. "
+    "Never narrate movement without calling move_object first. If you do not know the "
+    "destination object's ID, call get_sub_world or get_object to find it first."
 )
 
 _PC_SYSTEM_PROMPT_TEMPLATE = (
@@ -482,7 +487,10 @@ class AIClient:
             f"{combat_instruction}"
             "As the DM, narrate what happens next. Call world tools as needed to update "
             "game state (e.g. apply damage with add_hp, move objects with move_object). "
-            "End with your narration."
+            "IMPORTANT: If the player or any character changes location, you MUST call "
+            "move_object(id, new_parent_id) to update their position in the world BEFORE "
+            "writing the Final Answer. Use get_sub_world or get_object first if you need "
+            "to discover the destination's object ID."
         )
 
         if in_combat and meta:

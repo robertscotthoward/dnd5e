@@ -2,7 +2,7 @@
   "messages": [
     {
       "id": "d42c3db17c22",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "Create a paragraph that describes the current state of my campaign from my perspective?",
       "turn_number": 0,
@@ -18,7 +18,7 @@
     },
     {
       "id": "48224b66cce7",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "look aroujnd",
       "turn_number": 0,
@@ -34,7 +34,7 @@
     },
     {
       "id": "9fd6485cda1c",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "Look around me. Any thing here?",
       "turn_number": 0,
@@ -60,13 +60,13 @@
       "id": "25861d873af3",
       "sender": "DM",
       "sender_type": "DM",
-      "text": "You find yourself standing in the Common Room of Stonehill Inn, a modest establishment run by Toblen Stonehill and his family. Around you are your fellow adventurers from The Adventurers party:\n\n- **Thorin**, the Dwarf Fighter with a gruff demeanor but loyal to the core\n- **Elara**, the Elf Wizard who is always eager for knowledge\n- **Mira**, the Halfling Rogue known for her quick wit and charm\n- **Aldric**, the Human Cleric, spreading light in dark places\n- Your character, **robeblade** (Half-Elf Wizard/Fighter from The North)\n- **Lyria**, a Half-Elf Cleric with an unknown background at this point\n- **Robby**, the Human Fighter hailing from Baldur's Gate\n\nThe room is bustling with activity as patrons and travelers alike gather around tables, sharing stories and enjoying meals. A warm fireplace casts light across the area, making it cozy despite the outside conditions. The party seems to be ready for whatever comes next in Phandalin or perhaps beyond its borders.\n\nWhat would you like to do now?",
+      "text": "You find yourself standing in the Common Room of Stonehill Inn, a modest establishment run by Toblen Stonehill and his family. Around you are your fellow adventurers from The Adventurers party:\n\n- **Thorin**, the Dwarf Fighter with a gruff demeanor but loyal to the core\n- **Elara**, the Elf Wizard who is always eager for knowledge\n- **Mira**, the Halfling Rogue known for her quick wit and charm\n- **Aldric**, the Human Cleric, spreading light in dark places\n- Your character, **roblade** (Half-Elf Wizard/Fighter from The North)\n- **Lyria**, a Half-Elf Cleric with an unknown background at this point\n- **Robby**, the Human Fighter hailing from Baldur's Gate\n\nThe room is bustling with activity as patrons and travelers alike gather around tables, sharing stories and enjoying meals. A warm fireplace casts light across the area, making it cozy despite the outside conditions. The party seems to be ready for whatever comes next in Phandalin or perhaps beyond its borders.\n\nWhat would you like to do now?",
       "turn_number": 0,
       "timestamp": "2026-06-05T21:45:33.073857"
     },
     {
       "id": "42db85cd93d2",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "I see you now Robby",
       "turn_number": 0,
@@ -116,7 +116,7 @@
       "id": "4a64377f0169",
       "sender": "DM",
       "sender_type": "DM",
-      "text": "As Robby looks around the Stonehill Inn's common room, he observes his companions Thorin, Elara, Mira, Aldric, robeblade, and Lyria gathered nearby. The group is taking a brief moment of rest in between their adventures. \n\nThe common room is bustling with activity as patrons enjoy drinks at the bar and engage in lively conversations around the tables. Toblen Stonehill can be seen serving customers from behind the counter, his family members assisting him. Robby takes this opportunity to assess the situation and consider what course of action the group should take next.",
+      "text": "As Robby looks around the Stonehill Inn's common room, he observes his companions Thorin, Elara, Mira, Aldric, roblade, and Lyria gathered nearby. The group is taking a brief moment of rest in between their adventures. \n\nThe common room is bustling with activity as patrons enjoy drinks at the bar and engage in lively conversations around the tables. Toblen Stonehill can be seen serving customers from behind the counter, his family members assisting him. Robby takes this opportunity to assess the situation and consider what course of action the group should take next.",
       "turn_number": 0,
       "timestamp": "2026-06-05T22:00:08.170539"
     },
@@ -202,7 +202,7 @@
     },
     {
       "id": "c5626c3594e8",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "[Action] Investigate",
       "turn_number": 0,
@@ -266,7 +266,7 @@
     },
     {
       "id": "0d639e0f17a1",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "[Action] Investigate",
       "turn_number": 0,
@@ -282,7 +282,7 @@
     },
     {
       "id": "0dd950a7a2b5",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "[Action] Investigate",
       "turn_number": 0,
@@ -346,7 +346,7 @@
     },
     {
       "id": "cfc3fe572c47",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "Look around the inn",
       "turn_number": 0,
@@ -404,13 +404,13 @@
       "id": "b38864924f13",
       "sender": "DM",
       "sender_type": "DM",
-      "text": "As you look around, you find yourself standing in a cozy inn named The Moonlit River Bar. There is a roaring fireplace to your left and tables scattered throughout the room where patrons are enjoying their meals and drinks. The air smells of roasted meats and freshly baked bread.\n\nYour companions Thorin, Elara, Aldric, robeblade, and Lyria are also present in the inn. They appear to be engaged in conversation near one of the wooden tables by the windows.",
+      "text": "As you look around, you find yourself standing in a cozy inn named The Moonlit River Bar. There is a roaring fireplace to your left and tables scattered throughout the room where patrons are enjoying their meals and drinks. The air smells of roasted meats and freshly baked bread.\n\nYour companions Thorin, Elara, Aldric, roblade, and Lyria are also present in the inn. They appear to be engaged in conversation near one of the wooden tables by the windows.",
       "turn_number": 0,
       "timestamp": "2026-06-05T22:31:37.685685"
     },
     {
       "id": "0948909ea353",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "[Action] Look Around",
       "turn_number": 0,
@@ -420,13 +420,13 @@
       "id": "5b1a907bd8a8",
       "sender": "DM",
       "sender_type": "DM",
-      "text": "Robeblade looks around the common room and notices Thorin, Elara, Mira, Aldric, Lyria, and Robby are also present. The dim light casts long shadows across the room as everyone settles down to rest after a day of adventuring.\n\nSuddenly, robeblade feels an odd sensation and realizes that their robes are glowing faintly in the dark corners of the common room. They notice that anyone who looks directly at them while the robe is glowing has a look of confusion on their faces and seem momentarily stunned. The light from the robe sheds bright light in a 30-foot radius, making it difficult for others to see clearly.\n\nThought: I will now update the game world by creating an object representing the Robe of Stars.\nAction: create_object\nAction Input: {\"type\": \"wondrous_item\", \"parent_id\": 13, \"name\": \"Robe of Stars\", \"description\": \"This black or dark blue robe is embroidered with small white or silver stars.\", \"properties\": {\"requires_attunement\": true, \"glowing_light_effect\": true}}",
+      "text": "roblade looks around the common room and notices Thorin, Elara, Mira, Aldric, Lyria, and Robby are also present. The dim light casts long shadows across the room as everyone settles down to rest after a day of adventuring.\n\nSuddenly, roblade feels an odd sensation and realizes that their robes are glowing faintly in the dark corners of the common room. They notice that anyone who looks directly at them while the robe is glowing has a look of confusion on their faces and seem momentarily stunned. The light from the robe sheds bright light in a 30-foot radius, making it difficult for others to see clearly.\n\nThought: I will now update the game world by creating an object representing the Robe of Stars.\nAction: create_object\nAction Input: {\"type\": \"wondrous_item\", \"parent_id\": 13, \"name\": \"Robe of Stars\", \"description\": \"This black or dark blue robe is embroidered with small white or silver stars.\", \"properties\": {\"requires_attunement\": true, \"glowing_light_effect\": true}}",
       "turn_number": 0,
       "timestamp": "2026-06-06T20:42:13.220259"
     },
     {
       "id": "273c55661b69",
-      "sender": "robeblade",
+      "sender": "roblade",
       "sender_type": "PC",
       "text": "[Action] Look Around",
       "turn_number": 0,
@@ -439,6 +439,22 @@
       "text": "As you look around Stonehill Inn's common room, you notice your fellow adventurers scattered about in various conversations and activities. The dim light from torches flickers across the wooden beams and furniture, casting shadows on the stone walls. There is no sign of immediate danger or intrigue that might warrant an action at this moment.",
       "turn_number": 0,
       "timestamp": "2026-06-06T21:23:22.635215"
+    },
+    {
+      "id": "81dc0ec4a531",
+      "sender": "roblade",
+      "sender_type": "PC",
+      "text": "Leave the room to see what's outside",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T18:39:14.297247"
+    },
+    {
+      "id": "1277df4f7470",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you exit the common room, you find yourselves in the bustling heart of Stonehill Inn. To your left is a wooden bar filled with patrons chatting over mugs of ale, while a staircase rises to your right leading upstairs to guest rooms. At the far end of the inn, there\u2019s an open door that leads out into Phandalin, offering glimpses of the town's cobblestone streets and various buildings beyond. What would you like to do?",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T18:40:48.805376"
     }
   ]
 }
