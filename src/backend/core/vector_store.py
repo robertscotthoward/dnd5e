@@ -22,8 +22,13 @@ console = Console()
 
 def _configure_llamaindex() -> None:
     """Configure LlamaIndex to use local embeddings (no OpenAI key needed)."""
+    import os
+    from llama_index.core.llms import MockLLM
+    os.environ.setdefault("HF_HUB_DISABLE_IMPLICIT_TOKEN", "1")
     LlamaSettings.embed_model = resolve_embed_model("local:BAAI/bge-small-en-v1.5")
-    LlamaSettings.llm = None  # Disable LLM; we only need embeddings here
+    # Set MockLLM explicitly so LlamaIndex doesn't warn about implicit fallback.
+    # We never use the LlamaIndex LLM path — Ollama is called directly in ai_client.py.
+    LlamaSettings.llm = MockLLM()
 
 
 class VectorStore:

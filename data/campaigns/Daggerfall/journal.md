@@ -160,3 +160,9 @@ As the party stepped out of the common room into the heart of Stonehill Inn, the
 
 ---
 
+## Turn 0 — 2026-06-08 19:01
+
+Roblade and Robby arrived at the Common Room of Stonehill Inn late in the afternoon, their footsteps echoing slightly against the wooden floorboards as they entered. The room was warm and inviting, with Toblen Stonehill bustling behind the bar, polishing glasses and greeting occasional patrons with a friendly nod. They found an empty table near the fireplace where they settled to plan their next move, the crackling flames casting dancing shadows across their faces as they engaged in quiet conversation, eyes occasionally scanning the room for any signs of intrigue or potential allies.
+
+---
+

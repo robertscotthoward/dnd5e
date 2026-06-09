@@ -455,6 +455,22 @@
       "text": "As you exit the common room, you find yourselves in the bustling heart of Stonehill Inn. To your left is a wooden bar filled with patrons chatting over mugs of ale, while a staircase rises to your right leading upstairs to guest rooms. At the far end of the inn, there\u2019s an open door that leads out into Phandalin, offering glimpses of the town's cobblestone streets and various buildings beyond. What would you like to do?",
       "turn_number": 0,
       "timestamp": "2026-06-08T18:40:48.805376"
+    },
+    {
+      "id": "10a43a6fcb49",
+      "sender": "Roblade",
+      "sender_type": "PC",
+      "text": "look around",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:01:02.147614"
+    },
+    {
+      "id": "d79ad4f2964e",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "You find yourselves gathered in the Common Room of Stonehill Inn, a cozy space filled with wooden tables and chairs, a roaring fireplace that casts flickering shadows across the walls, and a few other patrons scattered about. The atmosphere is quiet but welcoming, with Toblen Stonehill tending to his inn's needs nearby. There doesn't appear to be any immediate danger or urgent matters at hand; however, there might still be secrets lurking in the corners of this room waiting to be discovered if you decide to search for them.",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:01:17.905638"
     }
   ]
 }
