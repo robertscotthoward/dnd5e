@@ -166,3 +166,15 @@ Roblade and Robby arrived at the Common Room of Stonehill Inn late in the aftern
 
 ---
 
+## Turn 0 — 2026-06-08 19:06
+
+As Roblade and Robby emerged from the Stonehill Inn into Phandalin's lively Town Square, they were immediately enveloped by the vibrant atmosphere of the bustling frontier town. Merchants with colorful stalls lined the cobblestone streets, their voices mingling with the laughter of children playing around a central fountain adorned with carvings of ancient runes. The duo paused at a corner stall where an elderly merchant was selling maps and trinkets, exchanging pleasantries while scanning the crowd for any signs of trouble or potential quests.
+
+---
+
+## Turn 0 — 2026-06-08 19:06
+
+In the Common Room of the Stonehill Inn, Roblade and Lyria engaged in quiet conversation at their table while keeping an eye on the bustling crowd around them. Robby patrolled the edges of the room, his keen eyes scanning for any signs of danger or potential threats to their companions. Meanwhile, Thorin leaned against the entrance, surveying the scene with a gruff expression, and Mira moved about with her senses alert for opportunities for mischief or hidden dangers.
+
+---
+

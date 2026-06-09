@@ -471,6 +471,38 @@
       "text": "You find yourselves gathered in the Common Room of Stonehill Inn, a cozy space filled with wooden tables and chairs, a roaring fireplace that casts flickering shadows across the walls, and a few other patrons scattered about. The atmosphere is quiet but welcoming, with Toblen Stonehill tending to his inn's needs nearby. There doesn't appear to be any immediate danger or urgent matters at hand; however, there might still be secrets lurking in the corners of this room waiting to be discovered if you decide to search for them.",
       "turn_number": 0,
       "timestamp": "2026-06-08T19:01:17.905638"
+    },
+    {
+      "id": "b75b766398be",
+      "sender": "Roblade",
+      "sender_type": "PC",
+      "text": "Go outside and see what's there",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:05:50.937124"
+    },
+    {
+      "id": "b89dab55cd52",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "As you step out of Stonehill Inn and into the fresh air of Phandalin's Town Square, you are greeted by the sights and sounds of a lively frontier town. The square is bustling with activity; merchants hawk their wares from colorful stalls, children play in a small fountain at its center, and travelers gather around to share tales of adventure and hardship.",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:06:09.217809"
+    },
+    {
+      "id": "f65216fe3bc4",
+      "sender": "Roblade",
+      "sender_type": "PC",
+      "text": "Look around",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:06:33.858031"
+    },
+    {
+      "id": "c3a4317650e6",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "You find yourselves gathered in the Common Room of the Stonehill Inn, a modest establishment run by Toblen Stonehill and his family. The room is bustling with activity, filled with patrons chatting over meals or drinks at various tables. A large fireplace dominates one end of the room, casting a warm glow across the space. The air is thick with the scent of roasted meats and freshly baked bread.\n\nThorin stands near the entrance, leaning against the wooden doorframe as he surveys his surroundings with a gruff expression. Elara sits by a table in the corner, her eyes flicking through an ancient tome she has pulled from her bag. Mira is moving about, her keen senses alert for any signs of potential danger or opportunities for mischief. Aldric stands near the fireplace, offering prayers to Lathander as he watches over his companions.\n\nRoblade and Lyria are seated at a table together, engaged in quiet conversation. Robby patrols the edges of the room, his sharp eyes scanning for threats with a seasoned fighter\u2019s intuition.",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T19:06:41.478805"
     }
   ]
 }

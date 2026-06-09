@@ -3,6 +3,7 @@
 import asyncio
 import concurrent.futures
 import json
+import re
 from datetime import datetime
 
 
@@ -125,6 +126,64 @@ def _get_explored(campaign_id: str, user_id: str) -> list[list[float]]:
     return [[x, y] for x, y in _session_explored.get(key, set())]
 
 
+_MOVEMENT_KEYWORDS = re.compile(
+    r"\b(go|walk|head|move|step|exit|leave|enter|go\s+outside|go\s+inside|go\s+out|"
+    r"go\s+in|go\s+to|travel\s+to|proceed\s+to)\b",
+    re.IGNORECASE,
+)
+
+# Maps destination keywords in player text to a callable that resolves the target
+# object by searching the current container and its ancestors/children.
+_OUTSIDE_WORDS = re.compile(r"\b(outside|out|exterior|street|town|square)\b", re.IGNORECASE)
+_INSIDE_WORDS  = re.compile(r"\b(inside|in|interior|inn|room|building|tavern|dungeon)\b", re.IGNORECASE)
+
+
+def _resolve_movement(world, char_obj, player_text: str):
+    """
+    Detect movement intent in player_text and return the destination Object (the new
+    parent for the character and their party), or None if no movement is detected.
+
+    The character may be a direct child of a location OR inside a party that is
+    inside a location.  We resolve the *effective location container* by skipping
+    through any virtual party wrapper.
+
+    Rules:
+      - "outside / out / street / town / square" → parent of effective container
+        (room→inn, inn→town, …)
+      - "inside / in / <name>" → first child of effective container whose name or
+        type matches a word in the player text
+    """
+    if not _MOVEMENT_KEYWORDS.search(player_text):
+        return None
+
+    # Walk up past any virtual party to find the real location container
+    container = world.get_object(char_obj.parent)
+    while container is not None and container.is_virtual:
+        container = world.get_object(container.parent)
+    if container is None:
+        return None
+
+    if _OUTSIDE_WORDS.search(player_text):
+        destination = world.get_object(container.parent)
+        if destination is not None:
+            return destination
+        return None
+
+    if _INSIDE_WORDS.search(player_text):
+        children = world.get_children(container.id)
+        lower = player_text.lower()
+        for child in children:
+            if child.type in ("PC", "NPC", "item", "party"):
+                continue
+            if child.name and child.name.lower() in lower:
+                return child
+            if child.type.lower() in lower:
+                return child
+        return None
+
+    return None
+
+
 async def _run_dm_response(
     campaign_id: str,
     player_text: str,
@@ -149,6 +208,22 @@ async def _run_dm_response(
     situation = player_text
     if situation.upper().startswith("DM:"):
         situation = situation[3:].strip()
+
+    # Programmatically resolve movement before the DM agent runs so the world
+    # state is correct regardless of whether the LLM calls move_object or not.
+    _pcs = [obj for obj in campaign.world.objects.values()
+            if obj.type == "PC" and obj.name == char_name]
+    if _pcs:
+        _pc = _pcs[0]
+        _destination = _resolve_movement(campaign.world, _pc, situation)
+        if _destination is not None:
+            # If the PC is inside a party, move the party so all members travel together
+            _direct_parent = campaign.world.get_object(_pc.parent)
+            if _direct_parent and _direct_parent.is_virtual and _direct_parent.type == "party":
+                tools.move_object(_direct_parent.id, _destination.id)
+            else:
+                tools.move_object(_pc.id, _destination.id)
+            save_campaign_world(campaign_id, campaign)
 
     try:
         narration = await asyncio.get_running_loop().run_in_executor(
