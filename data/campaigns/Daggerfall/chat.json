@@ -615,6 +615,22 @@
       "text": "As you exit the building and step outside into the fresh air of Daggerfall Fields, a lush green expanse stretches before you. The sun casts a warm glow over the grassy plain dotted with scattered trees, while in the distance, you can see a small river meandering to the north. The crisp scent of nature fills your lungs as you take in your surroundings and prepare for whatever adventures lie ahead on this open terrain.",
       "turn_number": 0,
       "timestamp": "2026-06-08T19:55:50.820758"
+    },
+    {
+      "id": "dba06e76f965",
+      "sender": "Roblade",
+      "sender_type": "PC",
+      "text": "Go outside and look around",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T20:15:16.534751"
+    },
+    {
+      "id": "c3af2b99350f",
+      "sender": "DM",
+      "sender_type": "DM",
+      "text": "You step outside into the bustling Town Square of Daggerfall. The air is filled with the sounds and smells of a lively market day. Merchants are shouting out their wares, children run around playing games, and travelers from far and wide mingle together. Your party stands on the edge of the square, taking in the sights and sounds around them.",
+      "turn_number": 0,
+      "timestamp": "2026-06-08T20:15:40.702321"
     }
   ]
 }

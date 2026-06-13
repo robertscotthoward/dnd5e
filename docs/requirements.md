@@ -137,11 +137,11 @@ Object
   type: string, e.g. PC, NPC, system, planet, continent, bed, sword, ring
   name: OPTIONAL
   description:
-  location: [x, y, z]
-  size: [l, w, h]
+  size: [l, w, h]  # where l, w, h are in feet. Every object is a box of some sort. A human might be [1, 2, 6]
+  location: [x, y, z]  # where x, y, z are in feet. A child of this object with location [0,0,0] means the center of its parent. A null location means inside it somewhere, like a ring in a bag; exacly place is unimportant.
   weight: in pounds
   cost: in copper pieces
-  is_moveable: BOOL - true means the location can change. False means the children cannot move outside the size. A bag on an elf will have location [0,0,0] and size [0,0,0] to mean that the elf has the bag, assumes the elf's location, and items (like a ring) can be in the bag (the parent is the bag) or out of the bag (the parent is the elf wearing/equiping the ring).
+  is_moveable: BOOL - true means the location can change. False means the children cannot move outside the size. A bag on an elf will have location null to mean that the elf has the bag, assumes the elf's location, and items (like a ring) can be in the bag (the parent is the bag) or out of the bag (the parent is the elf wearing/equiping the ring).
   is_virtual: BOOL - true means the children can extend beyond the parent; e.g. a party. A party might have a location, like in a room, but each party member can be in different locations of the room. When a member says "let the party move to another room", then all party members change their location to [0,0,0], to denote that all members came together, and the party's parent becomes another room and the relative location is set for the party, e.g. [-3, 7, 0].
 ```
 
@@ -189,7 +189,9 @@ NPC (Player)
 
 
 # Location
-Each object has a location relative to its parent. If the object's location is [0,0,0] then the object is said to be "with" or "in" the parent, and that the exact location (or coordinates) of the item is irrelevant. 
+Each object has a location relative to its parent. [0, 0, 0] is in the center of its parent.
+The size of a child should never exceed its parent. The total volume of the children in a parent should never exceed the parent's volume.
+If the object's location is null then the object is said to be "with" or "in" the parent, and that the exact location (or coordinates) of the item is irrelevant. 
 Examples:
 * A sword has parent: PC elf. This means that the sword is being carried by the elf.
 * A backpack has parent: PC elf. This means the elf "has" a backpack.
@@ -198,7 +200,7 @@ Examples:
 
 Possessions are also a parent/child relationship as illustrated above.
 
-The resolution of the world is 5 feet. So a person takes up 25 square feet. A party might also have 4 people and the party has a location, and all 4 people are in that party's 5x5 space - each persons location is [0,0,0]. A member can move outside.
+The resolution of the world is 5 feet. So a person takes up 25 square feet. A party might also have 4 people and the party has a location, and all 4 people are in that party's 5x5 space - each persons location is null. A member can move outside.
 
 
 # Game
